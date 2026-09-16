@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Modal Dialog Demo</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 2rem;
+  }
+  button {
+    padding: .5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  /* Overlay that dims the page */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  /* Dialog box */
+  .modal {
+    background: #fff;
+    border-radius: .5rem;
+    padding: 1.5rem;
+    max-width: 90%;
+    max-height: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    overflow: auto;
+  }
+  .modal h2 {
+    margin-top: 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>Page Content</h1>
+<p>This is some content behind the dialog. When the dialog opens the page will be dimmed.</p>
+
+<button id="openBtn">Open Dialog</button>
+
+<script>
+(() => {
+  const openBtn = document.getElementById('openBtn');
+
+  openBtn.addEventListener('click', () => {
+    // Store the element that had focus so we can restore it later
+    const previouslyFocused = document.activeElement;
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.tabIndex = -1; // make it focusable
+
+    // Create dialog container
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'modalTitle');
+
+    // Dialog content
+    const title = document.createElement('h2');
+    title.id = 'modalTitle';
+    title.textContent = 'Modal Dialog';
+
+    const paragraph = document.createElement('p');
+    paragraph.textContent = 'This is a simple modal dialog. Click outside the box, press Escape, or click the button below to close it.';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.textContent = 'Close';
+    closeBtn.addEventListener('click', closeDialog);
+
+    modal.append(title, paragraph, closeBtn);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Focus the close button (or you could focus the modal itself)
+    closeBtn.focus();
+
+    // ---- Event handling ----
+    // Click outside the dialog closes it
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeDialog();
+    });
+
+    // Escape key closes it
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') closeDialog();
+    };
+    document.addEventListener('keydown', onKeyDown);
+
+    // Clean‑up function
+    function closeDialog() {
+      document.body.removeChild(overlay);
+      document.removeEventListener('keydown', onKeyDown);
+      // Return focus to the button that opened the dialog
+      if (previouslyFocused && previouslyFocused.focus) previouslyFocused.focus();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

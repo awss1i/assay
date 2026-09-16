@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>6×6 Mini Spreadsheet</title>
+<style>
+  body {font-family:Arial,sans-serif; padding:20px;}
+  table {border-collapse:collapse; margin:auto;}
+  td {
+    width:80px; height:30px;
+    border:1px solid #888;
+    text-align:right; padding:4px;
+    overflow:hidden;
+    white-space:nowrap;
+  }
+  td:focus {
+    outline:none; background:#fff8d4;
+  }
+</style>
+</head>
+<body>
+<h2 style="text-align:center;">6×6 Spreadsheet (editable)</h2>
+<table id="grid">
+  <tbody>
+  <!-- Rows 1‑6, Columns A‑F -->
+  <script>
+    const cols = ['A','B','C','D','E','F'];
+    const rows = [1,2,3,4,5,6];
+    const tbody = document.querySelector('#grid tbody');
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      cols.forEach(c => {
+        const td = document.createElement('td');
+        const id = c + r;
+        td.id = id;
+        td.contentEditable = true;
+        td.dataset.raw = '';          // raw text entered by the user
+        td.dataset.formula = '';      // keeps the formula if it starts with '='
+        td.addEventListener('focus', onFocus);
+        td.addEventListener('blur', onBlur);
+        td.addEventListener('input', onInput);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  </script>
+  </tbody>
+</table>
+
+<script>
+/* ---------- Helpers ---------- */
+function cellIdFromNode(node) {
+  return node.id;
+}
+
+/* ---------- Event Handlers ---------- */
+function onFocus(e) {
+  const cell = e.target;
+  if (cell.dataset.formula) {
+    cell.innerText = cell.dataset.formula;   // show the formula while editing
+  } else {
+    cell.innerText = cell.dataset.raw;
+  }
+}
+function onBlur(e) {
+  // after leaving a cell, recompute the whole sheet
+  recomputeAll();
+}
+function onInput(e) {
+  const cell = e.target;
+  const text = cell.innerText.trim();
+  if (text.startsWith('=')) {
+    cell.dataset.formula = text;
+    cell.dataset.raw = text;   // keep raw so we can restore on focus
+  } else {
+    cell.dataset.formula = '';
+    cell.dataset.raw = text;
+  }
+}
+
+/* ---------- Core Spreadsheet Logic ---------- */
+function getCellValue(id, visited = new Set()) {
+  if (visited.has(id)) {
+    throw new Error('#CIRC');
+  }
+  visited.add(id);
+  const cell = document.getElementById(id);
+  const formula = cell.dataset.formula;
+  if (!formula) {
+    // plain value: try to treat as number, else 0
+    const num = parseFloat(cell.dataset.raw);
+    return isNaN(num) ? 0 : num;
+  }
+  // formula: strip leading '='
+  let expr = formula.slice(1);
+  // replace cell references (A1‑F6) with their numeric values
+  expr = expr.replace(/\b([A-F][1-6])\b/g, (_, ref) => {
+    const val = getCellValue(ref, visited);
+    return typeof val === 'number' ? val : 0;
+  });
+  // evaluate the arithmetic expression safely
+  try {
+    // eslint-disable-next-line no-new-func
+    const result = Function('"use strict";return (' + expr + ')')();
+    if (typeof result !== 'number' || isNaN(result)) throw new Error();
+    return result;
+  } catch (_) {
+    throw new Error('#ERR');
+  } finally {
+    visited.delete(id);
+  }
+}
+
+/* Recompute every cell and display the result (or error) */
+function recomputeAll() {
+  cols.forEach(c => {
+    rows.forEach(r => {
+      const id = c + r;
+      const cell = document.getElementById(id);
+      try {
+        const val = getCellValue(id);
+        // show computed value, but keep raw/formula for editing later
+        cell.innerText = val;
+      } catch (e) {
+        cell.innerText = e.message;   // "#CIRC" or "#ERR"
+      }
+    });
+  });
+}
+
+/* Initialise with empty values */
+recomputeAll();
+</script>
+</body>
+</html>

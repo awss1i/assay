@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Async List with Filter</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  #spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #555;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+    display: none;
+  }
+  @keyframes spin {to {transform: rotate(360deg);}}
+  #list {list-style: none; padding: 0; max-width: 300px; margin: 10px auto;}
+  #list li {padding: 5px; border-bottom: 1px solid #ddd;}
+  #retry {display:none; margin:10px auto; padding:5px 10px;}
+  #filter {display:block; margin:0 auto 10px auto; padding:5px; width: 300px;}
+</style>
+</head>
+<body>
+<h2 style="text-align:center;">Async List</h2>
+<input type="text" id="filter" placeholder="Type to filter..." autocomplete="off" />
+<div id="spinner"></div>
+<ul id="list"></ul>
+<button id="retry">Retry Load</button>
+<script>
+  const data = [
+    "Apple", "Banana", "Cherry", "Date", "Elderberry",
+    "Fig", "Grape", "Honeydew", "Kiwi", "Lemon",
+    "Mango", "Nectarine", "Orange", "Papaya", "Quince",
+    "Raspberry", "Strawberry", "Tomato", "Ugli fruit", "Vanilla",
+    "Watermelon", "Xigua", "Yellow passion fruit", "Zucchini"
+  ];
+
+  const spinner = document.getElementById('spinner');
+  const listEl = document.getElementById('list');
+  const filterInput = document.getElementById('filter');
+  const retryBtn = document.getElementById('retry');
+
+  function showSpinner(show) { spinner.style.display = show ? 'block' : 'none'; }
+  function showRetry(show) { retryBtn.style.display = show ? 'block' : 'none'; }
+
+  // Simulated async load; fails first time then succeeds on retry.
+  let firstAttemptFailed = true;
+  function loadData() {
+    return new Promise((resolve, reject) => {
+      showSpinner(true);
+      setTimeout(() => {
+        showSpinner(false);
+        if (firstAttemptFailed) {
+          firstAttemptFailed = false; // next retry will succeed
+          reject(new Error('Simulated load failure'));
+        } else {
+          resolve(data);
+        }
+      }, 2000);
+    });
+  }
+
+  function renderList(items) {
+    listEl.innerHTML = '';
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      listEl.appendChild(li);
+    });
+  }
+
+  function applyFilter() {
+    const term = filterInput.value.toLowerCase();
+    const filtered = data.filter(item => item.toLowerCase().includes(term));
+    renderList(filtered);
+  }
+
+  // Initial load
+  loadData()
+    .then(items => { renderList(items); })
+    .catch(err => { console.error(err); showRetry(true); });
+
+  // Retry button handler
+  retryBtn.addEventListener('click', () => {
+    showRetry(false);
+    loadData()
+      .then(items => { renderList(items); })
+      .catch(err => { console.error(err); showRetry(true); });
+  });
+
+  // Filter input handler
+  filterInput.addEventListener('input', applyFilter);
+</script>
+</body>
+</html>

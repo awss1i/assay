@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic‑Tac‑Toe</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#f0f0f0;}
+  h1 {margin-bottom:0.5rem;}
+  #score {margin-bottom:1rem;font-size:1.2rem;}
+  #board {display:grid;grid-template: repeat(3, 100px) / repeat(3, 100px);gap:5px;}
+  .cell {background:#fff;border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:3rem;cursor:pointer;user-select:none;}
+  .cell.disabled {cursor:default;}
+  #reset {margin-top:1rem;padding:0.5rem 1rem;font-size:1rem;}
+</style>
+</head>
+<body>
+<h1>Tic‑Tac‑Toe</h1>
+<div id="score">You: 0 | Computer: 0 | Draws: 0</div>
+<div id="board"></div>
+<button id="reset">Reset Scores</button>
+<script>
+(() => {
+  const boardEl = document.getElementById('board');
+  const scoreEl = document.getElementById('score');
+  const resetBtn = document.getElementById('reset');
+  let board = Array(9).fill(null);
+  let scores = {player:0, computer:0, draws:0};
+  const lines = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // cols
+    [0,4,8],[2,4,6] // diagonals
+  ];
+
+  function renderBoard() {
+    boardEl.innerHTML = '';
+    board.forEach((mark, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (mark ? ' disabled' : '');
+      cell.textContent = mark ? mark : '';
+      cell.addEventListener('click', () => {
+        if (!board[i]) playerMove(i);
+      });
+      boardEl.appendChild(cell);
+    });
+  }
+
+  function checkWinner(bd) {
+    for (const [a,b,c] of lines) {
+      if (bd[a] && bd[a]===bd[b] && bd[a]===bd[c]) return bd[a];
+    }
+    return bd.includes(null) ? null : 'draw';
+  }
+
+  function playerMove(idx) {
+    board[idx] = 'X';
+    const result = checkWinner(board);
+    if (result) endRound(result);
+    else {
+      // computer turn
+      setTimeout(computerMove, 200);
+    }
+    renderBoard();
+  }
+
+  // Simple unbeatable AI using minimax
+  function computerMove() {
+    const best = minimax(board, 'O');
+    board[best.idx] = 'O';
+    const result = checkWinner(board);
+    if (result) endRound(result);
+    renderBoard();
+  }
+
+  function minimax(bd, player) {
+    const winner = checkWinner(bd);
+    if (winner) {
+      if (winner === 'draw') return {score:0};
+      return {score: winner === 'O' ? 1 : -1};
+    }
+    const moves = [];
+    bd.forEach((v,i)=>{ if(!v) {
+      const newBd = bd.slice();
+      newBd[i]=player;
+      const next = minimax(newBd, player==='O'?'X':'O');
+      moves.push({idx:i, score:next.score});
+    }});
+    // choose move with max score for AI, min for player
+    if (player==='O') {
+      // maximize
+      let maxScore = -Infinity, bestMove=null;
+      for(const m of moves){
+        if(m.score>maxScore){maxScore=m.score;bestMove=m;}
+      }
+      return bestMove;
+    } else {
+      // minimize
+      let minScore = Infinity, bestMove=null;
+      for(const m of moves){
+        if(m.score<minScore){minScore=m.score;bestMove=m;}
+      }
+      return bestMove;
+    }
+  }
+
+  function endRound(result) {
+    if (result==='X') {scores.player++; alert('You win!');}
+    else if (result==='O') {scores.computer++; alert('Computer wins!');}
+    else {scores.draws++; alert('Draw!');}
+    board = Array(9).fill(null);
+    updateScore();
+    renderBoard();
+  }
+
+  function updateScore() {
+    scoreEl.textContent = `You: ${scores.player} | Computer: ${scores.computer} | Draws: ${scores.draws}`;
+  }
+
+  resetBtn.addEventListener('click',()=>{
+    scores = {player:0, computer:0, draws:0};
+    updateScore();
+  });
+
+  // initial render
+  renderBoard();
+})();
+</script>
+</body>
+</html>

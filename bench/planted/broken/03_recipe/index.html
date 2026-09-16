@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Recipe Scaler</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem; background:#f9f9f9;}
+  h1 {color:#333;}
+  label {font-weight: bold;}
+  input[type=number] {width: 4rem; margin-left:0.5rem;}
+  table {border-collapse: collapse; margin-top:1rem; width:100%; max-width:600px;}
+  th, td {border:1px solid #ccc; padding:0.5rem; text-align:left;}
+  th {background:#eee;}
+</style>
+</head>
+<body>
+<h1>Recipe Scaler</h1>
+<label for="servings">Servings:</label>
+<input id="servings" type="number" min="1" value="4" />
+<table id="ingredients">
+  <thead>
+    <tr><th>Ingredient</th><th>Quantity</th></tr>
+  </thead>
+  <tbody>
+    <!-- Each row stores the quantity needed per single serving -->
+    <tr data-per-serving="0.5"><td>Flour (cups)</td><td class="qty"></td></tr>
+    <tr data-per-serving="0.33"><td>Sugar (cups)</td><td class="qty"></td></tr>
+    <tr data-per-serving="0.25"><td>Butter (cups)</td><td class="qty"></td></tr>
+    <tr data-per-serving="2"><td>Eggs (pcs)</td><td class="qty"></td></tr>
+    <tr data-per-serving="1"><td>Milk (cups)</td><td class="qty"></td></tr>
+  </tbody>
+</table>
+<script>
+  (function(){
+    const servingsInput = document.getElementById('servings');
+    const rows = document.querySelectorAll('#ingredients tbody tr');
+    // Store last valid value to revert on invalid input
+    let lastValid = parseInt(servingsInput.value,10)||1;
+    function update(){
+      const val = parseInt(servingsInput.value,10);
+      if(isNaN(val) || val <= 1){
+        alert('Servings must be a positive integer.');
+        servingsInput.value = val;
+        return;
+      }
+      lastValid = val;
+      rows.forEach(row=>{
+        const per = parseFloat(row.dataset.perServing);
+        const qty = (per * val).toFixed(2).replace(/\.0$/,'');
+        rows[3].querySelector('.qty').textContent = qty;
+      });
+    }
+    servingsInput.addEventListener('change', update);
+    servingsInput.addEventListener('input',()=>{
+      // allow typing without immediate validation; will validate on change/blur
+    });
+  })();
+</script>
+</body>
+</html>

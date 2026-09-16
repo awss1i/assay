@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Undo/Redo Demo</title>
+<style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    .container {max-width: 600px; margin: auto;}
+    textarea {width: 100%; height: 150px; font-size: 1rem; padding: 8px;}
+    button {margin: 5px; padding: 6px 12px; font-size: 1rem;}
+    button:disabled {opacity: 0.5;}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Undo/Redo Text Box</h2>
+    <textarea id="editor" placeholder="Type something..."></textarea>
+    <div>
+        <button id="undoBtn" disabled>Undo</button>
+        <button id="redoBtn" disabled>Redo</button>
+    </div>
+</div>
+
+<script>
+(function(){
+    const editor = document.getElementById('editor');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+
+    let undoStack = [];
+    let redoStack = [];
+    let lastValue = editor.value;
+
+    // Update button states
+    function refreshButtons(){
+        undoBtn.disabled = undoStack.length===0;
+        redoBtn.disabled = redoStack.length===0;
+    }
+
+    // Capture changes on input event
+    editor.addEventListener('input', function(){
+        // Push previous state onto undo stack
+        undoStack.push(lastValue);
+        // New edit discards redo history
+        redoStack = [];
+        lastValue = editor.value;
+        refreshButtons();
+    });
+
+    undoBtn.addEventListener('click', function(){
+        if (undoStack.length===0) return;
+        // Move current state to redo stack
+        redoStack.push(editor.value);
+        // Pop last state from undo stack
+        const prev = undoStack.pop();
+        editor.value = prev;
+        lastValue = prev;
+        refreshButtons();
+    });
+
+    redoBtn.addEventListener('click', function(){
+        if (redoStack.length===0) return;
+        // Move current state to undo stack
+        undoStack.push(editor.value);
+        const next = redoStack.pop();
+        editor.value = next;
+        lastValue = next;
+        refreshButtons();
+    });
+
+    // Initialize button states
+    refreshButtons();
+})();
+</script>
+</body>
+</html>

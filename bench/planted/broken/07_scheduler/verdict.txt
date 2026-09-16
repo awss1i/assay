@@ -1,0 +1,14 @@
+# One line per planted bug, in the order bugs.md numbers them.
+#
+#   <n> found <case-id> <optional note>
+#   <n> missed <optional note>
+#
+# A bug is *found* when at least one failing case is caused by it. That is a
+# judgement: assay reports an act and a measurement, and whether that
+# measurement is this bug showing itself is what a person has to decide.
+
+1 missed no expectation of what the days are called
+2 missed no expectation of how many slots a row has
+3 missed the attribute is never read
+4 found C011 the square clicked is one press behind
+5 missed Slot 0 against Slot 1 is a value judgement

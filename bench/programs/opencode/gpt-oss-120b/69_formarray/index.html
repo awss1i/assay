@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Person Form</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    .entry {display: flex; align-items: center; margin-bottom: 5px;}
+    .entry input {margin-right: 5px; padding: 4px;}
+    .entry button {margin-left: 5px;}
+    #summary {margin-top: 20px; font-weight: bold;}
+  </style>
+</head>
+<body>
+  <h2>Add Person</h2>
+  <div id="entries"></div>
+  <button id="addBtn">Add Person</button>
+  <button id="summaryBtn">Update Summary</button>
+  <div id="summary">Summary: (none)</div>
+
+  <script>
+    const entriesDiv = document.getElementById('entries');
+    const addBtn = document.getElementById('addBtn');
+    const summaryBtn = document.getElementById('summaryBtn');
+    const summaryDiv = document.getElementById('summary');
+
+    function createEntry(name = '', age = '') {
+      const div = document.createElement('div');
+      div.className = 'entry';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Name';
+      nameInput.value = name;
+
+      const ageInput = document.createElement('input');
+      ageInput.type = 'number';
+      ageInput.placeholder = 'Age';
+      ageInput.min = 0;
+      ageInput.value = age;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.type = 'button';
+      removeBtn.onclick = () => div.remove();
+
+      div.appendChild(nameInput);
+      div.appendChild(ageInput);
+      div.appendChild(removeBtn);
+      return div;
+    }
+
+    addBtn.onclick = () => {
+      entriesDiv.appendChild(createEntry());
+    };
+
+    summaryBtn.onclick = () => {
+      const people = [];
+      const entryDivs = entriesDiv.querySelectorAll('.entry');
+      entryDivs.forEach(entry => {
+        const inputs = entry.getElementsByTagName('input');
+        const name = inputs[0].value.trim();
+        const age = inputs[1].value.trim();
+        if (name && age) {
+          people.push(`${name} (${age})`);
+        }
+      });
+      summaryDiv.textContent = people.length ? 'Summary: ' + people.join(', ') : 'Summary: (none)';
+    };
+  </script>
+</body>
+</html>

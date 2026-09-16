@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Memory Game</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 5px;
+    }
+    .status {
+      margin-bottom: 15px;
+    }
+    .status span {
+      margin: 0 10px;
+      font-weight: bold;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 80px);
+      grid-gap: 10px;
+    }
+    .card {
+      width: 80px;
+      height: 80px;
+      background: #2e3d49;
+      color: #fff;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .card.flipped {
+      background: #fff;
+      color: #000;
+      cursor: default;
+    }
+    .card.matched {
+      background: #a5d6a7;
+      color: #fff;
+    }
+    #winMessage {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      color: green;
+      display: none;
+    }
+    button#restart {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-size: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory Game</h1>
+  <div class="status">
+    <span>Moves: <span id="moves">0</span></span>
+    <span>Time: <span id="timer">0</span>s</span>
+    <span>Pairs Found: <span id="pairs">0</span></span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div id="winMessage">🎉 You win! 🎉</div>
+  <button id="restart">Play Again</button>
+
+  <script>
+    const symbols = ['❶','❷','❸','❹','❺','❻','❼','❽']; // 8 unique symbols => 16 cards
+    const totalPairs = symbols.length;
+    let moves = 0;
+    let pairsFound = 0;
+    let timer = 0;
+    let timerInterval = null;
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    const movesEl = document.getElementById('moves');
+    const timerEl = document.getElementById('timer');
+    const pairsEl = document.getElementById('pairs');
+    const winMessage = document.getElementById('winMessage');
+    const restartBtn = document.getElementById('restart');
+    const grid = document.getElementById('grid');
+
+    function initGame() {
+      // Reset state
+      moves = 0; pairsFound = 0; timer = 0;
+      clearInterval(timerInterval);
+      timerInterval = null;
+      firstCard = secondCard = null;
+      lockBoard = false;
+      movesEl.textContent = moves;
+      timerEl.textContent = timer;
+      pairsEl.textContent = pairsFound;
+      winMessage.style.display = 'none';
+      restartBtn.style.display = 'none';
+      grid.innerHTML = '';
+      // Create shuffled deck
+      const deck = symbols.concat(symbols); // duplicate for pairs
+      deck.sort(() => Math.random() - 0.5);
+      deck.forEach(sym => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.value = sym;
+        card.textContent = '';
+        card.addEventListener('click', onCardClick);
+        grid.appendChild(card);
+      });
+    }
+
+    function startTimer() {
+      if (timerInterval) return; // already running
+      timerInterval = setInterval(() => {
+        timer++;
+        timerEl.textContent = timer;
+      }, 1000);
+    }
+
+    function onCardClick(e) {
+      const card = e.currentTarget;
+      if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      // Start timer on first flip of the game
+      if (!timerInterval) startTimer();
+      card.classList.add('flipped');
+      card.textContent = card.dataset.value;
+      if (!firstCard) {
+        firstCard = card;
+        return;
+      }
+      secondCard = card;
+      moves++;
+      movesEl.textContent = moves;
+      checkForMatch();
+    }
+
+    function checkForMatch() {
+      const isMatch = firstCard.dataset.value === secondCard.dataset.value;
+      if (isMatch) {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        pairsFound++;
+        pairsEl.textContent = pairsFound;
+        resetBoard();
+        if (pairsFound === totalPairs) {
+          endGame();
+        }
+      } else {
+        lockBoard = true;
+        setTimeout(() => {
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          firstCard.textContent = '';
+          secondCard.textContent = '';
+          resetBoard();
+        }, 1000);
+      }
+    }
+
+    function resetBoard() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      winMessage.style.display = 'block';
+      restartBtn.style.display = 'inline-block';
+    }
+
+    restartBtn.addEventListener('click', initGame);
+    // Initialize on load
+    initGame();
+  </script>
+</body>
+</html>

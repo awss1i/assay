@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Country Table</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  #filter {margin-bottom: 10px; padding: 5px; width: 200px;}
+  table {border-collapse: collapse; width: 100%;}
+  th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+  th {cursor: pointer; background-color: #f2f2f2;}
+  th.sort-asc::after {content: " \2191";}
+  th.sort-desc::after {content: " \2193";}
+  #rowCount {margin-top: 10px;}
+</style>
+</head>
+<body>
+<h2>Country Table</h2>
+<input type="text" id="filter" placeholder="Filter..." />
+<table id="countryTable">
+  <thead>
+    <tr>
+      <th data-col="0">Country</th>
+      <th data-col="1">Capital</th>
+      <th data-col="2">Population (M)</th>
+      <th data-col="3">Area (km²)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- 20 rows of data -->
+    <tr><td>United States</td><td>Washington, D.C.</td><td>331</td><td>9833520</td></tr>
+    <tr><td>Canada</td><td>Ottawa</td><td>38</td><td>9984670</td></tr>
+    <tr><td>United Kingdom</td><td>London</td><td>68</td><td>242495</td></tr>
+    <tr><td>Germany</td><td>Berlin</td><td>83</td><td>357386</td></tr>
+    <tr><td>France</td><td>Paris</td><td>67</td><td>643801</td></tr>
+    <tr><td>Italy</td><td>Rome</td><td>60</td><td>301340</td></tr>
+    <tr><td>Spain</td><td>Madrid</td><td>47</td><td>505990</td></tr>
+    <tr><td>Australia</td><td>Canberra</td><td>26</td><td>7692024</td></tr>
+    <tr><td>Japan</td><td>Tokyo</td><td>126</td><td>377975</td></tr>
+    <tr><td>China</td><td>Beijing</td><td>1410</td><td>9596961</td></tr>
+    <tr><td>India</td><td>New Delhi</td><td>1380</td><td>3287263</td></tr>
+    <tr><td>Brazil</td><td>Brasília</td><td>213</td><td>8515767</td></tr>
+    <tr><td>Russia</td><td>Moscow</td><td>146</td><td>17098242</td></tr>
+    <tr><td>Mexico</td><td>Mexico City</td><td>128</td><td>1964375</td></tr>
+    <tr><td>South Africa</td><td>Pretoria</td><td>60</td><td>1221037</td></tr>
+    <tr><td>Egypt</td><td>Cairo</td><td>102</td><td>1010408</td></tr>
+    <tr><td>Turkey</td><td>Ankara</td><td>84</td><td>783562</td></tr>
+    <tr><td>Nigeria</td><td>Abuja</td><td>206</td><td>923768</td></tr>
+    <tr><td>Argentina</td><td>Buenos Aires</td><td>45</td><td>2780400</td></tr>
+    <tr><td>South Korea</td><td>Seoul</td><td>52</td><td>100210</td></tr>
+  </tbody>
+</table>
+<div id="rowCount"></div>
+<script>
+// Sorting
+const table = document.getElementById('countryTable');
+const tbody = table.tBodies[0];
+let sortCol = -1;
+let sortAsc = true;
+
+function compareRows(a, b, col) {
+  const cellA = a.cells[col].textContent.trim();
+  const cellB = b.cells[col].textContent.trim();
+  const numA = parseFloat(cellA.replace(/,/g, ''));
+  const numB = parseFloat(cellB.replace(/,/g, ''));
+  if (!isNaN(numA) && !isNaN(numB)) {
+    return numA - numB;
+  }
+  return cellA.localeCompare(cellB);
+}
+
+function sortTable(col) {
+  const rowsArray = Array.from(tbody.rows);
+  if (sortCol === col) {
+    sortAsc = !sortAsc; // toggle direction
+  } else {
+    sortAsc = true;
+    sortCol = col;
+  }
+  rowsArray.sort((r1, r2) => {
+    const cmp = compareRows(r1, r2, col);
+    return sortAsc ? cmp : -cmp;
+  });
+  // re-append rows
+  rowsArray.forEach(row => tbody.appendChild(row));
+  updateHeaderArrows();
+  applyFilter(); // maintain filter after sort
+}
+
+function updateHeaderArrows() {
+  const ths = table.tHead.rows[0].cells;
+  for (let i = 0; i < ths.length; i++) {
+    ths[i].classList.remove('sort-asc', 'sort-desc');
+    if (i === sortCol) {
+      ths[i].classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+    }
+  }
+}
+
+// Attach click listeners to headers
+Array.from(table.tHead.rows[0].cells).forEach(th => {
+  const col = parseInt(th.getAttribute('data-col'));
+  th.addEventListener('click', () => sortTable(col));
+});
+
+// Filtering
+const filterInput = document.getElementById('filter');
+filterInput.addEventListener('input', applyFilter);
+
+function applyFilter() {
+  const term = filterInput.value.trim().toLowerCase();
+  let visibleCount = 0;
+  for (let row of tbody.rows) {
+    const text = row.textContent.toLowerCase();
+    const show = text.includes(term);
+    row.style.display = show ? '' : 'none';
+    if (show) visibleCount++;
+  }
+  document.getElementById('rowCount').textContent = `Showing ${visibleCount} of ${tbody.rows.length} rows`;
+}
+
+// Initial count display
+applyFilter();
+</script>
+</body>
+</html>

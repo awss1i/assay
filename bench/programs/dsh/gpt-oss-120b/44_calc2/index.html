@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calculator</title>
+<style>
+  body {font-family: sans-serif; background:#f0f0f0; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;}
+  .calc {background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:260px;}
+  .display {font-size:2em; text-align:right; padding:10px; background:#eaeaea; border-radius:4px; overflow:hidden;}
+  .buttons {display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:10px;}
+  button {font-size:1.2em; padding:15px; border:none; border-radius:4px; background:#ddd; cursor:pointer;}
+  button:hover {background:#ccc;}
+  .history {margin-top:15px; font-size:0.9em; max-height:100px; overflow-y:auto;}
+  .history-item {display:flex; justify-content:space-between;}
+</style>
+</head>
+<body>
+<div class="calc">
+  <div id="display" class="display">0</div>
+  <div class="buttons">
+    <button data-val="7">7</button>
+    <button data-val="8">8</button>
+    <button data-val="9">9</button>
+    <button data-op="/">÷</button>
+    <button data-val="4">4</button>
+    <button data-val="5">5</button>
+    <button data-val="6">6</button>
+    <button data-op="*">×</button>
+    <button data-val="1">1</button>
+    <button data-val="2">2</button>
+    <button data-val="3">3</button>
+    <button data-op="-">−</button>
+    <button data-val="0">0</button>
+    <button data-action="." id="dot">.</button>
+    <button data-action="%" id="percent">%</button>
+    <button data-op="+">+</button>
+    <button data-action="sign" id="sign">±</button>
+    <button data-action="clear" id="clear">C</button>
+    <button data-action="equals" id="equals" style="grid-column: span 2; background:#4caf50; color:#fff;">=</button>
+  </div>
+  <div class="history" id="history">
+    <strong>History</strong>
+    <div id="history-list"></div>
+  </div>
+</div>
+<script>
+(() => {
+  const display = document.getElementById('display');
+  const historyList = document.getElementById('history-list');
+  let current = '';
+  let operator = null;
+  let operand = null;
+  const history = [];
+
+  function updateDisplay(val) {
+    display.textContent = val || '0';
+  }
+
+  function addToHistory(result) {
+    history.unshift(result);
+    if (history.length > 5) history.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyList.innerHTML = '';
+    history.forEach((r,i) => {
+      const div = document.createElement('div');
+      div.className='history-item';
+      div.textContent = r;
+      historyList.appendChild(div);
+    });
+  }
+
+  function calculate() {
+    if (operator && operand !== null && current !== '') {
+      const a = parseFloat(operand);
+      const b = parseFloat(current);
+      let res;
+      switch(operator) {
+        case '+': res = a + b; break;
+        case '-': res = a - b; break;
+        case '*': res = a * b; break;
+        case '/': res = b === 0 ? 'Error' : a / b; break;
+        default: res = b;
+      }
+      if (res === 'Error') {
+        updateDisplay('Error');
+        // Reset after error
+        operand = null; operator = null; current = '';
+        return;
+      }
+      addToHistory(res);
+      updateDisplay(res);
+      operand = res;
+      current = '';
+    }
+  }
+
+  document.querySelectorAll('button[data-val]').forEach(btn => {
+    btn.addEventListener('click',()=>{
+      if (current === '0') current = '';
+      current += btn.dataset.val;
+      updateDisplay(current);
+    });
+  });
+
+  document.querySelectorAll('button[data-op]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if (current=== '') return; // ignore if no number entered
+      if (operand !== null && operator) {
+        calculate();
+      }
+      operand = current;
+      operator = btn.dataset.op;
+      current = '';
+    });
+  });
+
+  document.getElementById('equals').addEventListener('click',()=>{calculate();});
+
+  document.getElementById('clear').addEventListener('click',()=>{
+    current=''; operand=null; operator=null; updateDisplay('0');
+  });
+
+  document.getElementById('percent').addEventListener('click',()=>{
+    if(current) {
+      current = (parseFloat(current)/100).toString();
+      updateDisplay(current);
+    }
+  });
+
+  document.getElementById('sign').addEventListener('click',()=>{
+    if(current) {
+      if(current.startsWith('-')) current = current.slice(1);
+      else current = '-' + current;
+      updateDisplay(current);
+    }
+  });
+
+  document.getElementById('dot').addEventListener('click',()=>{
+    if(!current.includes('.')) {
+      current = current||'0';
+      current += '.';
+      updateDisplay(current);
+    }
+  });
+
+  // Keyboard support
+  document.addEventListener('keydown',e=>{
+    const key=e.key;
+    if(!isNaN(key)) {
+      // number
+      if (current === '0') current='';
+      current+=key; updateDisplay(current);
+    } else if(key==='Enter' || key==='=') {
+      e.preventDefault(); calculate();
+    } else if(['+','-','*','/'].includes(key)) {
+      // operator
+      if (current=== '') return;
+      if (operand !== null && operator) calculate();
+      operand = current; operator = key; current='';
+    } else if(key==='Backspace') {
+      // delete last char
+      current = current.slice(0,-1);
+      updateDisplay(current);
+    } else if(key==='Escape') {
+      // clear
+      document.getElementById('clear').click();
+    } else if(key==='%') {
+      document.getElementById('percent').click();
+    } else if(key==='c' && e.ctrlKey) {
+      // ctrl+c ignore (prevent copy)
+    } else if(key==='c') {
+      // treat as clear
+      document.getElementById('clear').click();
+    } else if(key==='n') {
+      // sign flip shortcut
+      document.getElementById('sign').click();
+    }
+  });
+})();
+</script>
+</body>
+</html>

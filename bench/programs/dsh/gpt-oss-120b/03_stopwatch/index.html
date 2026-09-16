@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stopwatch</title>
+<style>
+  body {font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; background:#f0f0f0;}
+  #display {font-size: 3rem; margin-bottom: 20px;}
+  button {font-size: 1rem; padding: 10px 20px; margin: 5px;}
+  #laps {margin-top:20px; width: 300px; max-height:200px; overflow-y:auto; background:#fff; padding:10px; border:1px solid #ccc;}
+  #laps li {font-size:1.2rem;}
+</style>
+</head>
+<body>
+<div id="display">00:00.00</div>
+<div>
+  <button id="startBtn">Start</button>
+  <button id="stopBtn" disabled>Stop</button>
+  <button id="lapBtn" disabled>Lap</button>
+  <button id="resetBtn" disabled>Reset</button>
+</div>
+<ul id="laps"></ul>
+<script>
+  let startTime = 0;
+  let elapsed = 0;
+  let timerInterval = null;
+  const display = document.getElementById('display');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const lapBtn = document.getElementById('lapBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const lapsUl = document.getElementById('laps');
+
+  function formatTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const hundredths = Math.floor((ms % 1000) / 10);
+    return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(hundredths).padStart(2,'0')}`;
+  }
+
+  function updateDisplay() {
+    const now = Date.now();
+    const diff = now - startTime + elapsed;
+    display.textContent = formatTime(diff);
+  }
+
+  startBtn.addEventListener('click', () => {
+    startTime = Date.now();
+    timerInterval = setInterval(updateDisplay, 10);
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    lapBtn.disabled = false;
+    resetBtn.disabled = false;
+  });
+
+  stopBtn.addEventListener('click', () => {
+    clearInterval(timerInterval);
+    elapsed += Date.now() - startTime;
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    lapBtn.disabled = true;
+  });
+
+  lapBtn.addEventListener('click', () => {
+    const now = Date.now();
+    const diff = now - startTime + elapsed;
+    const li = document.createElement('li');
+    li.textContent = formatTime(diff);
+    lapsUl.appendChild(li);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    clearInterval(timerInterval);
+    startTime = 0;
+    elapsed = 0;
+    display.textContent = '00:00.00';
+    lapsUl.innerHTML = '';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    lapBtn.disabled = true;
+    resetBtn.disabled = true;
+  });
+</script>
+</body>
+</html>

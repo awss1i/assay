@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three‑Step Form</title>
+<style>
+  body {font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:20px;}
+  .form-step {display:none; background:#fff;padding:20px;margin:0 auto;max-width:500px;
+               border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+  .form-step.active {display:block;}
+  .buttons {margin-top:20px;text-align:right;}
+  button {padding:8px 16px;margin-left:8px;border:none;border-radius:4px;
+         background:#0069d9;color:#fff;cursor:pointer;}
+  button:disabled {background:#aaa;cursor:not-allowed;}
+  .error {color:#d00;font-size:.9em;margin-top:4px;}
+  .summary {background:#fafafa;padding:10px;border:1px solid #ddd;}
+  .summary div {margin-bottom:8px;}
+  .summary label {display:inline-block;width:120px;font-weight:bold;}
+  .summary input {border:none;background:transparent;width:calc(100% - 130px);}
+</style>
+</head>
+<body>
+
+<h2>Three‑Step Form</h2>
+
+<div id="step1" class="form-step active">
+  <h3>Step 1 – Personal Info</h3>
+  <label>
+    Name:<br>
+    <input type="text" id="name" required>
+  </label><br>
+  <div class="error" id="err-name"></div>
+
+  <label>
+    Email:<br>
+    <input type="email" id="email" required>
+  </label><br>
+  <div class="error" id="err-email"></div>
+
+  <div class="buttons">
+    <button id="next1">Next →</button>
+  </div>
+</div>
+
+<div id="step2" class="form-step">
+  <h3>Step 2 – Address</h3>
+  <label>
+    Street:<br>
+    <input type="text" id="street" required>
+  </label><br>
+  <div class="error" id="err-street"></div>
+
+  <label>
+    City:<br>
+    <input type="text" id="city" required>
+  </label><br>
+  <div class="error" id="err-city"></div>
+
+  <label>
+    ZIP:<br>
+    <input type="text" id="zip" required pattern="\\d{5}">
+  </label><br>
+  <div class="error" id="err-zip"></div>
+
+  <div class="buttons">
+    <button id="back2">← Back</button>
+    <button id="next2">Next →</button>
+  </div>
+</div>
+
+<div id="step3" class="form-step">
+  <h3>Step 3 – Review &amp; Submit</h3>
+  <div class="summary" id="summary">
+    <div><label>Name:</label> <input type="text" id="sum-name"></div>
+    <div><label>Email:</label> <input type="email" id="sum-email"></div>
+    <div><label>Street:</label> <input type="text" id="sum-street"></div>
+    <div><label>City:</label> <input type="text" id="sum-city"></div>
+    <div><label>ZIP:</label> <input type="text" id="sum-zip"></div>
+  </div>
+
+  <div class="buttons">
+    <button id="back3">← Back</button>
+    <button id="submit">Submit</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const data = {};
+
+  // Utility
+  const show = (id)=>{document.querySelectorAll('.form-step').forEach(s=>s.classList.remove('active'));
+                     document.getElementById(id).classList.add('active');};
+
+  const setError = (el,msg)=>{document.getElementById(el).textContent=msg;};
+  const clearErrors = ()=>{document.querySelectorAll('.error').forEach(e=>e.textContent='');};
+
+  // Step 1 -> 2
+  document.getElementById('next1').addEventListener('click',()=>{
+    clearErrors();
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email').value.trim();
+    let ok=true;
+    if(!name){setError('err-name','Name required'); ok=false;}
+    if(!email){setError('err-email','Email required'); ok=false;}
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      setError('err-email','Invalid email'); ok=false;
+    }
+    if(ok){
+      data.name=name; data.email=email;
+      // populate step2 if returning
+      document.getElementById('street').value=data.street||'';
+      document.getElementById('city').value=data.city||'';
+      document.getElementById('zip').value=data.zip||'';
+      show('step2');
+    }
+  });
+
+  // Step 2 navigation
+  document.getElementById('back2').addEventListener('click',()=>{
+    // restore step1 fields
+    document.getElementById('name').value=data.name||'';
+    document.getElementById('email').value=data.email||'';
+    show('step1');
+  });
+
+  document.getElementById('next2').addEventListener('click',()=>{
+    clearErrors();
+    const street=document.getElementById('street').value.trim();
+    const city=document.getElementById('city').value.trim();
+    const zip=document.getElementById('zip').value.trim();
+    let ok=true;
+    if(!street){setError('err-street','Street required'); ok=false;}
+    if(!city){setError('err-city','City required'); ok=false;}
+    if(!zip){setError('err-zip','ZIP required'); ok=false;}
+    if(zip && !/^\d{5}$/.test(zip)){
+      setError('err-zip','5‑digit ZIP'); ok=false;
+    }
+    if(ok){
+      data.street=street; data.city=city; data.zip=zip;
+      // Fill summary fields
+      document.getElementById('sum-name').value=data.name;
+      document.getElementById('sum-email').value=data.email;
+      document.getElementById('sum-street').value=data.street;
+      document.getElementById('sum-city').value=data.city;
+      document.getElementById('sum-zip').value=data.zip;
+      show('step3');
+    }
+  });
+
+  // Step 3 navigation
+  document.getElementById('back3').addEventListener('click',()=>{
+    // Restore step2 fields from data (they may have been edited in summary)
+    document.getElementById('street').value=data.street||'';
+    document.getElementById('city').value=data.city||'';
+    document.getElementById('zip').value=data.zip||'';
+    show('step2');
+  });
+
+  // Final submit
+  document.getElementById('submit').addEventListener('click',()=>{
+    // Grab possibly edited summary fields
+    data.name=document.getElementById('sum-name').value.trim();
+    data.email=document.getElementById('sum-email').value.trim();
+    data.street=document.getElementById('sum-street').value.trim();
+    data.city=document.getElementById('sum-city').value.trim();
+    data.zip=document.getElementById('sum-zip').value.trim();
+
+    // very simple final validation
+    if(!data.name||!data.email||!data.street||!data.city||!!data.zip){
+      alert('Please complete all fields before submitting.');
+      return;
+    }
+    // Simulate submit
+    alert('Submitted!\\n\\n' + JSON.stringify(data, null, 2));
+  });
+})();
+</script>
+</body>
+</html>

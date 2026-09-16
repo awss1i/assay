@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Undo / Redo Textbox</title>
+<style>
+    body {
+        font-family: sans-serif;
+        margin: 2rem;
+        background: #f5f5f5;
+        color: #333;
+    }
+    .container {
+        max-width: 600px;
+        margin: auto;
+    }
+    textarea {
+        width: 100%;
+        height: 200px;
+        padding: .5rem;
+        font-size: 1rem;
+        line-height: 1.4;
+        border: 1px solid #bbb;
+        border-radius: 4px;
+        resize: vertical;
+        box-sizing: border-box;
+        background: #fff;
+    }
+    .buttons {
+        margin-top: .5rem;
+        text-align: right;
+    }
+    button {
+        padding: .4rem .8rem;
+        margin-left: .5rem;
+        font-size: .95rem;
+        border: 1px solid #888;
+        border-radius: 3px;
+        background: #e0e0e0;
+        cursor: pointer;
+    }
+    button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Undo / Redo Textbox</h1>
+    <textarea id="editor" placeholder="Start typing…"></textarea>
+    <div class="buttons">
+        <button id="undoBtn" disabled>Undo</button>
+        <button id="redoBtn" disabled>Redo</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    const textarea = document.getElementById('editor');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+
+    // History stack and pointer
+    let history = [''];   // initial empty state
+    let index = 0;        // points to current state in history
+
+    // Update the disabled state of the buttons
+    function updateButtons() {
+        undoBtn.disabled = index === 0;
+        redoBtn.disabled = index === history.length - 1;
+    }
+
+    // Record a new state (called on user input)
+    function recordState(newValue) {
+        if (newValue === history[index]) return; // no change
+
+        // Discard any redo history if we are not at the latest state
+        if (index < history.length - 1) {
+            history = history.slice(0, index + 1);
+        }
+
+        history.push(newValue);
+        index++;
+        updateButtons();
+    }
+
+    // Undo action
+    undoBtn.addEventListener('click', function () {
+        if (index > 0) {
+            index--;
+            textarea.value = history[index];
+            updateButtons();
+        }
+    });
+
+    // Redo action
+    redoBtn.addEventListener('click', function () {
+        if (index < history.length - 1) {
+            index++;
+            textarea.value = history[index];
+            updateButtons();
+        }
+    });
+
+    // Listen for user edits
+    textarea.addEventListener('input', function () {
+        recordState(textarea.value);
+    });
+
+    // Initialise button states
+    updateButtons();
+})();
+</script>
+
+</body>
+</html>

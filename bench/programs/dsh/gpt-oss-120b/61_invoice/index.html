@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  table {border-collapse: collapse; width: 100%; max-width: 800px;}
+  th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+  th {background: #f0f0f0;}
+  input[type="number"] {width: 80px;}
+  .right {text-align: right;}
+  .total-row {font-weight: bold;}
+  #addRow {margin-top: 10px;}
+</style>
+</head>
+<body>
+<h1>Invoice</h1>
+<table id="invoiceTable">
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th>Quantity</th>
+      <th>Unit Price (pence)</th>
+      <th class="right">Line Total (£)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Example row -->
+    <tr class="item-row">
+      <td>Item A</td>
+      <td><input type="number" min="0" value="1" class="qty"/></td>
+      <td><input type="number" min="0" value="100" class="price"/></td>
+      <td class="right line-total">£1.00</td>
+    </tr>
+    <tr class="item-row">
+      <td>Item B</td>
+      <td><input type="number" min="0" value="2" class="qty"/></td>
+      <td><input type="number" min="0" value="250" class="price"/></td>
+      <td class="right line-total">£5.00</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr class="total-row">
+      <td colspan="3" class="right">Subtotal:</td>
+      <td class="right" id="subtotal">£0.00</td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="3" class="right">Tax (20%):</td>
+      <td class="right" id="tax">£0.00</td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="3" class="right">Total:</td>
+      <td class="right" id="total">£0.00</td>
+    </tr>
+  </tfoot>
+</table>
+<button id="addRow">Add Item</button>
+<script>
+// Utility: format pence to £X.XX
+function formatPence(pence) {
+  return new Intl.NumberFormat('en-GB', {style: 'currency', currency: 'GBP'}).format(pence / 100);
+}
+
+function recalculate() {
+  const rows = document.querySelectorAll('.item-row');
+  let subtotalPence = 0;
+  rows.forEach(row => {
+    const qty = Number(row.querySelector('.qty').value) || 0;
+    const price = Number(row.querySelector('.price').value) || 0; // price in pence
+    const linePence = qty * price;
+    subtotalPence += linePence;
+    row.querySelector('.line-total').textContent = formatPence(linePence);
+  });
+  const taxPence = Math.round(subtotalPence * 0.20);
+  const totalPence = subtotalPence + taxPence;
+  document.getElementById('subtotal').textContent = formatPence(subtotalPence);
+  document.getElementById('tax').textContent = formatPence(taxPence);
+  document.getElementById('total').textContent = formatPence(totalPence);
+}
+
+// Attach change listeners to inputs
+function attachListeners(row) {
+  row.querySelectorAll('.qty, .price').forEach(inp => {
+    inp.addEventListener('input', recalculate);
+  });
+}
+
+// Initialise listeners for existing rows
+document.querySelectorAll('.item-row').forEach(attachListeners);
+
+// Recalculate initially
+recalculate();
+
+// Add new row functionality
+document.getElementById('addRow').addEventListener('click', () => {
+  const tbody = document.querySelector('#invoiceTable tbody');
+  const newRow = document.createElement('tr');
+  newRow.className = 'item-row';
+  newRow.innerHTML = `
+    <td>New Item</td>
+    <td><input type="number" min="0" value="1" class="qty"/></td>
+    <td><input type="number" min="0" value="0" class="price"/></td>
+    <td class="right line-total">£0.00</td>
+  `;
+  tbody.appendChild(newRow);
+  attachListeners(newRow);
+  recalculate();
+});
+</script>
+</body>
+</html>

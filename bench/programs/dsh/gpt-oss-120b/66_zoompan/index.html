@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zoom & Pan Canvas Demo</title>
+<style>
+  body, html { margin:0; height:100%; overflow:hidden; font-family:Arial, sans-serif; }
+  #canvas { background:#fafafa; display:block; }
+  #ui {
+    position:absolute; top:10px; left:10px; z-index:10;
+    background:rgba(255,255,255,0.8); padding:5px; border-radius:4px;
+  }
+  #ui button { margin:2px; }
+  #coords { margin-left:8px; font-weight:bold; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <button id="zoomIn">Zoom In</button>
+  <button id="zoomOut">Zoom Out</button>
+  <span id="coords">(0, 0)</span>
+</div>
+<canvas id="canvas"></canvas>
+<script>
+(function(){
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let width, height;
+
+  // View transformation
+  let scale = 1; // zoom factor
+  let offsetX = 0; // pan offset
+  let offsetY = 0;
+
+  // Drag handling
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartOffsetX = 0;
+  let dragStartOffsetY = 0;
+
+  const coordsSpan = document.getElementById('coords');
+
+  function resize(){
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    draw();
+  }
+
+  function worldToScreen(x,y){
+    return {
+      x: (x * scale) + offsetX,
+      y: (y * scale) + offsetY
+    };
+  }
+  function screenToWorld(x,y){
+    return {
+      x: (x - offsetX) / scale,
+      y: (y - offsetY) / scale
+    };
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,width,height);
+    // draw grid for reference
+    const gridSize = 50;
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    for(let x=-offsetX/scale%gridSize; x<width/scale; x+=gridSize){
+      const sx = x * scale + offsetX;
+      ctx.beginPath();
+      ctx.moveTo(sx,0);
+      ctx.lineTo(sx,height);
+      ctx.stroke();
+    }
+    for(let y=-offsetY/scale%gridSize; y<height/scale; y+=gridSize){
+      const sy = y * scale + offsetY;
+      ctx.beginPath();
+      ctx.moveTo(0,sy);
+      ctx.lineTo(width,sy);
+      ctx.stroke();
+    }
+    // draw some shapes
+    ctx.fillStyle = '#ff6666';
+    const rect = worldToScreen(100,100);
+    ctx.fillRect(rect.x, rect.y, 80*scale, 60*scale);
+    ctx.fillStyle = '#66aaff';
+    const circle = worldToScreen(300,200);
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, 40*scale, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#66ff66';
+    const poly = [
+      {x:400, y:150},
+      {x:460, y:180},
+      {x:440, y:240},
+      {x:380, y:230}
+    ];
+    ctx.beginPath();
+    poly.forEach((p,i)=>{
+      const s = worldToScreen(p.x,p.y);
+      if(i===0) ctx.moveTo(s.x,s.y); else ctx.lineTo(s.x,s.y);
+    });
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  canvas.addEventListener('mousedown', e=>{
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragStartOffsetX = offsetX;
+    dragStartOffsetY = offsetY;
+  });
+  window.addEventListener('mousemove', e=>{
+    // update coordinate readout
+    const rect = canvas.getBoundingClientRect();
+    const wx = e.clientX - rect.left;
+    const wy = e.clientY - rect.top;
+    const world = screenToWorld(wx, wy);
+    coordsSpan.textContent = `(${world.x.toFixed(1)}, ${world.y.toFixed(1)})`;
+    if(isDragging){
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      offsetX = dragStartOffsetX + dx;
+      offsetY = dragStartOffsetY + dy;
+      draw();
+    }
+  });
+  window.addEventListener('mouseup', ()=>{ isDragging = false; });
+  // Touch support (optional)
+  canvas.addEventListener('touchstart', e=>{ if(e.touches.length===1){ const t=e.touches[0]; canvas.dispatchEvent(new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY})); } });
+  canvas.addEventListener('touchmove', e=>{ if(e.touches.length===1){ const t=e.touches[0]; canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY})); } e.preventDefault(); });
+  canvas.addEventListener('touchend', e=>{ canvas.dispatchEvent(new MouseEvent('mouseup',{})); });
+
+  document.getElementById('zoomIn').addEventListener('click',()=>{ zoomAt(1.2); });
+  document.getElementById('zoomOut').addEventListener('click',()=>{ zoomAt(0.8); });
+
+  function zoomAt(factor){
+    // zoom relative to canvas centre
+    const cx = width/2;
+    const cy = height/2;
+    const worldCenter = screenToWorld(cx, cy);
+    scale *= factor;
+    // keep the world point under centre constant
+    const newScreen = worldToScreen(worldCenter.x, worldCenter.y);
+    offsetX += cx - newScreen.x;
+    offsetY += cy - newScreen.y;
+    draw();
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
+</script>
+</body>
+</html>

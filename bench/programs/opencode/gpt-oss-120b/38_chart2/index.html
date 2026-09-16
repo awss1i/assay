@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bar/Line Toggle Chart</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  #chartContainer { position: relative; width: 100%; max-width: 800px; margin: auto; }
+  canvas { border: 1px solid #ccc; display: block; width: 100%; height: 400px; }
+  #controls { text-align: center; margin-top: 10px; }
+  button { padding: 6px 12px; margin: 0 5px; }
+  .no-data { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); 
+             font-size: 1.2em; color: #666; }
+</style>
+</head>
+<body>
+
+<div id="chartContainer">
+  <canvas id="chart"></canvas>
+  <div id="noDataMsg" class="no-data" style="display:none;">No data to display</div>
+</div>
+
+<div id="controls">
+  <button id="toggle">Switch to Line</button>
+  <button id="addSample">Add Sample Data</button>
+  <button id="clear">Clear Data</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+  const toggleBtn = document.getElementById('toggle');
+  const addBtn = document.getElementById('addSample');
+  const clearBtn = document.getElementById('clear');
+  const noDataMsg = document.getElementById('noDataMsg');
+
+  // Resize canvas to actual pixel size for crisp drawing
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+
+  // ---- Data ---------------------------------------------------------
+  let data = [];               // empty dataset initially
+  const sampleData = [5,12,9,15,7,20,3];
+
+  // ---- Chart state ---------------------------------------------------
+  let mode = 'bar'; // 'bar' or 'line'
+
+  // ---- Helpers -------------------------------------------------------
+  function getYScale(maxValue, height, padding) {
+    // Protect against maxValue === 0 (empty or all zeros)
+    const effectiveMax = Math.max(maxValue, 1);
+    return (height - 2 * padding) / effectiveMax;
+  }
+
+  function drawAxes(margin, width, height, maxY) {
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    // Y axis
+    ctx.moveTo(margin, margin);
+    ctx.lineTo(margin, height - margin);
+    // X axis
+    ctx.lineTo(width - margin, height - margin);
+    ctx.stroke();
+
+    // Y ticks + labels
+    const tickCount = 5;
+    const tickStep = maxY / tickCount;
+    const yScale = getYScale(maxY, height, margin);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i <= tickCount; i++) {
+      const yVal = i * tickStep;
+      const yPos = height - margin - yVal * yScale;
+      ctx.beginPath();
+      ctx.moveTo(margin - 4, yPos);
+      ctx.lineTo(margin, yPos);
+      ctx.stroke();
+      ctx.fillText(yVal.toFixed(0), margin - 6, yPos);
+    }
+  }
+
+  // ---- Drawing --------------------------------------------------------
+  function draw() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    if (data.length === 0) {
+      noDataMsg.style.display = 'block';
+      return;
+    }
+    noDataMsg.style.display = 'none';
+
+    const margin = 50;                // space for axes and labels
+    const plotWidth = w - 2 * margin;
+    const plotHeight = h - 2 * margin;
+    const maxY = Math.max(...data);
+    const yScale = getYScale(maxY, h, margin);
+    const barWidth = plotWidth / data.length * 0.6;
+    const stepX = plotWidth / data.length;
+
+    // Axes
+    drawAxes(margin, w, h, maxY);
+
+    ctx.fillStyle = '#4285F4';
+    ctx.strokeStyle = '#4285F4';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = '12px sans-serif';
+
+    if (mode === 'bar') {
+      // Draw bars
+      data.forEach((v, i) => {
+        const x = margin + i * stepX + stepX / 2;
+        const barHeight = v * yScale;
+        const y = h - margin - barHeight;
+        ctx.fillRect(x - barWidth / 2, y, barWidth, barHeight);
+        // label value on top of each bar
+        ctx.fillStyle = '#000';
+        ctx.fillText(v, x, y - 14);
+        ctx.fillStyle = '#4285F4';
+      });
+    } else {
+      // Draw line
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = margin + i * stepX + stepX / 2;
+        const y = h - margin - v * yScale;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Points + labels
+      data.forEach((v, i) => {
+        const x = margin + i * stepX + stepX / 2;
+        const y = h - margin - v * yScale;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#000';
+        ctx.fillText(v, x, y - 20);
+        ctx.fillStyle = '#4285F4';
+      });
+    }
+  }
+
+  // ---- UI -------------------------------------------------------------
+  toggleBtn.addEventListener('click', () => {
+    mode = mode === 'bar' ? 'line' : 'bar';
+    toggleBtn.textContent = mode === 'bar' ? 'Switch to Line' : 'Switch to Bar';
+    draw();
+  });
+
+  addBtn.addEventListener('click', () => {
+    data = sampleData.slice(); // copy sample
+    draw();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    data = [];
+    draw();
+  });
+
+  // Initial render (empty)
+  draw();
+})();
+</script>
+</body>
+</html>

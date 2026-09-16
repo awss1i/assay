@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Paginated List of 47 Items</title>
+<style>
+  body {font-family: sans-serif; margin: 20px;}
+  .list {margin-bottom: 20px;}
+  .item {padding: 5px 0;}
+  .controls {display: flex; align-items: center; gap: 10px;}
+  button {padding: 5px 10px;}
+  .page-indicator {margin-left: auto;}
+</style>
+</head>
+<body>
+<h1>Paginated List</h1>
+<div class="list" id="list"></div>
+<div class="controls">
+  <button id="prevBtn">Previous</button>
+  <button id="nextBtn">Next</button>
+  <span class="page-indicator" id="pageInfo"></span>
+</div>
+<script>
+  const totalItems = 47;
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const listEl = document.getElementById('list');
+  const pageInfoEl = document.getElementById('pageInfo');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  let currentPage = 1; // 1-indexed
+
+  function renderPage(page) {
+    // Clamp page
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    currentPage = page;
+    // Clear list
+    listEl.innerHTML = '';
+    const startIdx = (page - 1) * itemsPerPage + 1; // inclusive
+    const endIdx = Math.min(page * itemsPerPage, totalItems);
+    for (let i = startIdx; i <= endIdx; i++) {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.textContent = 'Item ' + i;
+      listEl.appendChild(div);
+    }
+    pageInfoEl.textContent = `Page ${page} of ${totalPages}`;
+    // Disable buttons at ends
+    prevBtn.disabled = page === 1;
+    nextBtn.disabled = page === totalPages;
+  }
+
+  prevBtn.addEventListener('click', () => renderPage(currentPage - 1));
+  nextBtn.addEventListener('click', () => renderPage(currentPage + 1));
+
+  // Initial render
+  renderPage(1);
+</script>
+</body>
+</html>

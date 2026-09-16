@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Generator</title>
+<style>
+  body {font-family: Arial, sans-serif; padding: 2rem; background: #f0f0f0;}
+  .container {max-width: 400px; margin: auto; background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+  h1 {font-size: 1.5rem; margin-bottom: 1rem; text-align: center;}
+  label {display: block; margin: 0.5rem 0;}
+  input[type=range] {width: 100%;}
+  .output {margin-top: 1rem; word-break: break-all; background:#e9e9e9; padding:0.5rem; border-radius:4px; text-align:center; font-weight:bold;}
+  button {margin-top:0.5rem; width:100%; padding:0.5rem; border:none; border-radius:4px; background:#007bff; color:#fff; font-size:1rem; cursor:pointer;}
+  button:hover {background:#0056b3;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Password Generator</h1>
+  <label>Length: <span id="lenDisplay">12</span></label>
+  <input type="range" id="lenSlider" min="4" max="32" value="12">
+  <label><input type="checkbox" id="includeDigits" checked> Include Digits</label>
+  <label><input type="checkbox" id="includeSymbols" checked> Include Symbols</label>
+  <button id="generateBtn">Generate</button>
+  <div class="output" id="passwordDisplay"></div>
+  <button id="copyBtn">Copy</button>
+</div>
+<script>
+(function(){
+  const lenSlider=document.getElementById('lenSlider');
+  const lenDisplay=document.getElementById('lenDisplay');
+  const passwordDisplay=document.getElementById('passwordDisplay');
+  const generateBtn=document.getElementById('generateBtn');
+  const copyBtn=document.getElementById('copyBtn');
+  const includeDigits=document.getElementById('includeDigits');
+  const includeSymbols=document.getElementById('includeSymbols');
+
+  const lower='abcdefghijklmnopqrstuvwxyz';
+  const upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const digits='0123456789';
+  const symbols='!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+  function updateLength(){lenDisplay.textContent=lenSlider.value;}
+  lenSlider.addEventListener('input',updateLength);
+  updateLength();
+
+  function generate(){
+    const length=parseInt(lenSlider.value,10);
+    let charset=lower+upper;
+    if(includeDigits.checked) charset+=digits;
+    if(includeSymbols.checked) charset+=symbols;
+    let pwd='';
+    const cryptoObj=window.crypto || window.msCrypto;
+    for(let i=0;i<length;i++){
+      const rand=cryptoObj.getRandomValues(new Uint32Array(1))[0]%charset.length;
+      pwd+=charset.charAt(rand);
+    }
+    passwordDisplay.textContent=pwd;
+  }
+  generateBtn.addEventListener('click',generate);
+
+  copyBtn.addEventListener('click',()=>{
+    const pwd=passwordDisplay.textContent;
+    if(!pwd) return;
+    navigator.clipboard.writeText(pwd).catch(()=>{
+      // fallback for older browsers
+      const textarea=document.createElement('textarea');
+      textarea.value=pwd;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    });
+  });
+})();
+</script>
+</body>
+</html>

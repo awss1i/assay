@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bubble‑Sort Visualiser</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+    background: #f0f0f0;
+  }
+  #controls {
+    margin-bottom: 12px;
+  }
+  button {
+    margin: 0 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  #bars {
+    display: flex;
+    align-items: flex-end;
+    width: 80vw;
+    max-width: 800px;
+    height: 300px;
+    border: 1px solid #999;
+    background: #fff;
+  }
+  .bar {
+    flex: 1;
+    margin: 0 1px;
+    background: #3498db;
+    transition: background 0.2s;
+  }
+  .bar.active {
+    background: #e74c3c;
+  }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <button id="shuffleBtn">Shuffle</button>
+  <button id="sortBtn">Sort</button>
+</div>
+
+<div id="bars"></div>
+
+<script>
+/* ---- Configuration ---- */
+const BAR_COUNT = 50;          // number of bars
+const ANIM_DELAY = 30;         // ms between visual steps
+
+/* ---- State ---- */
+const container = document.getElementById('bars');
+let heights = [];
+
+/* ---- Helpers ---- */
+function randomHeights() {
+  heights = [];
+  for (let i = 0; i < BAR_COUNT; i++) {
+    // heights between 10 % and 100 %
+    heights.push(Math.floor(Math.random() * 90) + 10);
+  }
+}
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+function render(highlight = []) {
+  container.innerHTML = '';
+  heights.forEach((h, idx) => {
+    const bar = document.createElement('div');
+    bar.className = 'bar' + (highlight.includes(idx) ? ' active' : '');
+    bar.style.height = h + '%';
+    container.appendChild(bar);
+  });
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ---- UI actions ---- */
+document.getElementById('shuffleBtn').addEventListener('click', () => {
+  shuffleArray(heights);
+  render();
+});
+
+document.getElementById('sortBtn').addEventListener('click', async () => {
+  // disable UI while sorting
+  document.getElementById('shuffleBtn').disabled = true;
+  document.getElementById('sortBtn').disabled   = true;
+  await bubbleSort();
+  document.getElementById('shuffleBtn').disabled = false;
+  document.getElementById('sortBtn').disabled   = false;
+});
+
+/* ---- Bubble‑Sort animation ---- */
+async function bubbleSort() {
+  const n = heights.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      render([j, j + 1]);               // highlight current pair
+      await sleep(ANIM_DELAY);
+      if (heights[j] > heights[j + 1]) {
+        // swap
+        [heights[j], heights[j + 1]] = [heights[j + 1], heights[j]];
+        render([j, j + 1]);
+        await sleep(ANIM_DELAY);
+      }
+    }
+  }
+  render(); // final clean‑up
+}
+
+/* ---- Initialise ---- */
+randomHeights();
+render();
+</script>
+
+</body>
+</html>

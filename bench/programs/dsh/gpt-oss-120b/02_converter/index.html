@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Temperature Converter</title>
+<style>
+body{font-family:sans-serif;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;padding:2rem;}
+.container{background:#fff;padding:1.5rem;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);max-width:400px;width:100%;}
+input{width:100%;padding:0.5rem;margin:0.5rem 0;font-size:1rem;}
+label{font-weight:bold;display:block;margin-top:1rem;}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Temperature Converter</h2>
+<label for="celsius">Celsius</label>
+<input type="number" id="celsius" placeholder="Enter °C">
+<label for="fahrenheit">Fahrenheit</label>
+<input type="number" id="fahrenheit" placeholder="Enter °F">
+</div>
+<script>
+const cInput=document.getElementById('celsius');
+const fInput=document.getElementById('fahrenheit');
+let suppress=false;
+
+cInput.addEventListener('input',()=>{
+  if(suppress) return;
+  suppress=true;
+  const c=parseFloat(cInput.value);
+  if(!isNaN(c)){
+    const f=c*9/5+32;
+    fInput.value=Number(f.toFixed(2));
+  } else {
+    fInput.value='';
+  }
+  suppress=false;
+});
+
+fInput.addEventListener('input',()=>{
+  if(suppress) return;
+  suppress=true;
+  const f=parseFloat(fInput.value);
+  if(!isNaN(f)){
+    const c=(f-32)*5/9;
+    cInput.value=Number(c.toFixed(2));
+  } else {
+    cInput.value='';
+  }
+  suppress=false;
+});
+</script>
+</body>
+</html>

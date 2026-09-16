@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Zoom & Pan Demo</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;font-family:sans-serif;background:#fafafa;}
+  #toolbar{
+    position:absolute;top:10px;left:10px;z-index:10;
+    background:#fff;padding:5px;border:1px solid #ccc;border-radius:4px;
+  }
+  #toolbar button{
+    margin:0 2px;padding:4px 8px;
+  }
+  #coords{
+    margin-left:10px;
+  }
+  canvas{
+    display:block;
+  }
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <button id="zoomIn">Zoom +</button>
+  <button id="zoomOut">Zoom −</button>
+  <span id="coords">x: 0, y: 0</span>
+</div>
+<canvas id="canvas"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const coordsDiv = document.getElementById('coords');
+  const zoomInBtn = document.getElementById('zoomIn');
+  const zoomOutBtn = document.getElementById('zoomOut');
+
+  let scale = 1;           // zoom level
+  let offsetX = 0;         // pan offset
+  let offsetY = 0;
+  let isPanning = false;
+  let lastMouseX = 0;
+  let lastMouseY = 0;      // last known mouse position (canvas coords)
+
+  // Adjust canvas size for device pixel ratio
+  function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
+    draw();
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // Draw grid and some sample shapes
+  function draw() {
+    ctx.save();
+    ctx.setTransform(1,0,0,1,0,0); // reset
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(scale, scale);
+
+    // background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(-5000,-5000,10000,10000);
+
+    // grid
+    const gridSpacing = 100;
+    ctx.beginPath();
+    for(let x=-5000;x<=5000;x+=gridSpacing){
+      ctx.moveTo(x,-5000);
+      ctx.lineTo(x,5000);
+    }
+    for(let y=-5000;y<=5000;y+=gridSpacing){
+      ctx.moveTo(-5000,y);
+      ctx.lineTo(5000,y);
+    }
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1/scale;
+    ctx.stroke();
+
+    // axes
+    ctx.beginPath();
+    ctx.moveTo(-5000,0);
+    ctx.lineTo(5000,0);
+    ctx.moveTo(0,-5000);
+    ctx.lineTo(0,5000);
+    ctx.strokeStyle = '#a0a0a0';
+    ctx.lineWidth = 2/scale;
+    ctx.stroke();
+
+    // sample shapes
+    ctx.fillStyle = '#ff6666';
+    ctx.fillRect(200,150,200,120); // rectangle
+
+    ctx.beginPath();
+    ctx.arc(-300,-200,80,0,Math.PI*2);
+    ctx.fillStyle = '#66aaff';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(-400,300);
+    ctx.lineTo(-200,350);
+    ctx.lineTo(-350,500);
+    ctx.closePath();
+    ctx.fillStyle = '#aaff66';
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // Convert canvas screen point to world coordinates
+  function screenToWorld(x, y) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = x - rect.left;
+    const sy = y - rect.top;
+    const wx = (sx - offsetX) / scale;
+    const wy = (sy - offsetY) / scale;
+    return {x: wx, y: wy};
+  }
+
+  // Update coordinate readout
+  function updateCoords(e) {
+    const {x, y} = screenToWorld(e.clientX, e.clientY);
+    coordsDiv.textContent = `x: ${x.toFixed(2)}, y: ${y.toFixed(2)}`;
+  }
+
+  // Panning handlers
+  canvas.addEventListener('pointerdown', (e) => {
+    isPanning = true;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (isPanning) {
+      const dx = e.clientX - lastMouseX;
+      const dy = e.clientY - lastMouseY;
+      offsetX += dx;
+      offsetY += dy;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      draw();
+    }
+    updateCoords(e);
+  });
+
+  canvas.addEventListener('pointerup', (e) => {
+    isPanning = false;
+    canvas.releasePointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointerleave', () => {
+    isPanning = false;
+  });
+
+  // Zoom helpers
+  function applyZoom(factor, cursorX, cursorY) {
+    // cursorX/Y are canvas screen coordinates
+    const {x: wx, y: wy} = screenToWorld(cursorX, cursorY);
+    scale *= factor;
+    // keep world point under cursor stationary
+    const rect = canvas.getBoundingClientRect();
+    const sx = cursorX - rect.left;
+    const sy = cursorY - rect.top;
+    offsetX = sx - wx * scale;
+    offsetY = sy - wy * scale;
+    draw();
+  }
+
+  // Zoom button actions (centered on last mouse position)
+  zoomInBtn.addEventListener('click', () => {
+    const mouseX = lastMouseX || window.innerWidth/2;
+    const mouseY = lastMouseY || window.innerHeight/2;
+    applyZoom(1.2, mouseX, mouseY);
+  });
+  zoomOutBtn.addEventListener('click', () => {
+    const mouseX = lastMouseX || window.innerWidth/2;
+    const mouseY = lastMouseY || window.innerHeight/2;
+    applyZoom(1/1.2, mouseX, mouseY);
+  });
+
+  // Initial draw
+  draw();
+})();
+</script>
+</body>
+</html>

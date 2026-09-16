@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kanban Board</title>
+<style>
+  body {font-family:Arial,sans-serif;margin:0;padding:0;background:#f0f0f0;}
+  .board {display:flex;gap:10px;padding:10px;box-sizing:border-box;}
+  .column {
+    flex:1;
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:4px;
+    display:flex;
+    flex-direction:column;
+    max-height:90vh;
+  }
+  .header {
+    background:#e2e2e2;
+    padding:8px;
+    font-weight:bold;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #ccc;
+  }
+  .cards {
+    flex:1;
+    overflow-y:auto;
+    padding:8px;
+    list-style:none;
+    margin:0;
+  }
+  .card {
+    background:#fffbcc;
+    border:1px solid #d4d4a5;
+    margin-bottom:6px;
+    padding:6px;
+    border-radius:3px;
+    cursor:grab;
+  }
+  .card.dragging {opacity:0.5;}
+  .addBtn {
+    background:#4caf50;
+    color:#fff;
+    border:none;
+    border-radius:3px;
+    padding:4px 8px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="board">
+  <section class="column" data-id="todo">
+    <div class="header">To Do <span class="count">0</span> <button class="addBtn">+</button></div>
+    <ul class="cards"></ul>
+  </section>
+  <section class="column" data-id="inprogress">
+    <div class="header">In Progress <span class="count">0</span> <button class="addBtn">+</button></div>
+    <ul class="cards"></ul>
+  </section>
+  <section class="column" data-id="done">
+    <div class="header">Done <span class="count">0</span> <button class="addBtn">+</button></div>
+    <ul class="cards"></ul>
+  </section>
+</div>
+
+<script>
+(() => {
+  const storageKey = 'kanbanBoardState';
+  const columns = document.querySelectorAll('.column');
+
+  // ---------- Helpers ----------
+  const uuid = () => '_' + Math.random().toString(36).substr(2, 9);
+  const saveState = () => {
+    const state = {};
+    columns.forEach(col => {
+      const id = col.dataset.id;
+      const cards = [...col.querySelectorAll('.card')].map(c => ({
+        id: c.dataset.id,
+        text: c.textContent
+      }));
+      state[id] = cards;
+    });
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  };
+  const loadState = () => {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  };
+  const updateCounts = () => {
+    columns.forEach(col => {
+      const cnt = col.querySelectorAll('.card').length;
+      col.querySelector('.count').textContent = cnt;
+    });
+  };
+  const createCardElement = (data) => {
+    const li = document.createElement('li');
+    li.className = 'card';
+    li.draggable = true;
+    li.dataset.id = data.id;
+    li.textContent = data.text;
+    return li;
+  };
+  const addCardToColumn = (col, text) => {
+    const card = createCardElement({id: uuid(), text});
+    col.querySelector('.cards').appendChild(card);
+    attachDragHandlers(card);
+    updateCounts();
+    saveState();
+  };
+
+  // ---------- Drag & Drop ----------
+  let dragged = null;
+  const attachDragHandlers = (card) => {
+    card.addEventListener('dragstart', e => {
+      dragged = card;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      dragged = null;
+      card.classList.remove('dragging');
+    });
+  };
+  columns.forEach(col => {
+    const ul = col.querySelector('.cards');
+    ul.addEventListener('dragover', e => e.preventDefault());
+    ul.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragged) return;
+      ul.appendChild(dragged);
+      updateCounts();
+      saveState();
+    });
+  });
+
+  // ---------- Initialisation ----------
+  const init = () => {
+    const saved = loadState();
+    if (saved) {
+      // Populate from storage
+      columns.forEach(col => {
+        const id = col.dataset.id;
+        const cards = saved[id] || [];
+        const ul = col.querySelector('.cards');
+        cards.forEach(data => {
+          const el = createCardElement(data);
+          ul.appendChild(el);
+          attachDragHandlers(el);
+        });
+      });
+    } else {
+      // Default cards
+      addCardToColumn(document.querySelector('[data-id="todo"]'), 'Sample Task 1');
+      addCardToColumn(document.querySelector('[data-id="todo"]'), 'Sample Task 2');
+      addCardToColumn(document.querySelector('[data-id="inprogress"]'), 'Working Task');
+    }
+    updateCounts();
+  };
+
+  // ---------- Add‑card Buttons ----------
+  document.querySelectorAll('.addBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const col = btn.closest('.column');
+      const title = prompt('Card title:');
+      if (title) addCardToColumn(col, title);
+    });
+  });
+
+  // Run
+  init();
+})();
+</script>
+</body>
+</html>

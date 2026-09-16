@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Todo List</title>
+<style>
+  body {font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto;}
+  h1 {text-align: center;}
+  #new-todo {width: 100%; padding: 0.5rem; font-size: 1rem;}
+  ul {list-style: none; padding: 0;}
+  li {display: flex; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #ddd;}
+  li.done {color: #777; text-decoration: line-through;}
+  li.hidden {display: none;}
+  li input[type="checkbox"] {margin-right: 0.5rem;}
+  .filters {margin: 1rem 0; display: flex; gap: 1rem; cursor: pointer;}
+  .filters span {padding: 0.2rem 0.5rem; border: 1px solid #ccc; border-radius: 3px;}
+  .filters .active {background: #eee;}
+  #clear-completed {margin-top: 1rem;}
+  .edit-input {flex:1; margin-left:1.5rem; font-size:1rem;}
+</style>
+</head>
+<body>
+<h1>Todo List</h1>
+<input id="new-todo" type="text" placeholder="What needs to be done?" />
+<ul id="todo-list"></ul>
+<div class="filters" id="filters">
+  <span data-filter="all" class="active">All</span>
+  <span data-filter="active">Active</span>
+  <span data-filter="done">Done</span>
+</div>
+<div>
+  <span id="remaining-count">0</span> items left
+</div>
+<button id="clear-completed">Clear completed</button>
+<script>
+(() => {
+  const newTodo = document.getElementById('new-todo');
+  const list = document.getElementById('todo-list');
+  const remainingCount = document.getElementById('remaining-count');
+  const filterButtons = document.querySelectorAll('#filters span');
+  const clearBtn = document.getElementById('clear-completed');
+
+  let todos = [];
+  let currentFilter = 'all';
+
+  function render() {
+    // clear list
+    list.innerHTML = '';
+    todos.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.dataset.index = i;
+      if (t.done) li.classList.add('done');
+      if (currentFilter === 'active' && t.done) li.classList.add('hidden');
+      if (currentFilter === 'done' && !t.done) li.classList.add('hidden');
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = t.done;
+      checkbox.addEventListener('change', () => {
+        t.done = checkbox.checked;
+        render();
+      });
+      li.appendChild(checkbox);
+
+      const span = document.createElement('span');
+      span.textContent = t.text;
+      span.style.flex = '1';
+      span.addEventListener('dblclick', () => startEdit(li, t, i));
+      li.appendChild(span);
+
+      list.appendChild(li);
+    });
+    updateCount();
+  }
+
+  function updateCount() {
+    const left = todos.filter(t => !t.done).length;
+    remainingCount.textContent = left;
+  }
+
+  function addTodo(text) {
+    if (!text.trim()) return;
+    todos.push({text: text.trim(), done: false});
+    render();
+    newTodo.value = '';
+  }
+
+  function startEdit(li, todo, idx) {
+    // replace span with input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = todo.text;
+    input.className = 'edit-input';
+    const oldSpan = li.querySelector('span');
+    li.replaceChild(input, oldSpan);
+    input.focus();
+    const finish = () => {
+      const val = input.value.trim();
+      if (val) todo.text = val;
+      li.replaceChild(oldSpan, input);
+      oldSpan.textContent = todo.text;
+    };
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        finish();
+        input.blur();
+      }
+    });
+  }
+
+  newTodo.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      addTodo(newTodo.value);
+    }
+  });
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentFilter = btn.dataset.filter;
+      filterButtons.forEach(b => b.classList.toggle('active', b === btn));
+      render();
+    });
+  });
+
+  clearBtn.addEventListener('click', () => {
+    todos = todos.filter(t => !t.done);
+    render();
+  });
+
+  // initial render
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+[project]
+name = "assay-ui"
+version = "0.1.4"
+description = "Find out if a generated web page actually works. No tests written, no LLM."
+keywords = ["testing", "llm", "codegen", "playwright", "evaluation", "qa",
+            "ai-agents", "browser-testing"]
+authors = [{ name = "awss1i" }]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Environment :: Console",
+  "Topic :: Software Development :: Testing",
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["playwright>=1.40"]
+
+[project.urls]
+Homepage = "https://github.com/awss1i/assay"
+Source = "https://github.com/awss1i/assay"
+Issues = "https://github.com/awss1i/assay/issues"
+Changelog = "https://github.com/awss1i/assay/releases"
+
+[project.scripts]
+assay = "assay.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

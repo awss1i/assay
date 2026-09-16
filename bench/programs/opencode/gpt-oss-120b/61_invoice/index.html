@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice</title>
+<style>
+ body {font-family: sans-serif; margin: 20px;}
+ table {border-collapse: collapse; width: 100%; max-width: 800px;}
+ th, td {border: 1px solid #ccc; padding: 8px; text-align: right;}
+ th {background: #f0f0f0;}
+ td:first-child, th:first-child {text-align: left;}
+ .summary {margin-top: 20px; width: 300px;}
+ .summary td {border: none;}
+ .add-btn {margin-top: 10px;}
+ input[type="number"] {width: 80px;}
+</style>
+</head>
+<body>
+<h1>Invoice</h1>
+<table id="invoice">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Qty</th>
+      <th>Unit Price (p)</th>
+      <th>Line Total (p)</th>
+    </tr>
+  </thead>
+  <tbody id="items-body">
+    <!-- rows will be inserted here -->
+  </tbody>
+</table>
+<button class="add-btn" onclick="addRow()">Add Line Item</button>
+<table class="summary">
+  <tr><td>Subtotal:</td><td id="subtotal">£0.00</td></tr>
+  <tr><td>Tax (20%):</td><td id="tax">£0.00</td></tr>
+  <tr><td><strong>Total:</strong></td><td id="total"><strong>£0.00</strong></td></tr>
+</table>
+
+<script>
+let rowCount = 0;
+function formatPence(p) {
+  return '£' + (p/100).toFixed(2);
+}
+function recalc() {
+  const tbody = document.getElementById('items-body');
+  let subtotal = 0;
+  for (let i = 0; i < tbody.rows.length; i++) {
+    const row = tbody.rows[i];
+    const qty = parseInt(row.querySelector('.qty').value) || 0;
+    const price = parseInt(row.querySelector('.price').value) || 0;
+    const lineTotal = qty * price;
+    row.querySelector('.line-total').textContent = lineTotal;
+    subtotal += lineTotal;
+  }
+  const tax = Math.round(subtotal * 20 / 100);
+  const total = subtotal + tax;
+  document.getElementById('subtotal').textContent = formatPence(subtotal);
+  document.getElementById('tax').textContent = formatPence(tax);
+  document.getElementById('total').textContent = formatPence(total);
+}
+function addRow() {
+  rowCount++;
+  const tbody = document.getElementById('items-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>Item ${rowCount}</td>
+    <td><input type="number" min="0" class="qty" value="0" oninput="recalc()"></td>
+    <td><input type="number" min="0" class="price" value="0" oninput="recalc()"></td>
+    <td class="line-total">0</td>
+  `;
+  tbody.appendChild(tr);
+}
+// initialize with one row
+addRow();
+</script>
+</body>
+</html>

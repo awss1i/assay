@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Line‑by‑line Compare</title>
+<style>
+  body {font-family: monospace; margin:0; padding:1rem; background:#fafafa;}
+  .container {display:flex; flex-direction:column; height:100vh; box-sizing:border-box;}
+  .editors {display:flex; gap:1rem; flex:0 0 auto;}
+  textarea {
+    flex:1;
+    height:30vh;
+    resize:none;
+    font-family:inherit;
+    font-size:0.95rem;
+    padding:0.5rem;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+  }
+  button {
+    margin:0.5rem 0;
+    padding:0.5rem 1rem;
+    font-size:1rem;
+    align-self:flex-start;
+  }
+  #diff {flex:1; overflow:auto; margin-top:0.5rem;}
+  table {border-collapse:collapse; width:100%;}
+  td {vertical-align:top; white-space:pre; padding:2px 4px;}
+  .added   {background:#c8e6c9;}   /* light green */
+  .removed {background:#ffcdd2;}   /* light red */
+  .unchanged {background:#e0e0e0;} /* light gray */
+  .lineno {color:#777; user-select:none;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="editors">
+    <textarea id="left" placeholder="Left text…"></textarea>
+    <textarea id="right" placeholder="Right text…"></textarea>
+  </div>
+  <button id="compare">Compare</button>
+  <div id="diff"></div>
+</div>
+
+<script>
+/* Simple LCS‑based diff ----------------------------------------------- */
+function lcs(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, () => new Uint16Array(n+1));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i-1] === b[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+      else dp[i][j] = dp[i-1][j] > dp[i][j-1] ? dp[i-1][j] : dp[i][j-1];
+    }
+  }
+
+  // backtrack to get matching line indices
+  const matches = [];
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (a[i-1] === b[j-1]) {
+      matches.push([i-1, j-1]);
+      i--; j--;
+    } else if (dp[i-1][j] >= dp[i][j-1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return matches.reverse(); // left‑to‑right order
+}
+
+/* Build diff table ---------------------------------------------------- */
+function buildDiff() {
+  const leftLines  = document.getElementById('left').value.split('\n');
+  const rightLines = document.getElementById('right').value.split('\n');
+
+  const matches = lcs(leftLines, rightLines);
+  let li = 0, ri = 0, mi = 0;
+  const rows = [];
+
+  while (li < leftLines.length || ri < rightLines.length) {
+    if (mi < matches.length && li === matches[mi][0] && ri === matches[mi][1]) {
+      rows.push({type:'unchanged', left:leftLines[li], right:rightLines[ri]});
+      li++; ri++; mi++;
+    } else if (mi < matches.length && li < matches[mi][0]) {
+      rows.push({type:'removed', left:leftLines[li], right:''});
+      li++;
+    } else if (mi < matches.length && ri < matches[mi][1]) {
+      rows.push({type:'added', left:'', right:rightLines[ri]});
+      ri++;
+    } else {
+      // no more matches – flush remaining lines
+      if (li < leftLines.length) {
+        rows.push({type:'removed', left:leftLines[li], right:''});
+        li++;
+      } else if (ri < rightLines.length) {
+        rows.push({type:'added', left:'', right:rightLines[ri]});
+        ri++;
+      }
+    }
+  }
+
+  // render table
+  const tbl = document.createElement('table');
+  rows.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+
+    const tdLNum = document.createElement('td');
+    tdLNum.className = 'lineno';
+    tdLNum.textContent = r.left !== '' ? idx+1 : '';
+    const tdRNum = document.createElement('td');
+    tdRNum.className = 'lineno';
+    tdRNum.textContent = r.right !== '' ? idx+1 : '';
+
+    const tdLeft = document.createElement('td');
+    const tdRight = document.createElement('td');
+
+    tdLeft.textContent = r.left;
+    tdRight.textContent = r.right;
+
+    const cls = r.type;
+    tdLeft.classList.add(cls);
+    tdRight.classList.add(cls);
+
+    tr.append(tdLNum, tdLeft, tdRNum, tdRight);
+    tbl.appendChild(tr);
+  });
+
+  const diffDiv = document.getElementById('diff');
+  diffDiv.innerHTML = '';
+  diffDiv.appendChild(tbl);
+}
+
+/* Event wiring -------------------------------------------------------- */
+document.getElementById('compare').addEventListener('click', buildDiff);
+document.getElementById('left').addEventListener('input', buildDiff);
+document.getElementById('right').addEventListener('input', buildDiff);
+</script>
+</body>
+</html>

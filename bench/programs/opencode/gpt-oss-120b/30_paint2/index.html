@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Painter</title>
+<style>
+  body {font-family:sans-serif; background:#222; color:#ddd; display:flex; flex-direction:column; align-items:center; margin:0; height:100vh;}
+  #toolbar {margin:10px;}
+  #toolbar button, #toolbar input {margin:0 5px; padding:5px 10px; font-size:14px;}
+  canvas {image-rendering:pixelated; border:1px solid #555; cursor:crosshair;}
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <input type="color" id="colorPicker" value="#ff0000">
+  <button id="pencilBtn">✏️ Pencil</button>
+  <button id="eraserBtn">🧹 Eraser</button>
+  <button id="fillBtn">🪣 Fill</button>
+  <button id="undoBtn">↩️ Undo</button>
+  <button id="downloadBtn">⬇️ Download PNG</button>
+</div>
+<canvas id="canvas" width="32" height="32"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const PIXEL_SIZE = 20;                // visual size of a pixel
+  canvas.style.width = canvas.width * PIXEL_SIZE + 'px';
+  canvas.style.height = canvas.height * PIXEL_SIZE + 'px';
+
+  // initial clear (white)
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  let tool = 'pencil';                  // pencil | eraser | fill
+  let drawing = false;
+  const colorPicker = document.getElementById('colorPicker');
+  const undoStack = [];
+
+  // ------- UI handlers -------
+  document.getElementById('pencilBtn').onclick = () => tool = 'pencil';
+  document.getElementById('eraserBtn').onclick = () => tool = 'eraser';
+  document.getElementById('fillBtn').onclick   = () => tool = 'fill';
+  document.getElementById('undoBtn').onclick   = undo;
+  document.getElementById('downloadBtn').onclick = downloadPNG;
+
+  // ------- Drawing logic -------
+  canvas.addEventListener('mousedown', e => {
+    const [x, y] = mousePos(e);
+    if (tool === 'fill') {
+      floodFill(x, y, hexToRgb(colorPicker.value));
+    } else {
+      drawing = true;
+      drawPixel(x, y);
+    }
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!drawing) return;
+    const [x, y] = mousePos(e);
+    drawPixel(x, y);
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (drawing) {
+      drawing = false;
+      pushUndo();
+    }
+  });
+
+  function mousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = Math.floor((e.clientX - rect.left) / PIXEL_SIZE);
+    const cy = Math.floor((e.clientY - rect.top) / PIXEL_SIZE);
+    return [cx, cy];
+  }
+
+  function drawPixel(x, y) {
+    if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+    ctx.fillStyle = (tool === 'eraser') ? '#ffffff' : colorPicker.value;
+    ctx.fillRect(x, y, 1, 1);
+  }
+
+  // ------- Undo handling -------
+  function pushUndo() {
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    undoStack.push(data);
+    if (undoStack.length > 10) undoStack.shift();
+  }
+
+  function undo() {
+    if (undoStack.length === 0) return;
+    const data = undoStack.pop();
+    ctx.putImageData(data, 0, 0);
+  }
+
+  // ------- Flood fill -------
+  function floodFill(startX, startY, fillColor) {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const w = img.width, h = img.height;
+    const startIdx = (startY * w + startX) * 4;
+    const target = img.data.slice(startIdx, startIdx + 4);
+    if (sameColor(target, fillColor)) return; // already filled
+
+    const stack = [[startX, startY]];
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      const idx = (y * w + x) * 4;
+      if (!inBounds(x, y) || !sameColor(img.data.slice(idx, idx + 4), target)) continue;
+      // set pixel
+      img.data[idx] = fillColor[0];
+      img.data[idx + 1] = fillColor[1];
+      img.data[idx + 2] = fillColor[2];
+      img.data[idx + 3] = 255;
+      // push neighbours
+      stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+    ctx.putImageData(img, 0, 0);
+    pushUndo();
+  }
+
+  function inBounds(x, y) {
+    return x >= 0 && y >= 0 && x < canvas.width && y < canvas.height;
+  }
+
+  function sameColor(a, b) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+  }
+
+  function hexToRgb(hex) {
+    const v = parseInt(hex.slice(1), 16);
+    return [(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF];
+  }
+
+  // ------- Download -------
+  function downloadPNG() {
+    const link = document.createElement('a');
+    link.download = 'pixel-paint.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+})();
+</script>
+</body>
+</html>

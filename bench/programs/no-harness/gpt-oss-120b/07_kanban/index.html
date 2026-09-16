@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Kanban Board</title>
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background:#f0f2f5;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+  }
+  h1 {
+    text-align:center;
+    margin:0.5rem 0;
+    font-size:1.5rem;
+    color:#333;
+  }
+  #board {
+    flex:1;
+    display:flex;
+    gap:1rem;
+    padding:1rem;
+    overflow:auto;
+  }
+  .column {
+    background:#e2e4e6;
+    flex:1;
+    min-width:200px;
+    border-radius:4px;
+    display:flex;
+    flex-direction:column;
+  }
+  .col-header {
+    background:#c1c7d0;
+    padding:0.5rem;
+    font-weight:bold;
+    text-align:center;
+    border-top-left-radius:4px;
+    border-top-right-radius:4px;
+  }
+  .cards {
+    flex:1;
+    padding:0.5rem;
+    overflow-y:auto;
+  }
+  .card {
+    background:#fff;
+    margin:0.5rem 0;
+    padding:0.5rem;
+    border-radius:4px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.1);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .card button {
+    border:none;
+    background:none;
+    cursor:pointer;
+    font-size:1rem;
+    padding:0;
+    margin-left:0.5rem;
+    color:#555;
+  }
+  .add-btn {
+    background:#5aac44;
+    color:#fff;
+    border:none;
+    margin:0.5rem;
+    padding:0.4rem;
+    border-radius:3px;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .add-btn:hover {background:#519839;}
+</style>
+</head>
+<body>
+<h1>Kanban Board</h1>
+<div id="board">
+  <div class="column" data-index="0">
+    <div class="col-header">Backlog</div>
+    <div class="cards"></div>
+    <button class="add-btn">+ Add Card</button>
+  </div>
+  <div class="column" data-index="1">
+    <div class="col-header">In Progress</div>
+    <div class="cards"></div>
+    <button class="add-btn">+ Add Card</button>
+  </div>
+  <div class="column" data-index="2">
+    <div class="col-header">Done</div>
+    <div class="cards"></div>
+    <button class="add-btn">+ Add Card</button>
+  </div>
+</div>
+
+<script>
+  // Helper to create a card element
+  function createCard(text) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const span = document.createElement('span');
+    span.textContent = text;
+    const moveBtn = document.createElement('button');
+    moveBtn.textContent = '→';
+    moveBtn.title = 'Move right';
+    moveBtn.addEventListener('click', () => moveCardRight(card));
+    card.append(span, moveBtn);
+    return card;
+  }
+
+  // Move a card to the next column (if any)
+  function moveCardRight(card) {
+    const currentCol = card.parentElement.parentElement; // .column
+    const currentIdx = Number(currentCol.dataset.index);
+    const nextIdx = currentIdx + 1;
+    const nextCol = document.querySelector(`.column[data-index="${nextIdx}"]`);
+    if (!nextCol) return; // already at last column
+    const dest = nextCol.querySelector('.cards');
+    dest.appendChild(card);
+    // Hide the move button if it's now the last column
+    const btn = card.querySelector('button');
+    btn.style.visibility = nextIdx === 2 ? 'hidden' : 'visible';
+  }
+
+  // Add card to a specific column
+  function addCardToColumn(col) {
+    const text = prompt('Enter card title:');
+    if (text === null || text.trim() === '') return;
+    const card = createCard(text.trim());
+    // hide move button if this is the right‑most column
+    if (Number(col.dataset.index) === 2) {
+      card.querySelector('button').style.visibility = 'hidden';
+    }
+    col.querySelector('.cards').appendChild(card);
+  }
+
+  // Wire up “Add Card” buttons
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    const col = btn.closest('.column');
+    btn.addEventListener('click', () => addCardToColumn(col));
+  });
+</script>
+</body>
+</html>

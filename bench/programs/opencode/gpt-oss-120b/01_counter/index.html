@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click Counter</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    #counter {
+      font-size: 4rem;
+      margin: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #0066ff;
+      color: white;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #0044cc;
+    }
+    .btn:active {
+      background: #002288;
+    }
+  </style>
+</head>
+<body>
+  <div id="counter">0</div>
+  <button id="inc" class="btn">Increment</button>
+  <button id="reset" class="btn">Reset</button>
+  <script>
+    (function(){
+      const counterEl = document.getElementById('counter');
+      let count = 0;
+      document.getElementById('inc').addEventListener('click',()=>{
+        count++;
+        counterEl.textContent = count;
+      });
+      document.getElementById('reset').addEventListener('click',()=>{
+        count = 0;
+        counterEl.textContent = count;
+      });
+    })();
+  </script>
+</body>
+</html>

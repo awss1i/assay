@@ -1,0 +1,75 @@
+counter|a click counter with an increment button and a reset button
+converter|a temperature converter between celsius and fahrenheit that updates as you type
+stopwatch|a stopwatch with Start, Stop, Lap and Reset, showing lap times in a list
+todo|a todo list: type a task, press Add, and each task has a Delete button
+notes|a sticky-notes board where Add Note makes a note you can type into and delete
+cart|a shopping cart: a list of items with Add buttons, and a basket showing quantities and a total
+kanban|a kanban board with three columns, where you add a card to a column and can move it right
+sortviz|a bubble-sort visualiser: bars of random height, a Shuffle button and a Sort button that animates the swaps
+wizard|a three-step signup wizard with Next and Back buttons and a progress bar that fills as you advance
+accordion|an FAQ page with five collapsible sections, where clicking a heading opens it and closes the others
+paintgrid|a 16x16 grid of cells and a colour palette: click a cell to paint it with the chosen colour, and a Clear button empties the grid
+tictactoe|tic-tac-toe on a 3x3 grid, two players alternating, announcing the winner
+memory|a memory matching game: 16 cards face down, click two, they stay face up if they match
+minesweeper|a 9x9 minesweeper: click a square to reveal it, and it shows how many mines are adjacent
+draw|a freehand drawing canvas: draw with the mouse, pick a colour and a brush size, and a Clear button
+chart|a bar chart drawn on a canvas from numbers you type into a field, redrawing when you add one
+signature|a signature pad on a canvas with Clear and Undo buttons
+snake|the game snake on a canvas, steered with the arrow keys, with a score that goes up when it eats
+tetris|the game tetris on a canvas, arrow keys to move and rotate, with a score and falling pieces
+breakout|the game breakout on a canvas: a paddle you steer with the arrow keys, a ball that bounces, and bricks that disappear
+bounce|a canvas of bouncing balls with buttons to add a ball, remove one, and pause the animation
+signup|a sign-up form validating email and password, showing an error under each field and a success message when both are valid
+quiz|a five-question multiple-choice quiz that shows your score at the end
+password|a password generator with a length slider, checkboxes for symbols and digits, and Generate and Copy buttons
+search|a searchable list of twenty countries that loads after a short delay, then filters as you type
+todo2|a todo list with filter tabs for All, Active and Done, a live count of what is left, double-click a task to rename it in place, and a Clear completed button that only removes the done ones
+notes2|a notes app where notes persist in localStorage across a reload, each note can be pinned to the top, and a search box filters by title and body as you type
+cart2|a shopping cart where quantity can be typed directly, a promo code SAVE10 takes ten percent off, removing the last item shows an empty-basket message, and the total is always correct to two decimal places
+kanban2|a kanban board where a card can be dragged between three columns with the mouse, each column shows its own count, and the board survives a reload
+paint2|a pixel painter with an eraser, a fill-bucket that floods a contiguous area, an undo that steps back through the last ten strokes, and a download-as-PNG button
+tictactoe2|tic-tac-toe against a computer opponent that never loses, with a running score across rounds and a board that locks once somebody wins
+memory2|a memory game with a move counter, a timer that starts on the first flip, a pairs-found score, and a win message that only appears when every pair is matched
+minesweeper2|a minesweeper with right-click flagging, a mine counter that follows the flags, an automatic flood-reveal of empty regions, and a lose state that reveals every mine
+snake2|snake with food that respawns, a score that rises as it eats, a growing tail, walls that end the game, and a high score kept in localStorage
+tetris2|tetris with a next-piece preview, line clears that raise the score, a level that speeds the fall, and a pause that actually stops the clock
+breakout2|breakout with three lives, bricks worth different points by row, a ball whose angle depends on where it hits the paddle, and a win state when the last brick goes
+draw2|a drawing canvas with undo and redo, a colour picker, three brush sizes, and a save that keeps the drawing across a reload
+chart2|a chart that switches between bar and line on a toggle, scales its own axis to the data, labels every point, and handles an empty dataset without breaking
+signup2|a sign-up form validating email, password strength shown as a live meter, a confirm-password field that must match, and a submit that stays disabled until everything is valid
+quiz2|a quiz that asks one question at a time with a progress bar, lets you go back and change an answer, and shows a per-question review at the end
+search2|a searchable, sortable table of twenty countries with sortable column headers, a filter box, and a row count that follows the filter
+wizard2|a three-step form that keeps what you typed when you go back, validates each step before letting you forward, and shows a summary you can edit before submitting
+clock2|a world clock showing four cities that tick every second, with a twelve or twenty-four hour toggle that applies to all of them at once
+calc2|a calculator with keyboard support, a running history of the last five results, percentage and sign-flip, and division by zero handled without breaking
+timer2|a countdown timer you set in minutes and seconds, with start, pause, resume and reset, that keeps counting correctly after a pause and announces when it reaches zero
+gallery2|an image-free gallery of twenty CSS-drawn tiles with a lightbox that opens on click, closes on escape, and steps between tiles with the arrow keys
+dashboard2|a dashboard with three CSS-drawn charts, a date-range selector that changes all three at once, and a total that recomputes from the visible range
+markdown2|a live markdown preview supporting headings, bold, italic, links and lists, updating as you type, with a word count
+routes2|a single-page app with three views switched by the hash in the URL, where reloading on a view keeps you on it and a back button returns to the previous one
+async2|a list that loads after a two-second delay with a visible spinner, then filters as you type, and shows a retry button if the load is made to fail
+spreadsheet|a 6x6 grid of editable cells where a cell starting with = holds a formula over other cells like =A1+B2, every dependent cell recomputes when a referenced one changes, and a circular reference is refused rather than hanging
+treeview|a nested folder tree three levels deep where a folder expands and collapses on click, a collapsed folder hides every descendant, and a counter shows how many rows are currently visible
+sortable|a table of eight people with name, age and joined-date columns, where clicking a header sorts by it, clicking again reverses, ages sort as numbers rather than as text and dates sort chronologically
+pagination|a list of 47 items shown ten to a page, with next and previous that stop at the ends, a page indicator, and a last page holding the remaining seven
+tabs|four tabbed panels where clicking a tab shows only its panel, the left and right arrow keys move between tabs, and Home and End jump to the first and last
+modal|a dialog opened by a button that dims the page behind it, closes on Escape and on a click outside it but not on a click inside, and returns focus to the button that opened it
+autocomplete|a country box that shows matching suggestions as you type, where the down arrow walks the suggestions, Enter fills the box with the highlighted one and Escape closes the list without changing anything
+reorder|a list of six rows that can be dragged into a new order, showing the current order as a line of numbers underneath so a wrong drop index is visible
+multiselect|a list of ten items where a click selects one, ctrl-click adds to the selection, shift-click takes the whole range between, and a counter shows how many are selected
+splitpane|two panes divided by a bar that can be dragged left and right to resize them, refusing to shrink either below a minimum, with both widths shown as percentages
+invoice|an invoice with line items each having a quantity and a unit price in pence, a subtotal, twenty percent tax and a total, all staying exactly right to the penny as quantities change
+calendar|a month calendar with previous and next month buttons, the correct number of days and starting weekday for every month including February in a leap year, and today marked
+stepper|a quantity control with plus and minus buttons and a typed box, a minimum of one and a maximum of ten that it refuses to cross by either route, and a total price that follows
+filtersort|a table with both a search box and sortable columns, where filtering then sorting keeps only the matching rows and sorting then filtering does not lose the sort
+undoredo|a text box with undo and redo buttons, where redo becomes available after an undo and a fresh edit discards the redo history rather than leaving it stale
+zoompan|a canvas of shapes with zoom-in and zoom-out buttons and dragging to pan, where a readout shows the coordinate under the pointer and it stays correct after zooming
+palette|a canvas holding three shapes where clicking a shape selects it, a row of colour swatches recolours the selected shape only, and nothing happens when no shape is selected
+infinite|a list of twenty rows that appends twenty more when scrolled to the bottom, up to sixty, then says there is no more to load
+formarray|a form where Add Person appends a name and age field pair, each pair has its own Remove, and a summary line lists every completed person
+diff|two text panes and a Compare button that marks added, removed and unchanged lines between them, updating when either pane is edited
+pomodoro|a pomodoro timer that counts twenty-five minutes of work then automatically switches to a five-minute break, with start, pause and skip, and a count of completed rounds
+survey|a branching questionnaire where answering yes and answering no lead to different next questions, a back button returns to the question actually answered, and the end shows the path taken
+seatmap|a seating grid where some seats are already booked and refuse selection, clicking a free seat toggles it, and a total price counts only the seats currently chosen
+cube3d|a rotating wireframe cube drawn with WebGL, where the arrow keys change its rotation axis and speed, and a button stops and restarts the animation
+matrix|two editable 3x3 number grids with a multiply button that fills a third grid with the product, refusing non-numeric entries and showing the arithmetic for one cell

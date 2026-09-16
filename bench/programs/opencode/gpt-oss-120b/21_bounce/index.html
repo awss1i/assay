@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bouncing Balls</title>
+    <style>
+        body {margin:0; font-family:Arial, sans-serif; display:flex; flex-direction:column; align-items:center; background:#f0f0f0;}
+        canvas {border:1px solid #333; background:#fff;}
+        .controls {margin:10px;}
+        button {margin:0 5px; padding:5px 10px;}
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button id="addBtn">Add Ball</button>
+        <button id="removeBtn">Remove Ball</button>
+        <button id="pauseBtn">Pause</button>
+    </div>
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const balls = [];
+        let paused = false;
+
+        function random(min, max) {return Math.random() * (max - min) + min;}
+        function randomColor() {
+            const r = Math.floor(random(0,255));
+            const g = Math.floor(random(0,255));
+            const b = Math.floor(random(0,255));
+            return `rgb(${r},${g},${b})`;
+        }
+        class Ball {
+            constructor() {
+                this.radius = random(10,30);
+                this.x = random(this.radius, canvas.width - this.radius);
+                this.y = random(this.radius, canvas.height - this.radius);
+                this.vx = random(-2,2);
+                this.vy = random(-2,2);
+                this.color = randomColor();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                // bounce off walls
+                if (this.x + this.radius > canvas.width || this.x - this.radius < 0) this.vx = -this.vx;
+                if (this.y + this.radius > canvas.height || this.y - this.radius < 0) this.vy = -this.vy;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+        function addBall() {balls.push(new Ball());}
+        function removeBall() {balls.pop();}
+        function togglePause() {
+            paused = !paused;
+            document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+        }
+        document.getElementById('addBtn').addEventListener('click', addBall);
+        document.getElementById('removeBtn').addEventListener('click', removeBall);
+        document.getElementById('pauseBtn').addEventListener('click', togglePause);
+        // start with a few balls
+        for(let i=0;i<5;i++) addBall();
+        function animate(){
+            if (!paused) {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                for(const b of balls){b.update(); b.draw();}
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

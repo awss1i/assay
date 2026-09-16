@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tree View with Counter</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  ul {list-style-type: none; margin: 0; padding-left: 20px;}
+  .folder > span {
+    cursor: pointer;
+    user-select: none;
+  }
+  .folder > span::before {
+    content: "▶"; /* right-pointing triangle */
+    display: inline-block;
+    width: 1em;
+    margin-right: 4px;
+    transition: transform 0.1s ease-in-out;
+  }
+  .folder.expanded > span::before {
+    transform: rotate(90deg);
+  }
+  .folder.collapsed > span::before {
+    transform: rotate(0deg);
+  }
+  .hidden {display: none;}
+  .counter {margin-top: 20px; font-weight: bold;}
+</style>
+</head>
+<body>
+<h2>Nested Folder Tree</h2>
+<ul id="treeRoot">
+  <li class="folder expanded"><span>Folder A</span>
+    <ul>
+      <li class="folder expanded"><span>Folder A1</span>
+        <ul>
+          <li>File A1a</li>
+          <li>File A1b</li>
+        </ul>
+      </li>
+      <li class="folder collapsed"><span>Folder A2</span>
+        <ul class="hidden">
+          <li>File A2a</li>
+          <li>File A2b</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li class="folder collapsed"><span>Folder B</span>
+    <ul class="hidden">
+      <li>File B1</li>
+      <li class="folder collapsed"><span>Folder B2</span>
+        <ul class="hidden">
+          <li>File B2a</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<div class="counter">Visible rows: <span id="visibleCount"></span></div>
+
+<script>
+// Toggle visibility of a folder's children
+function toggleFolder(event) {
+  const li = event.currentTarget.parentElement; // <li class="folder ...">
+  const childUl = li.querySelector('ul');
+  if (!childUl) return; // no children
+  const isCollapsed = li.classList.contains('collapsed');
+  if (isCollapsed) {
+    // Expand
+    childUl.classList.remove('hidden');
+    li.classList.remove('collapsed');
+    li.classList.add('expanded');
+  } else {
+    // Collapse – hide this ul and all descendant uls
+    childUl.classList.add('hidden');
+    li.classList.remove('expanded');
+    li.classList.add('collapsed');
+    // Also hide any nested uls that might be visible
+    const nested = childUl.querySelectorAll('ul');
+    nested.forEach(u => u.classList.add('hidden'));
+    // Ensure nested folders have collapsed class for correct arrow state
+    const nestedFolders = childUl.querySelectorAll('li.folder');
+    nestedFolders.forEach(f => f.classList.remove('expanded'));
+    nestedFolders.forEach(f => f.classList.add('collapsed'));
+  }
+  updateCounter();
+}
+
+function updateCounter() {
+  const allRows = document.querySelectorAll('li, li > span'); // include folder labels
+  let visible = 0;
+  allRows.forEach(node => {
+    // offsetParent is null when element or its ancestors are hidden via display:none
+    if (node.offsetParent !== null) visible++;
+  });
+  document.getElementById('visibleCount').textContent = visible;
+}
+
+// Initial wiring
+function initTree() {
+  const folders = document.querySelectorAll('li.folder > span');
+  folders.forEach(span => {
+    span.addEventListener('click', toggleFolder);
+  });
+  updateCounter();
+}
+
+document.addEventListener('DOMContentLoaded', initTree);
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Freehand Drawing Canvas</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #toolbar {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem;
+      background: #f0f0f0;
+      gap: 0.5rem;
+    }
+    #toolbar label {
+      margin-right: 0.25rem;
+    }
+    #canvas {
+      flex: 1;
+      border-top: 1px solid #ccc;
+      cursor: crosshair;
+    }
+    button {
+      padding: 0.25rem 0.75rem;
+      border: 1px solid #888;
+      background: #e0e0e0;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #d0d0d0;
+    }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <label for="colorPicker">Color:</label>
+    <input type="color" id="colorPicker" value="#000000">
+
+    <label for="sizePicker">Brush size:</label>
+    <input type="range" id="sizePicker" min="1" max="30" value="5">
+
+    <button id="clearBtn">Clear</button>
+  </div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const sizePicker = document.getElementById('sizePicker');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function resizeCanvas() {
+      // Preserve drawing on resize
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - document.getElementById('toolbar').offsetHeight;
+      ctx.putImageData(img, 0, 0);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function start(e) {
+      drawing = true;
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.strokeStyle = colorPicker.value;
+      ctx.lineWidth = sizePicker.value;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      [lastX, lastY] = [e.offsetX, e.offsetY];
+    }
+
+    function stop() {
+      drawing = false;
+    }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseleave', stop);
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      start({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    });
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      draw({ offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+    });
+    canvas.addEventListener('touchend', e => {
+      e.preventDefault();
+      stop();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>People Table</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  table {border-collapse: collapse; width: 100%;}
+  th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+  th {cursor: pointer; background-color: #f2f2f2;}
+  th.sorted-asc::after {content: " \2191";}
+  th.sorted-desc::after {content: " \2193";}
+</style>
+</head>
+<body>
+<h2>People</h2>
+<table id="people">
+  <thead>
+    <tr>
+      <th data-type="string">Name</th>
+      <th data-type="number">Age</th>
+      <th data-type="date">Joined</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Alice Johnson</td><td>34</td><td>2020-03-15</td></tr>
+    <tr><td>Bob Smith</td><td>28</td><td>2019-07-22</td></tr>
+    <tr><td>Charlie Lee</td><td>45</td><td>2018-11-02</td></tr>
+    <tr><td>Diana Patel</td><td>31</td><td>2021-01-10</td></tr>
+    <tr><td>Evan Kim</td><td>22</td><td>2022-06-05</td></tr>
+    <tr><td>Fiona Garcia</td><td>39</td><td>2017-09-30</td></tr>
+    <tr><td>George Zhao</td><td>27</td><td>2020-12-18</td></tr>
+    <tr><td>Hannah Wu</td><td>36</td><td>2019-04-08</td></tr>
+  </tbody>
+</table>
+<script>
+  const table = document.getElementById('people');
+  const thElements = table.querySelectorAll('th');
+  thElements.forEach((th, index) => {
+    th.addEventListener('click', () => {
+      const type = th.dataset.type;
+      const currentOrder = th.dataset.order || 'none';
+      const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+      sortColumn(index, type, newOrder);
+      // update visual indicators
+      thElements.forEach(t => t.classList.remove('sorted-asc','sorted-desc'));
+      th.dataset.order = newOrder;
+      th.classList.toggle('sorted-asc', newOrder === 'asc');
+      th.classList.toggle('sorted-desc', newOrder === 'desc');
+    });
+  });
+  function sortColumn(colIndex, type, order) {
+    const tbody = table.tBodies[0];
+    const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+    const comparator = (a, b) => {
+      const aText = a.children[colIndex].textContent.trim();
+      const bText = b.children[colIndex].textContent.trim();
+      let cmp = 0;
+      if (type === 'number') {
+        cmp = Number(aText) - Number(bText);
+      } else if (type === 'date') {
+        cmp = new Date(aText) - new Date(bText);
+      } else { // string
+        cmp = aText.localeCompare(bText);
+      }
+      return order === 'asc' ? cmp : -cmp;
+    };
+    rowsArray.sort(comparator);
+    // re-append rows in sorted order
+    rowsArray.forEach(row => tbody.appendChild(row));
+  }
+</script>
+</body>
+</html>

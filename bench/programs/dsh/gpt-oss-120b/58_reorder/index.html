@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Draggable List Demo</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  ul {list-style: none; padding: 0; margin: 0; width: 200px;}
+  li {
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: #e0e0e0;
+    border: 1px solid #ccc;
+    cursor: move;
+    user-select: none;
+  }
+  li.dragging {opacity: 0.5;}
+  .order-display {margin-top: 20px; font-weight: bold;}
+</style>
+</head>
+<body>
+<h2>Drag the rows to reorder</h2>
+<ul id="list">
+  <li draggable="true" data-id="1">Item 1</li>
+  <li draggable="true" data-id="2">Item 2</li>
+  <li draggable="true" data-id="3">Item 3</li>
+  <li draggable="true" data-id="4">Item 4</li>
+  <li draggable="true" data-id="5">Item 5</li>
+  <li draggable="true" data-id="6">Item 6</li>
+</ul>
+<div class="order-display" id="orderDisplay">Current order: 1 2 3 4 5 6</div>
+
+<script>
+  const list = document.getElementById('list');
+  const orderDisplay = document.getElementById('orderDisplay');
+
+  // Update the order display based on current list order
+  function updateOrderDisplay() {
+    const ids = Array.from(list.children).map(li => li.dataset.id);
+    orderDisplay.textContent = 'Current order: ' + ids.join(' ');
+  }
+
+  // Handle drag events
+  let dragSrcEl = null;
+
+  function handleDragStart(e) {
+    dragSrcEl = this;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.id);
+    this.classList.add('dragging');
+  }
+
+  function handleDragOver(e) {
+    if (e.preventDefault) e.preventDefault(); // Allows drop
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  }
+
+  function handleDrop(e) {
+    if (e.stopPropagation) e.stopPropagation();
+    const srcId = e.dataTransfer.getData('text/plain');
+    const target = this;
+    if (dragSrcEl && dragSrcEl !== target) {
+      // Reorder elements: insert dragged element before/after target based on position
+      const rect = target.getBoundingClientRect();
+      const offset = e.clientY - rect.top;
+      const half = rect.height / 2;
+      if (offset > half) {
+        // Insert after target
+        target.parentNode.insertBefore(dragSrcEl, target.nextSibling);
+      } else {
+        // Insert before target
+        target.parentNode.insertBefore(dragSrcEl, target);
+      }
+      updateOrderDisplay();
+    }
+    return false;
+  }
+
+  function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    dragSrcEl = null;
+  }
+
+  // Attach listeners
+  const items = list.querySelectorAll('li');
+  items.forEach(function(item) {
+    item.addEventListener('dragstart', handleDragStart, false);
+    item.addEventListener('dragover', handleDragOver, false);
+    item.addEventListener('drop', handleDrop, false);
+    item.addEventListener('dragend', handleDragEnd, false);
+  });
+
+  // Initial order display
+  updateOrderDisplay();
+</script>
+</body>
+</html>

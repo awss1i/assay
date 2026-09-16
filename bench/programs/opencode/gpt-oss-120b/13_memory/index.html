@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Matching Game</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: #2c3e50;
+    font-family: sans-serif;
+  }
+  #game {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-gap: 10px;
+  }
+  .card {
+    width: 80px;
+    height: 80px;
+    perspective: 600px; /* 3D flip */
+  }
+  .inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+  }
+  .flipped .inner {
+    transform: rotateY(180deg);
+  }
+  .face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
+  .front {
+    background: #ecf0f1;
+    transform: rotateY(180deg);
+  }
+  .back {
+    background: #3498db;
+    color: #fff;
+  }
+  .matched .inner { cursor: default; }
+</style>
+</head>
+<body>
+<div id="game"></div>
+<script>
+(() => {
+  const symbols = ['✈','✉','✊','✎','✒','✖','✱','☀']; // 8 unique symbols
+  const values = symbols.concat(symbols); // duplicate for pairs
+  // shuffle using Fisher‑Yates
+  for (let i = values.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [values[i], values[j]] = [values[j], values[i]];
+  }
+  const game = document.getElementById('game');
+  const state = {first: null, second: null, lock: false, matches: 0};
+  values.forEach((val, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.value = val;
+    card.innerHTML = `
+      <div class="inner">
+        <div class="face back">?</div>
+        <div class="face front">${val}</div>
+      </div>`;
+    card.addEventListener('click', () => {
+      if (state.lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      card.classList.add('flipped');
+      if (!state.first) {
+        state.first = card;
+        return;
+      }
+      state.second = card;
+      state.lock = true;
+      const match = state.first.dataset.value === state.second.dataset.value;
+      setTimeout(() => {
+        if (match) {
+          state.first.classList.add('matched');
+          state.second.classList.add('matched');
+          state.matches += 1;
+          if (state.matches === symbols.length) {
+            setTimeout(() => alert('Congratulations! You found all pairs.'), 200);
+          }
+        } else {
+          state.first.classList.remove('flipped');
+          state.second.classList.remove('flipped');
+        }
+        state.first = null;
+        state.second = null;
+        state.lock = false;
+      }, 800);
+    });
+    game.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>

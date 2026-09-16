@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weekly Scheduler</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  table {border-collapse: collapse; width: 100%; max-width: 600px;}
+  th, td {border: 1px solid #999; text-align: center; padding: 10px; cursor: pointer;}
+  th {background: #f0f0f0;}
+  td {background: #e8f5e9;}
+  td.booked {background: #ffcc80;}
+  #summary {margin-top: 20px;}
+</style>
+</head>
+<body>
+<h2>Weekly Grid (5 days × 4 slots)</h2>
+<table id="grid">
+  <thead>
+    <tr>
+      <th>Day / Slot</th>
+      <th>Slot 1</th>
+      <th>Slot 2</th>
+      <th>Slot 3</th>
+      <th>Slot 4</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<h3>Booked Slots Summary</h3>
+<ul id="summary"></ul>
+
+<script>
+// Days and slots configuration
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Sunday"];
+const slotCount = 4;
+// State: booked[dayIndex][slotIndex] = true/false
+const booked = Array.from({length: days.length}, () => Array(slotCount).fill(false));
+
+const gridBody = document.querySelector('#grid tbody');
+// Build table rows
+days.forEach((day, dIdx) => {
+  const tr = document.createElement('tr');
+  const th = document.createElement('th');
+  th.textContent = day;
+  tr.appendChild(th);
+  for (let s = 0; s <= slotCount; s++) {
+    const td = document.createElement('td');
+    td.dataset.day = dIdx;
+    td.dataset.slot = dIdx;
+    td.textContent = '';
+    td.addEventListener('click', toggleSlot);
+    tr.appendChild(td);
+  }
+  gridBody.appendChild(tr);
+});
+
+function toggleSlot(e) {
+  const td = e.currentTarget;
+  const d = Number(td.dataset.day);
+  const s = Number(td.dataset.slot);
+  booked[d][s] = !booked[d][s];
+  td.classList.toggle('booked', !booked[d][s]);
+  updateSummary();
+}
+
+function updateSummary() {
+  const summary = document.getElementById('summary');
+  summary.innerHTML = '';
+  days.forEach((day, dIdx) => {
+    const slots = [];
+    booked[dIdx].forEach((b, sIdx) => {
+      if (b) slots.push(`Slot ${sIdx}`);
+    });
+    if (slots.length) {
+      const li = document.createElement('li');
+      li.textContent = `${day}: ${slots.join(', ')}`;
+      summary.appendChild(li);
+    }
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Delayed List with Search & Retry</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    background:#fafafa;
+    color:#333;
+  }
+  #spinner, #error, #app {
+    display: none;
+    text-align: center;
+  }
+  #spinner {
+    margin-top: 5rem;
+  }
+  .spinner {
+    border: 4px solid #eee;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  #search {
+    width: 100%;
+    max-width: 400px;
+    padding: .5rem;
+    margin: 1rem auto;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display:block;
+  }
+  #list {
+    list-style:none;
+    padding:0;
+    max-width:400px;
+    margin:0 auto;
+  }
+  #list li {
+    padding:.5rem;
+    border-bottom:1px solid #ddd;
+  }
+  #error p {
+    margin:1rem 0;
+    color:#c00;
+  }
+  button {
+    padding:.5rem 1rem;
+    font-size:1rem;
+    background:#3498db;
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  button:hover { background:#2980b9; }
+</style>
+</head>
+<body>
+
+<div id="spinner"><div class="spinner"></div></div>
+
+<div id="error">
+  <p>Failed to load the list.</p>
+  <button id="retry">Retry</button>
+</div>
+
+<div id="app">
+  <input type="text" id="search" placeholder="Type to filter...">
+  <ul id="list"></ul>
+</div>
+
+<script>
+(() => {
+  const data = [
+    "Apple", "Apricot", "Avocado", "Banana", "Blackberry",
+    "Blueberry", "Cherry", "Coconut", "Cranberry", "Date",
+    "Dragonfruit", "Durian", "Fig", "Grape", "Guava",
+    "Kiwi", "Lemon", "Lime", "Mango", "Melon",
+    "Nectarine", "Orange", "Papaya", "Peach", "Pear",
+    "Pineapple", "Plum", "Pomegranate", "Raspberry",
+    "Strawberry", "Watermelon"
+  ];
+
+  const spinnerEl = document.getElementById('spinner');
+  const errorEl   = document.getElementById('error');
+  const appEl     = document.getElementById('app');
+  const listEl    = document.getElementById('list');
+  const searchEl  = document.getElementById('search');
+  const retryBtn  = document.getElementById('retry');
+
+  function show(el){ el.style.display = 'block'; }
+  function hide(el){ el.style.display = 'none'; }
+
+  function renderList(items){
+    listEl.innerHTML = '';
+    items.forEach(txt => {
+      const li = document.createElement('li');
+      li.textContent = txt;
+      listEl.appendChild(li);
+    });
+  }
+
+  function loadData(){
+    // Simulate a network request: 30% chance to fail
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (Math.random() < 0.3) reject('load error');
+        else resolve(data);
+      }, 2000);
+    });
+  }
+
+  function startLoading(){
+    hide(errorEl);
+    hide(appEl);
+    show(spinnerEl);
+    loadData()
+      .then(items => {
+        hide(spinnerEl);
+        renderList(items);
+        show(appEl);
+      })
+      .catch(() => {
+        hide(spinnerEl);
+        show(errorEl);
+      });
+  }
+
+  // Filter as you type
+  searchEl.addEventListener('input', () => {
+    const term = searchEl.value.toLowerCase();
+    const filtered = data.filter(item => item.toLowerCase().includes(term));
+    renderList(filtered);
+  });
+
+  retryBtn.addEventListener('click', startLoading);
+
+  // Kick‑off the first load
+  startLoading();
+})();
+</script>
+
+</body>
+</html>

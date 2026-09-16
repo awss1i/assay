@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bubble‑Sort Visualiser</title>
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        background:#f5f5f5;
+        margin:0;
+        padding:20px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:20px;
+    }
+    h1 { margin:0; font-size:1.8rem; }
+    #controls {
+        display:flex;
+        gap:10px;
+    }
+    button {
+        padding:8px 16px;
+        font-size:1rem;
+        cursor:pointer;
+        border:none;
+        border-radius:4px;
+        background:#0066cc;
+        color:#fff;
+        transition:background .2s;
+    }
+    button:disabled { background:#999; cursor:default; }
+    button:hover:not(:disabled) { background:#0055aa; }
+    #bars {
+        display:flex;
+        align-items:flex-end;
+        width: 90vw;
+        max-width:800px;
+        height:300px;
+        border:1px solid #ccc;
+        background:#fff;
+        position:relative;
+    }
+    .bar {
+        flex:0 0 auto;
+        width:10px;
+        margin:0 1px;
+        background:#4a90e2;
+    }
+    .bar.active   { background:#e74c3c; }   /* currently compared */
+    .bar.sorted   { background:#2ecc71; }   /* already in final place */
+</style>
+</head>
+<body>
+<h1>Bubble‑Sort Visualiser</h1>
+<div id="controls">
+    <button id="shuffleBtn">Shuffle</button>
+    <button id="sortBtn">Sort</button>
+</div>
+<div id="bars"></div>
+
+<script>
+(() => {
+    const BAR_COUNT = 60;            // number of vertical bars
+    const MAX_HEIGHT = 100;          // logical max value (percentage)
+    const ANIM_DELAY = 30;           // ms between each comparison / swap
+    const barsContainer = document.getElementById('bars');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const sortBtn    = document.getElementById('sortBtn');
+
+    let values = [];                 // numeric heights (0‑100)
+    let barEls = [];                 // corresponding <div class="bar">
+
+    // ----- utilities -------------------------------------------------
+    const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+    const randArray = () => {
+        const arr = [];
+        for (let i = 0; i < BAR_COUNT; i++) {
+            arr.push(Math.floor(Math.random() * MAX_HEIGHT) + 1);
+        }
+        return arr;
+    };
+
+    const renderBars = () => {
+        barsContainer.innerHTML = '';
+        barEls = values.map(v => {
+            const el = document.createElement('div');
+            el.className = 'bar';
+            el.style.height = `${v}%`;
+            barsContainer.appendChild(el);
+            return el;
+        });
+    };
+
+    const shuffle = () => {
+        // Fisher–Yates shuffle
+        for (let i = values.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [values[i], values[j]] = [values[j], values[i]];
+        }
+        renderBars();
+    };
+
+    // ----- bubble sort with animation --------------------------------
+    const bubbleSort = async () => {
+        shuffleBtn.disabled = true;
+        sortBtn.disabled   = true;
+
+        const n = values.length;
+        for (let i = 0; i < n; i++) {
+            let swapped = false;
+            for (let j = 0; j < n - i - 1; j++) {
+                // highlight the two bars being compared
+                barEls[j].classList.add('active');
+                barEls[j + 1].classList.add('active');
+                await sleep(ANIM_DELAY);
+
+                if (values[j] > values[j + 1]) {
+                    // swap data
+                    [values[j], values[j + 1]] = [values[j + 1], values[j]];
+                    // swap visual heights
+                    const tmpH = barEls[j].style.height;
+                    barEls[j].style.height = barEls[j + 1].style.height;
+                    barEls[j + 1].style.height = tmpH;
+                    swapped = true;
+                    await sleep(ANIM_DELAY);
+                }
+
+                // remove highlight
+                barEls[j].classList.remove('active');
+                barEls[j + 1].classList.remove('active');
+            }
+            // mark the last sorted element
+            barEls[n - i - 1].classList.add('sorted');
+            if (!swapped) break; // array already sorted
+        }
+
+        // final clean‑up: ensure all are marked sorted
+        barEls.forEach(bar => bar.classList.add('sorted'));
+
+        shuffleBtn.disabled = false;
+        sortBtn.disabled = false;
+    };
+
+    // ----- initialise -------------------------------------------------
+    const init = () => {
+        values = randArray();
+        renderBars();
+        shuffleBtn.onclick = shuffle;
+        sortBtn.onclick = bubbleSort;
+    };
+
+    document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>

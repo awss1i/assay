@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Markdown Preview</title>
+<style>
+  body { margin:0; font-family:Arial,Helvetica,sans-serif; background:#f5f5f5; }
+  .container { display:flex; height:100vh; }
+  textarea {
+    flex:1; resize:none; border:none; padding:1rem; font-size:1rem;
+    box-sizing:border-box; outline:none; background:#fff;
+  }
+  .preview {
+    flex:1; overflow:auto; padding:1rem; background:#fff; border-left:1px solid #ddd;
+  }
+  .preview h1,.preview h2,.preview h3,.preview h4,.preview h5,.preview h6{
+    margin:0.5em 0 0.25em;
+  }
+  .preview p{ margin:0.5em 0; }
+  .preview ul{ margin:0.5em 0 0.5em 1.5em; padding:0; }
+  .preview li{ margin:0.25em 0; }
+  .preview a{ color:#0066cc; text-decoration:none; }
+  .preview a:hover{ text-decoration:underline; }
+  .status {
+    position:fixed; right:1rem; bottom:1rem; background:rgba(0,0,0,0.1);
+    padding:0.3rem 0.6rem; border-radius:4px; font-size:0.9rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <textarea id="md" placeholder="Type Markdown here…"></textarea>
+  <div class="preview" id="preview"></div>
+</div>
+<div class="status">Words: <span id="wc">0</span></div>
+
+<script>
+(() => {
+  const textarea = document.getElementById('md');
+  const preview   = document.getElementById('preview');
+  const wcSpan    = document.getElementById('wc');
+
+  const escapeHtml = (str) =>
+    str.replace(/&/g,'&amp;')
+       .replace(/</g,'&lt;')
+       .replace(/>/g,'&gt;');
+
+  const inline = (txt) => {
+    let s = escapeHtml(txt);
+    s = s.replace(/\[([^\]]+)]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+    s = s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    s = s.replace(/__(.+?)__/g,'<strong>$1</strong>');
+    s = s.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+    s = s.replace(/_([^_]+)_/g,'<em>$1</em>');
+    return s;
+  };
+
+  const parse = (md) => {
+    const lines = md.split('\n');
+    let html = '';
+    let inList = false;
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+
+      // Heading
+      const hMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+      if (hMatch) {
+        if (inList) { html+='</ul>'; inList=false; }
+        const lvl = hMatch[1].length;
+        html += `<h${lvl}>${inline(hMatch[2])}</h${lvl}>`;
+        return;
+      }
+
+      // Unordered list
+      if (/^[-*+]\s+/.test(trimmed)) {
+        if (!inList) { html+='<ul>'; inList=true; }
+        const item = trimmed.replace(/^[-*+]\s+/, '');
+        html += `<li>${inline(item)}</li>`;
+        return;
+      }
+
+      // Empty line -> close list
+      if (trimmed === '') {
+        if (inList) { html+='</ul>'; inList=false; }
+        return;
+      }
+
+      // Paragraph
+      if (inList) { html+='</ul>'; inList=false; }
+      html += `<p>${inline(trimmed)}</p>`;
+    });
+
+    if (inList) html+='</ul>';
+    return html;
+  };
+
+  const update = () => {
+    const text = textarea.value;
+    preview.innerHTML = parse(text);
+    const words = text.trim() ? text.trim().split(/\s+/).filter(w=>w.length).length : 0;
+    wcSpan.textContent = words;
+  };
+
+  textarea.addEventListener('input', update);
+  // initialise
+  update();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Simple Shopping Cart</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif;margin:20px;background:#f9f9f9;}
+  h1 {color:#333;}
+  .products, .basket {margin-top:20px;}
+  .product {display:flex;justify-content:space-between;margin:5px 0;padding:5px;background:#fff;border:1px solid #ddd;}
+  .product button {background:#28a745;color:#fff;border:none;padding:5px 10px;cursor:pointer;}
+  .product button:hover {background:#218838;}
+  table {width:100%;border-collapse:collapse;background:#fff;}
+  th, td {border:1px solid #ddd;padding:8px; text-align:left;}
+  th {background:#f2f2f2;}
+  .total {font-weight:bold;}
+</style>
+</head>
+<body>
+<h1>Simple Shopping Cart</h1>
+<div class="products">
+  <h2>Products</h2>
+  <div id="product-list"></div>
+</div>
+<div class="basket">
+  <h2>Basket</h2>
+  <table id="basket-table">
+    <thead>
+      <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr><td colspan="3" class="total">Total</td><td id="total-price">$0.00</td></tr>
+    </tfoot>
+  </table>
+</div>
+<script>
+const products = [
+  {name: "Apple", price: 0.99},
+  {name: "Banana", price: 0.59},
+  {name: "Orange", price: 0.79},
+  {name: "Bread", price: 2.49},
+  {name: "Milk", price: 1.99}
+];
+
+const basket = {};
+
+function formatMoney(num) {
+  return "$" + num.toFixed(2);
+}
+
+function renderProducts() {
+  const container = document.getElementById("product-list");
+  container.innerHTML = "";
+  products.forEach((p, idx) => {
+    const div = document.createElement("div");
+    div.className = "product";
+    div.innerHTML = `<span>${p.name} - ${formatMoney(p.price)}</span>` +
+      `<button onclick="addItem(${idx})">Add</button>`;
+    container.appendChild(div);
+  });
+}
+
+function addItem(index) {
+  const prod = products[index];
+  if (!basket[prod.name]) {
+    basket[prod.name] = {qty: 0, price: prod.price};
+  }
+  basket[prod.name].qty += 1;
+  renderBasket();
+}
+
+function renderBasket() {
+  const tbody = document.querySelector("#basket-table tbody");
+  tbody.innerHTML = "";
+  let total = 0;
+  for (const name in basket) {
+    const entry = basket[name];
+    const subtotal = entry.qty * entry.price;
+    total += subtotal;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${name}</td>` +
+      `<td>${entry.qty}</td>` +
+      `<td>${formatMoney(entry.price)}</td>` +
+      `<td>${formatMoney(subtotal)}</td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById("total-price").textContent = formatMoney(total);
+}
+
+// Initial render
+renderProducts();
+</script>
+</body>
+</html>

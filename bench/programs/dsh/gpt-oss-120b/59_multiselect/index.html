@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Multi-Select List</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  ul {list-style: none; padding: 0;}
+  li {padding: 8px 12px; border: 1px solid #ccc; margin-bottom: 4px; cursor: pointer; user-select: none;}
+  li.selected {background-color: #cce5ff;}
+  #counter {margin-top: 20px; font-weight: bold;}
+</style>
+</head>
+<body>
+<h2>Click items to select</h2>
+<ul id="itemList">
+  <li>Item 1</li>
+  <li>Item 2</li>
+  <li>Item 3</li>
+  <li>Item 4</li>
+  <li>Item 5</li>
+  <li>Item 6</li>
+  <li>Item 7</li>
+  <li>Item 8</li>
+  <li>Item 9</li>
+  <li>Item 10</li>
+</ul>
+<div id="counter">Selected: 0</div>
+
+<script>
+(function(){
+  const list = document.getElementById('itemList');
+  const items = Array.from(list.querySelectorAll('li'));
+  const counter = document.getElementById('counter');
+  const selected = new Set();
+  let lastIndex = -1;
+
+  function updateCounter(){
+    counter.textContent = `Selected: ${selected.size}`;
+  }
+
+  function clearSelection(){
+    selected.forEach(idx=> items[idx].classList.remove('selected'));
+    selected.clear();
+  }
+
+  items.forEach((li,i)=>{
+    li.addEventListener('click', (e)=>{
+      const ctrl = e.ctrlKey || e.metaKey; // meta for Mac Cmd
+      const shift = e.shiftKey;
+
+      if(shift){
+        if(lastIndex === -1){
+          // No prior selection, just select this one
+          clearSelection();
+          selected.add(i);
+          li.classList.add('selected');
+        } else {
+          const start = Math.min(lastIndex, i);
+          const end = Math.max(lastIndex, i);
+          // Keep existing selection (like typical shift behavior)
+          for(let j=start; j<=end; j++){
+            if(!selected.has(j)){
+              selected.add(j);
+              items[j].classList.add('selected');
+            }
+          }
+        }
+        lastIndex = i;
+      } else if(ctrl){
+        if(selected.has(i)){
+          selected.delete(i);
+          li.classList.remove('selected');
+        } else {
+          selected.add(i);
+          li.classList.add('selected');
+        }
+        lastIndex = i;
+      } else {
+        // Plain click: clear previous and select only this
+        clearSelection();
+        selected.add(i);
+        li.classList.add('selected');
+        lastIndex = i;
+      }
+      updateCounter();
+    });
+  });
+})();
+</script>
+</body>
+</html>

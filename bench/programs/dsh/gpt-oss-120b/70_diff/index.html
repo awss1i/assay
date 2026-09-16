@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Line Diff Viewer</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9;}
+  .container {display: flex; flex-direction: column; gap: 10px;}
+  .panes {display: flex; gap: 10px;}
+  textarea {flex: 1; width: 100%; height: 200px; font-family: monospace; font-size: 14px; padding: 5px; box-sizing: border-box;}
+  button {padding: 6px 12px; font-size: 14px;}
+  pre {background: #fff; padding: 10px; border: 1px solid #ccc; overflow-x: auto; white-space: pre-wrap; font-family: monospace;}
+  .added {background-color: #e6ffed;}
+  .removed {background-color: #ffeef0;}
+  .unchanged {background-color: #f0f0f0;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="panes">
+    <textarea id="pane1" placeholder="Original text"></textarea>
+    <textarea id="pane2" placeholder="Modified text"></textarea>
+  </div>
+  <button id="compareBtn">Compare</button>
+  <pre id="diffResult"></pre>
+</div>
+<script>
+  // Compute diff using a simple LCS algorithm
+  function diffLines(aLines, bLines) {
+    const n = aLines.length, m = bLines.length;
+    // Build DP table for lengths of LCS
+    const dp = Array.from({length: n+1}, () => new Uint16Array(m+1));
+    for (let i=1;i<=n;i++) {
+      for (let j=1;j<=m;j++) {
+        if (aLines[i-1]===bLines[j-1]) dp[i][j]=dp[i-1][j-1]+1;
+        else dp[i][j]=Math.max(dp[i-1][j], dp[i][j-1]);
+      }
+    }
+    // Backtrack to get diff actions
+    const actions = [];
+    let i=n, j=m;
+    while (i>0 && j>0) {
+      if (aLines[i-1]===bLines[j-1]) {
+        actions.push({type:'unchanged', text:aLines[i-1]});
+        i--; j--;
+      } else if (dp[i-1][j] >= dp[i][j-1]) {
+        actions.push({type:'removed', text:aLines[i-1]});
+        i--;
+      } else {
+        actions.push({type:'added', text:bLines[j-1]});
+        j--;
+      }
+    }
+    while (i>0) { actions.push({type:'removed', text:aLines[i-1]}); i--; }
+    while (j>0) { actions.push({type:'added', text:bLines[j-1]}); j--; }
+    return actions.reverse();
+  }
+
+  function updateDiff() {
+    const pane1 = document.getElementById('pane1').value.split(/\r?\n/);
+    const pane2 = document.getElementById('pane2').value.split(/\r?\n/);
+    const diff = diffLines(pane1, pane2);
+    const resultEl = document.getElementById('diffResult');
+    // Build HTML with spans for styling
+    const html = diff.map(d => {
+      const span = document.createElement('span');
+      span.textContent = d.text + '\n';
+      if (d.type==='added') span.className='added';
+      else if (d.type==='removed') span.className='removed';
+      else span.className='unchanged';
+      return span.outerHTML;
+    }).join('');
+    resultEl.innerHTML = html;
+  }
+
+  document.getElementById('compareBtn').addEventListener('click', updateDiff);
+  // Also update on input changes for live feedback
+  document.getElementById('pane1').addEventListener('input', updateDiff);
+  document.getElementById('pane2').addEventListener('input', updateDiff);
+</script>
+</body>
+</html>

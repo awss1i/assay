@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard – CSS Charts</title>
+<style>
+    :root{
+        --color1:#4caf50;
+        --color2:#2196f3;
+        --color3:#ff9800;
+    }
+    body{
+        font-family:Arial,Helvetica,sans-serif;
+        margin:20px;
+        background:#f9f9f9;
+        color:#333;
+    }
+    h1{
+        margin-bottom:10px;
+    }
+    .controls{
+        margin:15px 0;
+        display:flex;
+        gap:20px;
+        align-items:center;
+    }
+    .controls label{
+        font-size:0.9rem;
+    }
+    .charts{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:20px;
+    }
+    .chart{
+        background:#fff;
+        border:1px solid #ddd;
+        border-radius:4px;
+        padding:10px;
+        box-shadow:0 2px 4px rgba(0,0,0,0.05);
+    }
+    .chart h2{
+        margin:0 0 8px;
+        font-size:1rem;
+        text-align:center;
+    }
+    .bars{
+        display:flex;
+        align-items:flex-end;
+        height:150px;               /* fixed height for scaling */
+        border-top:1px solid #eee;
+        overflow:hidden;
+    }
+    .bar{
+        flex:1;
+        margin:0 1px;
+        background:#777;
+        transition:height .3s ease;
+    }
+    .total{
+        margin-top:20px;
+        font-size:1.2rem;
+    }
+</style>
+</head>
+<body>
+<h1>Dashboard – CSS Charts</h1>
+
+<div class="controls">
+    <label>From: <input type="date" id="dateFrom"></label>
+    <label>To:   <input type="date" id="dateTo"></label>
+</div>
+
+<div class="charts">
+    <div class="chart" id="chart1">
+        <h2>Sales</h2>
+        <div class="bars"></div>
+    </div>
+    <div class="chart" id="chart2">
+        <h2>Visitors</h2>
+        <div class="bars"></div>
+    </div>
+    <div class="chart" id="chart3">
+        <h2>Orders</h2>
+        <div class="bars"></div>
+    </div>
+</div>
+
+<div class="total"><strong>Total of visible data:</strong> <span id="totalValue">0</span></div>
+
+<script>
+/* -------------------------------------------------------------
+   Simple demo data (30 days, three series)
+   ------------------------------------------------------------- */
+const DAY_COUNT = 30;
+const today = new Date();
+today.setHours(0,0,0,0);
+
+function addDays(date, n){
+    const d = new Date(date);
+    d.setDate(d.getDate()+n);
+    return d;
+}
+
+// generate random data for 30 days
+const data = [];
+for(let i = 0; i < DAY_COUNT; i++){
+    const d = addDays(today, -DAY_COUNT + i + 1);
+    data.push({
+        date: d,
+        values:[
+            Math.floor(Math.random()*80)+20,   // series 0
+            Math.floor(Math.random()*150)+30,  // series 1
+            Math.floor(Math.random()*60)+10    // series 2
+        ]
+    });
+}
+
+/* -------------------------------------------------------------
+   Helper utilities
+   ------------------------------------------------------------- */
+function fmtDate(d){
+    const y = d.getFullYear(),
+          m = String(d.getMonth()+1).padStart(2,'0'),
+          dd = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+}
+function parseInput(id){
+    const v = document.getElementById(id).value;
+    return v ? new Date(v) : null;
+}
+
+/* -------------------------------------------------------------
+   Render logic
+   ------------------------------------------------------------- */
+const chartEls = [
+    document.querySelector('#chart1 .bars'),
+    document.querySelector('#chart2 .bars'),
+    document.querySelector('#chart3 .bars')
+];
+const colors = [ 'var(--color1)', 'var(--color2)', 'var(--color3)' ];
+
+function updateCharts(){
+    const from = parseInput('dateFrom') || data[0].date;
+    const to   = parseInput('dateTo')   || data[data.length-1].date;
+
+    // keep inputs tidy
+    document.getElementById('dateFrom').value = fmtDate(from);
+    document.getElementById('dateTo').value   = fmtDate(to);
+
+    const visible = data.filter(d=> d.date>=from && d.date<=to);
+    if(visible.length===0){
+        // nothing to display – clear charts and total
+        chartEls.forEach(c=> c.innerHTML='');
+        document.getElementById('totalValue').textContent='0';
+        return;
+    }
+
+    // compute max per series for scaling
+    const maxVals = [0,0,0];
+    visible.forEach(d=>{
+        d.values.forEach((v,i)=>{ if(v>maxVals[i]) maxVals[i]=v; });
+    });
+
+    // render each chart
+    chartEls.forEach((container, idx)=>{
+        container.innerHTML='';           // clear
+        visible.forEach(row=>{
+            const val = row.values[idx];
+            const h = (val / maxVals[idx]) * 100; // percent height
+            const bar = document.createElement('div');
+            bar.className='bar';
+            bar.style.height = h + '%';
+            bar.style.background = colors[idx];
+            bar.title = `${fmtDate(row.date)}: ${val}`;
+            container.appendChild(bar);
+        });
+    });
+
+    // compute total of all displayed numbers
+    const total = visible.reduce((sum,row)=> sum + row.values.reduce((a,b)=>a+b,0),0);
+    document.getElementById('totalValue').textContent = total;
+}
+
+/* -------------------------------------------------------------
+   Initialise date pickers & bind events
+   ------------------------------------------------------------- */
+window.addEventListener('load',()=>{
+
+    // initialise date inputs to first/last day
+    document.getElementById('dateFrom').value = fmtDate(data[0].date);
+    document.getElementById('dateTo').value   = fmtDate(data[data.length-1].date);
+
+    document.getElementById('dateFrom').addEventListener('change', updateCharts);
+    document.getElementById('dateTo').addEventListener('change',   updateCharts);
+
+    updateCharts();   // initial render
+});
+</script>
+</body>
+</html>

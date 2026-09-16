@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="945" height="586"
+     viewBox="0 0 945 586" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+     font-size="13">
+  <style>
+  .play{animation:fade 5.55s linear infinite}
+  .row{animation:5.55s step-end infinite}
+  .keys{transform:translateX(102.7px);animation:type 5.55s infinite}
+  .cursor{opacity:0;animation:cursor 5.55s step-end infinite}
+  @keyframes fade{0%,88.29%{opacity:1}100%{opacity:0}}
+  @keyframes type{0%{transform:translateX(0)}
+    5.41%{transform:translateX(0);animation-timing-function:steps(13,end)}
+    19.46%,100%{transform:translateX(102.7px)}}
+  @keyframes cursor{0%{opacity:1}27.03%,100%{opacity:0}}
+  @keyframes r0{0%{opacity:0}27.03%,100%{opacity:1}}
+  @keyframes r1{0%{opacity:0}28.36%,100%{opacity:1}}
+  @keyframes r2{0%{opacity:0}29.70%,100%{opacity:1}}
+  @keyframes r3{0%{opacity:0}31.03%,100%{opacity:1}}
+  @keyframes r4{0%{opacity:0}32.37%,100%{opacity:1}}
+  @keyframes r5{0%{opacity:0}33.70%,100%{opacity:1}}
+  @keyframes r6{0%{opacity:0}35.04%,100%{opacity:1}}
+  @keyframes r7{0%{opacity:0}36.37%,100%{opacity:1}}
+  @keyframes r8{0%{opacity:0}37.70%,100%{opacity:1}}
+  @keyframes r9{0%{opacity:0}39.04%,100%{opacity:1}}
+  @keyframes r10{0%{opacity:0}40.37%,100%{opacity:1}}
+  @keyframes r11{0%{opacity:0}41.71%,100%{opacity:1}}
+  @keyframes r12{0%{opacity:0}43.04%,100%{opacity:1}}
+  @keyframes r13{0%{opacity:0}44.38%,100%{opacity:1}}
+  @keyframes r14{0%{opacity:0}45.71%,100%{opacity:1}}
+  @keyframes r15{0%{opacity:0}47.05%,100%{opacity:1}}
+  @keyframes r16{0%{opacity:0}48.38%,100%{opacity:1}}
+  @keyframes r17{0%{opacity:0}49.72%,100%{opacity:1}}
+  @keyframes r18{0%{opacity:0}51.05%,100%{opacity:1}}
+  @keyframes r19{0%{opacity:0}52.39%,100%{opacity:1}}
+  @keyframes r20{0%{opacity:0}53.72%,100%{opacity:1}}
+  @keyframes r21{0%{opacity:0}55.06%,100%{opacity:1}}
+  @keyframes r22{0%{opacity:0}56.39%,100%{opacity:1}}
+  @keyframes r23{0%{opacity:0}57.72%,100%{opacity:1}}
+  @keyframes r24{0%{opacity:0}59.06%,100%{opacity:1}}
+  @keyframes r25{0%{opacity:0}60.39%,100%{opacity:1}}
+  @keyframes r26{0%{opacity:0}61.73%,100%{opacity:1}}
+  @keyframes r27{0%{opacity:0}63.06%,100%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  </style>
+  <rect width="945" height="586" rx="10" fill="#12131a"/>
+  <circle cx="24" cy="22" r="6" fill="#ef6b73"/>
+  <circle cx="44" cy="22" r="6" fill="#e2c15f"/>
+  <circle cx="64" cy="22" r="6" fill="#5ac37d"/>
+  <g class="play" fill="#c6cad6">
+    <text x="22" y="46" xml:space="preserve"><tspan fill="#5ac37d">$</tspan> <tspan fill="#eef0f5">assay ./paint</tspan></text>
+    <text class="row" style="animation-name:r0" x="22" y="80" xml:space="preserve"><tspan fill="#eef0f5">25 case(s) planned, 25 carried out, 23 passed, 2 failed</tspan></text>
+    <text class="row" style="animation-name:r1" x="22" y="114" xml:space="preserve"><tspan fill="#6d7385">C001</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">open the page and let it settle</tspan></text>
+    <text class="row" style="animation-name:r2" x="22" y="131" xml:space="preserve"><tspan fill="#6d7385">C002</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Eraser</tspan></text>
+    <text class="row" style="animation-name:r3" x="22" y="148" xml:space="preserve"><tspan fill="#6d7385">C003</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Eraser twice</tspan></text>
+    <text class="row" style="animation-name:r4" x="22" y="165" xml:space="preserve"><tspan fill="#6d7385">C004</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Fill</tspan></text>
+    <text class="row" style="animation-name:r5" x="22" y="182" xml:space="preserve"><tspan fill="#6d7385">C005</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Fill twice</tspan></text>
+    <text class="row" style="animation-name:r6" x="22" y="199" xml:space="preserve"><tspan fill="#6d7385">C006</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Undo</tspan></text>
+    <text class="row" style="animation-name:r7" x="22" y="216" xml:space="preserve"><tspan fill="#6d7385">C007</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Undo twice</tspan></text>
+    <text class="row" style="animation-name:r8" x="22" y="233" xml:space="preserve"><tspan fill="#6d7385">C008</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Download PNG</tspan></text>
+    <text class="row" style="animation-name:r9" x="22" y="250" xml:space="preserve"><tspan fill="#6d7385">C009</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Download PNG twice</tspan></text>
+    <text class="row" style="animation-name:r10" x="22" y="267" xml:space="preserve"><tspan fill="#6d7385">C010</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click canvas at point 1</tspan></text>
+    <text class="row" style="animation-name:r11" x="22" y="284" xml:space="preserve"><tspan fill="#6d7385">C011</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click canvas at point 2</tspan></text>
+    <text class="row" style="animation-name:r12" x="22" y="301" xml:space="preserve"><tspan fill="#6d7385">C012</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click canvas at point 3</tspan></text>
+    <text class="row" style="animation-name:r13" x="22" y="318" xml:space="preserve"><tspan fill="#6d7385">C013</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click canvas at point 4</tspan></text>
+    <text class="row" style="animation-name:r14" x="22" y="335" xml:space="preserve"><tspan fill="#6d7385">C014</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">use canvas: click it, drag on it, and press the keys a program like this is driven with</tspan></text>
+    <text class="row" style="animation-name:r15" x="22" y="352" xml:space="preserve"><tspan fill="#6d7385">C015</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">draw on canvas, then draw somewhere else on it</tspan></text>
+    <text class="row" style="animation-name:r16" x="22" y="369" xml:space="preserve"><tspan fill="#ef6b73">    → the first stroke drew and the second did nothing. this surface has forgotten how to draw</tspan></text>
+    <text class="row" style="animation-name:r17" x="22" y="386" xml:space="preserve"><tspan fill="#6d7385">C016</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">draw on canvas twice, then press Eraser twice</tspan></text>
+    <text class="row" style="animation-name:r18" x="22" y="403" xml:space="preserve"><tspan fill="#6d7385">C017</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">draw on canvas twice, then press Fill twice</tspan></text>
+    <text class="row" style="animation-name:r19" x="22" y="420" xml:space="preserve"><tspan fill="#6d7385">C018</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">draw on canvas twice, then press Undo twice</tspan></text>
+    <text class="row" style="animation-name:r20" x="22" y="437" xml:space="preserve"><tspan fill="#ef6b73">    → the first press did nothing and the second did something, from the same state, so this control is one behind</tspan></text>
+    <text class="row" style="animation-name:r21" x="22" y="454" xml:space="preserve"><tspan fill="#6d7385">C019</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">draw on canvas twice, then press Download PNG twice</tspan></text>
+    <text class="row" style="animation-name:r22" x="22" y="471" xml:space="preserve"><tspan fill="#6d7385">C020</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Eraser, then Fill</tspan></text>
+    <text class="row" style="animation-name:r23" x="22" y="488" xml:space="preserve"><tspan fill="#6d7385">C021</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Eraser, then Undo</tspan></text>
+    <text class="row" style="animation-name:r24" x="22" y="505" xml:space="preserve"><tspan fill="#6d7385">C022</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Fill, then Eraser</tspan></text>
+    <text class="row" style="animation-name:r25" x="22" y="522" xml:space="preserve"><tspan fill="#6d7385">C023</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Fill, then Undo</tspan></text>
+    <text class="row" style="animation-name:r26" x="22" y="539" xml:space="preserve"><tspan fill="#6d7385">C024</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Undo, then Eraser</tspan></text>
+    <text class="row" style="animation-name:r27" x="22" y="556" xml:space="preserve"><tspan fill="#6d7385">C025</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">press Undo, then Fill</tspan></text>
+    <g class="keys">
+      <rect x="37.8" y="34" width="105" height="17" fill="#12131a"/>
+      <rect class="cursor" x="37.8" y="35" width="8" height="15" fill="#c6cad6"/>
+    </g>
+  </g>
+</svg>

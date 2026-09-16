@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>WebGL Wireframe Cube</title>
+<style>
+  body, html { margin:0; height:100%; overflow:hidden; background:#111; color:#fff; font-family:sans-serif; }
+  #ui { position:absolute; top:10px; left:10px; z-index:10; }
+  button { padding:5px 10px; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<div id="ui"><button id="toggleBtn">Pause</button></div>
+<canvas id="glcanvas"></canvas>
+<script>
+(() => {
+  const canvas = document.getElementById('glcanvas');
+  const gl = canvas.getContext('webgl');
+  if (!gl) { alert('WebGL not supported'); return; }
+
+  // Resize canvas to fill window
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);
+  };
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Vertex shader – simple MVP transform
+  const vsSource = `
+    attribute vec3 aPosition;
+    uniform mat4 uMVP;
+    void main(void) {
+      gl_Position = uMVP * vec4(aPosition, 1.0);
+    }
+  `;
+  const fsSource = `
+    precision mediump float;
+    void main(void) { gl_FragColor = vec4(0.9,0.9,0.9,1.0); }
+  `;
+  // Compile shader helper
+  const compileShader = (src, type) => {
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      console.error('Shader compile error:', gl.getShaderInfoLog(sh));
+    }
+    return sh;
+  };
+  const vertexShader = compileShader(vsSource, gl.VERTEX_SHADER);
+  const fragmentShader = compileShader(fsSource, gl.FRAGMENT_SHADER);
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error('Program link error:', gl.getProgramInfoLog(program));
+  }
+  gl.useProgram(program);
+
+  const aPosLoc = gl.getAttribLocation(program, 'aPosition');
+  const uMVPLoc = gl.getUniformLocation(program, 'uMVP');
+
+  // Cube vertices
+  const vertices = new Float32Array([
+    -1,-1,-1,
+     1,-1,-1,
+     1, 1,-1,
+    -1, 1,-1,
+    -1,-1, 1,
+     1,-1, 1,
+     1, 1, 1,
+    -1, 1, 1,
+  ]);
+  // Edge indices (pairs)
+  const indices = new Uint16Array([
+    0,1, 1,2, 2,3, 3,0, // back face
+    4,5, 5,6, 6,7, 7,4, // front face
+    0,4, 1,5, 2,6, 3,7  // sides
+  ]);
+
+  const vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(aPosLoc);
+  gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
+
+  const ebo = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+  // Simple math helpers
+  const mat4 = {
+    identity: () => [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1],
+    perspective: (fov, aspect, near, far) => {
+      const f = 1.0/Math.tan(fov/2);
+      const nf = 1/(near-far);
+      return [f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,(2*far*near)*nf, 0,0,-1,0];
+    },
+    multiply: (a,b) => {
+      const out = new Float32Array(16);
+      for(let i=0;i<4;i++){
+        for(let j=0;j<4;j++){
+          out[i*4+j]=0;
+          for(let k=0;k<4;k++) out[i*4+j]+=a[i*4+k]*b[k*4+j];
+        }
+      }
+      return out;
+    },
+    rotate: (m, axis, rad) => {
+      const [x,y,z] = axis;
+      const len = Math.hypot(x,y,z);
+      if (len===0) return m;
+      const nx=x/len, ny=y/len, nz=z/len;
+      const s=Math.sin(rad), c=Math.cos(rad), t=1-c;
+      const r = [
+        nx*nx*t + c,     ny*nx*t + nz*s, nz*nx*t - ny*s, 0,
+        nx*ny*t - nz*s, ny*ny*t + c,     nz*ny*t + nx*s, 0,
+        nx*nz*t + ny*s, ny*nz*t - nx*s, nz*nz*t + c,     0,
+        0,0,0,1];
+      return mat4.multiply(m, r);
+    }
+  };
+
+  // State
+  let axis = [1,0,0]; // default X axis
+  let speed = 0.02; // radians per frame
+  let angle = 0;
+  let running = true;
+
+  // Input handling
+  window.addEventListener('keydown', (e)=>{
+    switch(e.key){
+      case 'ArrowLeft':
+        axis = [0,1,0]; // Y axis
+        break;
+      case 'ArrowRight':
+        axis = [0,1,0]; // Y axis (same as left for simplicity)
+        break;
+      case 'ArrowUp':
+        speed = Math.min(speed+0.01, 0.2);
+        break;
+      case 'ArrowDown':
+        speed = Math.max(speed-0.01, 0.01);
+        break;
+    }
+  });
+  const btn = document.getElementById('toggleBtn');
+  btn.addEventListener('click',()=>{ running = !running; btn.textContent = running ? 'Pause' : 'Resume'; });
+
+  // Animation loop
+  const render = () => {
+    if (running) angle += speed;
+    gl.clearColor(0.1,0.1,0.1,1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+    // Build MVP matrix
+    const proj = mat4.perspective(Math.PI/4, canvas.width/canvas.height, 0.1, 100);
+    const view = mat4.identity(); // simple translate back
+    view[14] = -6; // move -z
+    let model = mat4.identity();
+    model = mat4.rotate(model, axis, angle);
+    const mv = mat4.multiply(view, model);
+    const mvp = mat4.multiply(proj, mv);
+    gl.uniformMatrix4fv(uMVPLoc, false, mvp);
+    // Draw lines
+    gl.drawElements(gl.LINES, indices.length, gl.UNSIGNED_SHORT, 0);
+    requestAnimationFrame(render);
+  };
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Shopping Cart</title>
+<style>
+    body {font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9;}
+    h1 {margin-bottom: .5em;}
+    table {width: 100%; border-collapse: collapse; margin-bottom: 1em;}
+    th, td {padding: .5em; text-align: left; border-bottom:1px solid #ddd;}
+    th {background:#e0e0e0;}
+    input.qty {width: 50px;}
+    button {cursor:pointer; padding:.3em .6em;}
+    .promo {margin-top:1em;}
+    .total {font-size:1.2em; font-weight:bold; text-align:right; margin-top:.5em;}
+    .empty {font-size:1.2em; color:#555; text-align:center; margin-top:2em;}
+</style>
+</head>
+<body>
+
+<h1>Shopping Cart</h1>
+
+<table id="cart-table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Unit Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+            <th>Remove</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-price="19.99">
+            <td>Wireless Mouse</td>
+            <td>$19.99</td>
+            <td><input class="qty" type="number" value="1" min="1"></td>
+            <td class="sub">$19.99</td>
+            <td><button class="rm">✖</button></td>
+        </tr>
+        <tr data-price="49.50">
+            <td>Bluetooth Headphones</td>
+            <td>$49.50</td>
+            <td><input class="qty" type="number" value="2" min="1"></td>
+            <td class="sub">$99.00</td>
+            <td><button class="rm">✖</button></td>
+        </tr>
+        <tr data-price="5.25">
+            <td>USB‑C Cable</td>
+            <td>$5.25</td>
+            <td><input class="qty" type="number" value="3" min="1"></td>
+            <td class="sub">$15.75</td>
+            <td><button class="rm">✖</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="empty" id="empty-msg" style="display:none;">
+    Your cart is empty.
+</div>
+
+<div class="promo">
+    <label for="code">Promo code:</label>
+    <input id="code" type="text" placeholder="Enter code">
+    <button id="apply">Apply</button>
+    <span id="promo-msg" style="margin-left:1em;color:green;"></span>
+</div>
+
+<div class="total">
+    Total: $<span id="total">0.00</span>
+</div>
+
+<script>
+(function() {
+    const cartTable = document.getElementById('cart-table');
+    const tbody = cartTable.querySelector('tbody');
+    const totalEl = document.getElementById('total');
+    const promoInput = document.getElementById('code');
+    const applyBtn = document.getElementById('apply');
+    const promoMsg = document.getElementById('promo-msg');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    let discount = 0; // 0 or 0.10 for 10%
+
+    // ---------- Helper ----------
+    function fmt(num) { return num.toFixed(2); }
+
+    // ---------- Re‑calculate ----------
+    function recalc() {
+        let sum = 0;
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const price = parseFloat(row.dataset.price);
+            const qty = Math.max(1, parseInt(row.querySelector('.qty').value,10)||1);
+            const sub = price * qty;
+            row.querySelector('.sub').textContent = '$' + fmt(sub);
+            sum += sub;
+        });
+        const discounted = sum * (1 - discount);
+        totalEl.textContent = fmt(discounted);
+        // hide/show empty message
+        if (rows.length === 0) {
+            cartTable.style.display = 'none';
+            emptyMsg.style.display = 'block';
+        } else {
+            cartTable.style.display = 'table';
+            emptyMsg.style.display = 'none';
+        }
+    }
+
+    // ---------- Quantity change ----------
+    tbody.addEventListener('input', function(e) {
+        if (e.target.classList.contains('qty')) {
+            recalc();
+        }
+    });
+
+    // ---------- Remove row ----------
+    tbody.addEventListener('click', function(e) {
+        if (e.target.classList.contains('rm')) {
+            const row = e.target.closest('tr');
+            row.remove();
+            recalc();
+        }
+    });
+
+    // ---------- Promo code ----------
+    applyBtn.addEventListener('click', function() {
+        const code = promoInput.value.trim().toUpperCase();
+        if (code === 'SAVE10') {
+            discount = 0.10;
+            promoMsg.textContent = '10% discount applied!';
+        } else {
+            discount = 0;
+            promoMsg.textContent = 'Invalid code';
+        }
+        recalc();
+    });
+
+    // ---------- Initial calculation ----------
+    recalc();
+})();
+</script>
+
+</body>
+</html>

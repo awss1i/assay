@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic‑Tac‑Toe – Unbeatable AI</title>
+<style>
+  body {font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;margin:0;padding:20px;background:#f0f0f0;}
+  h1 {margin-bottom:5px;}
+  #score {margin-bottom:15px;}
+  #board {display:grid;grid-template:repeat(3,1fr) / repeat(3,1fr);gap:5px;width:300px;height:300px;}
+  .cell {background:#fff;border:2px solid #444;font-size:3rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .cell.locked {cursor:default;}
+  #msg {margin-top:10px;font-weight:bold;}
+  button {margin-top:15px;padding:8px 16px;font-size:1rem;}
+</style>
+</head>
+<body>
+<h1>Tic‑Tac‑Toe</h1>
+<div id="score">You: 0&nbsp;&nbsp;Computer: 0&nbsp;&nbsp;Draws: 0</div>
+<div id="board"></div>
+<div id="msg"></div>
+<button id="resetBtn">Play Again</button>
+<script>
+const HUMAN = 'X';
+const AI = 'O';
+let board = Array(9).fill(null);
+let gameOver = false;
+let scores = {human:0, ai:0, draw:0};
+const cells = [];
+const boardEl = document.getElementById('board');
+const msgEl = document.getElementById('msg');
+const scoreEl = document.getElementById('score');
+const resetBtn = document.getElementById('resetBtn');
+
+function initBoard() {
+  boardEl.innerHTML = '';
+  board = Array(9).fill(null);
+  gameOver = false;
+  msgEl.textContent = '';
+  cells.length = 0;
+  for(let i=0;i<9;i++){
+    const cell=document.createElement('div');
+    cell.className='cell';
+    cell.dataset.idx=i;
+    cell.addEventListener('click', onHumanMove);
+    boardEl.appendChild(cell);
+    cells.push(cell);
+  }
+}
+
+function onHumanMove(e){
+  const idx = e.target.dataset.idx;
+  if(gameOver || board[idx]) return;
+  makeMove(idx, HUMAN);
+  if(checkWinner(board, HUMAN)) {
+    endGame('You win!');
+    scores.human++;
+    updateScore();
+    return;
+  }
+  if(isBoardFull(board)) {
+    endGame("It's a draw.");
+    scores.draw++;
+    updateScore();
+    return;
+  }
+  // AI turn
+  const aiMove = bestMove(board, AI);
+  makeMove(aiMove, AI);
+  if(checkWinner(board, AI)) {
+    endGame('Computer wins!');
+    scores.ai++;
+    updateScore();
+    return;
+  }
+  if(isBoardFull(board)) {
+    endGame("It's a draw.");
+    scores.draw++;
+    updateScore();
+  }
+}
+
+function makeMove(idx, player){
+  board[idx]=player;
+  cells[idx].textContent=player;
+  cells[idx].classList.add('locked');
+}
+
+function endGame(message){
+  gameOver=true;
+  msgEl.textContent=message;
+  // lock remaining empty cells
+  cells.forEach((c,i)=>{c.classList.add('locked');});
+}
+
+function updateScore(){
+  scoreEl.textContent = `You: ${scores.human}  Computer: ${scores.ai}  Draws: ${scores.draw}`;
+}
+
+function isBoardFull(b){return b.every(v=>v!==null);}
+
+function checkWinner(b, player){
+  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return wins.some(combo=>combo.every(i=>b[i]===player));
+}
+
+// Minimax algorithm – AI never loses
+function bestMove(b, player){
+  let bestScore=-Infinity;
+  let move=-1;
+  for(let i=0;i<9;i++){
+    if(b[i]!==null) continue;
+    b[i]=player;
+    const score=minimax(b,false);
+    b[i]=null;
+    if(score>bestScore){bestScore=score;move=i;}
+  }
+  return move;
+}
+function minimax(b, isMax){
+  if(checkWinner(b, AI)) return 10;
+  if(checkWinner(b, HUMAN)) return -10;
+  if(isBoardFull(b)) return 0;
+
+  if(isMax){
+    let best=-Infinity;
+    for(let i=0;i<9;i++){
+      if(b[i]!==null) continue;
+      b[i]=AI;
+      best=Math.max(best, minimax(b,false));
+      b[i]=null;
+    }
+    return best;
+  } else {
+    let best=Infinity;
+    for(let i=0;i<9;i++){
+      if(b[i]!==null) continue;
+      b[i]=HUMAN;
+      best=Math.min(best, minimax(b,true));
+      b[i]=null;
+    }
+    return best;
+  }
+}
+
+resetBtn.addEventListener('click',()=>{initBoard();});
+// start first round
+initBoard();
+</script>
+</body>
+</html>

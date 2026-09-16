@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Five‑Star Rating Widget</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  .rating {display: flex; flex-direction: row-reverse; justify-content: flex-end;}
+  .rating input {display: none;}
+  .rating label {
+    font-size: 2rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .rating input:checked ~ label,
+  .rating label:hover,
+  .rating label:hover ~ label {color: gold;}
+  .comment-box {margin-top: 10px; width: 100%; max-width: 400px;}
+  .submit-btn {margin-top: 10px; padding: 5px 10px;}
+  .past-ratings {margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px;}
+  .entry {margin-bottom: 8px;}
+  .average {font-weight: bold; margin-top: 10px;}
+</style>
+</head>
+<body>
+<h2>Rate this page</h2>
+<div class="rating" id="starRating">
+  <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+  <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+  <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+  <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+  <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+</div>
+<div class="comment-box">
+  <textarea id="comment" rows="3" cols="40" placeholder="Leave a comment..."></textarea>
+</div>
+<button class="submit-btn" id="submit">Submit</button>
+<div class="average" id="averageDisplay">Average rating: N/A</div>
+<div class="past-ratings" id="pastRatings">
+  <h3>Past Ratings</h3>
+  <div id="entries"></div>
+</div>
+<script>
+  const submitBtn = document.getElementById('submit');
+  const pastEntriesDiv = document.getElementById('entries');
+  const avgDisplay = document.getElementById('averageDisplay');
+
+  const ratings = [];
+
+  function updateAverage() {
+    if (ratings.length === 0) {
+      avgDisplay.textContent = 'Average rating: N/A';
+      return;
+    }
+    const sum = ratings.reduce((a,b) => a+b, 0);
+    const avg = (sum/ratings.length).toFixed(1);
+    avgDisplay.textContent = `Average rating: ${avg}`;
+  }
+
+  function addEntry(rating, comment) {
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'entry';
+    const stars = '★'.repeat(rating) + '☆'.repeat(5-rating);
+    entryDiv.textContent = `${stars} – ${comment}`;
+    pastEntriesDiv.appendChild(entryDiv);
+  }
+
+  submitBtn.addEventListener('click', () => {
+    const ratingInputs = document.querySelectorAll('input[name="rating"]');
+    let selectedRating = null;
+    ratingInputs.forEach(inp => { if (inp.checked) selectedRating = Number(inp.value); });
+    if (!selectedRating) {
+      alert('Please select a star rating.');
+      return;
+    }
+    const comment = document.getElementById('comment').value.trim();
+    // Store rating
+    ratings.push(selectedRating);
+    // Update UI
+    addEntry(selectedRating, comment || '(no comment)');
+    updateAverage();
+    // Reset form
+    ratingInputs.forEach(inp => inp.checked = false);
+    document.getElementById('comment').value = '';
+  });
+</script>
+</body>
+</html>

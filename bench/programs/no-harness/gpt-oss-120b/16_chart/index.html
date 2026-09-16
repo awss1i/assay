@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Bar Chart</title>
+<style>
+    body {
+        margin: 20px;
+        font-family: system-ui, sans-serif;
+        background:#f9f9f9;
+        color:#333;
+    }
+    h1 {
+        text-align:center;
+    }
+    #controls {
+        text-align:center;
+        margin-bottom:15px;
+    }
+    #dataInput {
+        width:60%;
+        max-width:500px;
+        padding:8px;
+        font-size:1rem;
+    }
+    #updateBtn {
+        padding:8px 12px;
+        font-size:1rem;
+        margin-left:5px;
+        cursor:pointer;
+    }
+    canvas {
+        display:block;
+        margin:0 auto;
+        background:#fff;
+        border:1px solid #ccc;
+    }
+</style>
+</head>
+<body>
+
+<h1>Live Bar Chart</h1>
+
+<div id="controls">
+    <input id="dataInput"
+           type="text"
+           placeholder="Enter numbers separated by commas, spaces or line‑breaks"
+           autocomplete="off">
+    <button id="updateBtn">Update Chart</button>
+</div>
+
+<canvas id="chartCanvas" width="800" height="400"></canvas>
+
+<script>
+(() => {
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+    const input = document.getElementById('dataInput');
+    const btn   = document.getElementById('updateBtn');
+
+    // Settings
+    const padding = { left: 50, right: 20, top: 20, bottom: 30 };
+    const barColor = '#4a90e2';
+    const axisColor = '#333';
+    const labelColor = '#000';
+    const font = '12px sans-serif';
+
+    // Parse the text field into an array of numbers
+    function parseData(str) {
+        // Split on commas, whitespace or line‑breaks
+        return str.split(/[\s,]+/)
+                  .map(v => parseFloat(v))
+                  .filter(v => !isNaN(v));
+    }
+
+    // Main drawing routine
+    function drawChart(data) {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // If no data, just draw axes and return
+        if (data.length === 0) {
+            drawAxes([]);
+            return;
+        }
+
+        const chartWidth  = canvas.width  - padding.left - padding.right;
+        const chartHeight = canvas.height - padding.top  - padding.bottom;
+        const maxVal = Math.max(...data, 0);
+        const barWidth = chartWidth / data.length * 0.7; // 70% of slot
+        const gap = chartWidth / data.length * 0.3;      // remaining space
+
+        // Draw axes first
+        drawAxes(data, maxVal);
+
+        // Draw each bar
+        data.forEach((val, i) => {
+            const x = padding.left + i * (barWidth + gap) + gap / 2;
+            const barHeight = (val / maxVal) * chartHeight;
+            const y = canvas.height - padding.bottom - barHeight;
+
+            // Bar
+            ctx.fillStyle = barColor;
+            ctx.fillRect(x, y, barWidth, barHeight);
+
+            // Value label above bar
+            ctx.fillStyle = labelColor;
+            ctx.font = font;
+            ctx.textAlign = 'center';
+            ctx.fillText(val, x + barWidth / 2, y - 5);
+        });
+    }
+
+    // Draw X and Y axes (and optional tick labels)
+    function drawAxes(data, maxVal = 0) {
+        ctx.strokeStyle = axisColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // Y axis
+        ctx.moveTo(padding.left, padding.top);
+        ctx.lineTo(padding.left, canvas.height - padding.bottom);
+        // X axis
+        ctx.lineTo(canvas.width - padding.right, canvas.height - padding.bottom);
+        ctx.stroke();
+
+        // Y‑axis ticks
+        const tickCount = 5;
+        ctx.fillStyle = labelColor;
+        ctx.font = font;
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= tickCount; i++) {
+            const y = padding.top + i * (canvas.height - padding.top - padding.bottom) / tickCount;
+            const value = ((tickCount - i) * maxVal / tickCount).toFixed(0);
+            ctx.beginPath();
+            ctx.moveTo(padding.left - 5, y);
+            ctx.lineTo(padding.left, y);
+            ctx.stroke();
+            ctx.fillText(value, padding.left - 8, y + 4);
+        }
+
+        // X‑axis labels (optional – just index numbers)
+        if (data.length) {
+            const chartWidth = canvas.width - padding.left - padding.right;
+            const barWidth = chartWidth / data.length * 0.7;
+            const gap = chartWidth / data.length * 0.3;
+            ctx.textAlign = 'center';
+            for (let i = 0; i < data.length; i++) {
+                const x = padding.left + i * (barWidth + gap) + gap / 2 + barWidth / 2;
+                ctx.fillText(i + 1, x, canvas.height - padding.bottom + 15);
+            }
+        }
+    }
+
+    // Update handler
+    function updateChart() {
+        const data = parseData(input.value);
+        drawChart(data);
+    }
+
+    // Attach events
+    btn.addEventListener('click', updateChart);
+    input.addEventListener('keyup', e => {
+        if (e.key === 'Enter') updateChart();
+    });
+
+    // Initial empty chart
+    drawChart([]);
+})();
+</script>
+
+</body>
+</html>

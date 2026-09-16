@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Breakout – Canvas Game</title>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        background:#111;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-family:Arial,Helvetica,sans-serif;
+        color:#fff;
+    }
+    canvas {
+        background:#222;
+        border:2px solid #555;
+    }
+    #msg {
+        position:absolute;
+        top:10px;
+        left:50%;
+        transform:translateX(-50%);
+        font-size:24px;
+        color:#fffa;
+        pointer-events:none;
+    }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="480" height="320"></canvas>
+<div id="msg"></div>
+
+<script>
+(() => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const msg = document.getElementById('msg');
+
+    // ==== Game constants ====
+    const PADDLE_HEIGHT = 10;
+    const PADDLE_WIDTH = 75;
+    const BALL_RADIUS = 8;
+
+    const BRICK_ROW_COUNT = 5;
+    const BRICK_COLUMN_COUNT = 8;
+    const BRICK_WIDTH = 50;
+    const BRICK_HEIGHT = 20;
+    const BRICK_PADDING = 8;
+    const BRICK_OFFSET_TOP = 30;
+    const BRICK_OFFSET_LEFT = 30;
+
+    // ==== Game variables ====
+    let paddleX = (canvas.width - PADDLE_WIDTH) / 2;
+    let rightPressed = false;
+    let leftPressed = false;
+
+    let x = canvas.width / 2;
+    let y = canvas.height - 30;
+    let dx = 2;
+    let dy = -2;
+
+    const bricks = [];
+    for(let r = 0; r < BRICK_ROW_COUNT; r++) {
+        bricks[r] = [];
+        for(let c = 0; c < BRICK_COLUMN_COUNT; c++) {
+            bricks[r][c] = { x:0, y:0, status:1 };
+        }
+    }
+
+    // ==== Input handling ====
+    document.addEventListener('keydown', e => {
+        if(e.key === 'Right' || e.key === 'ArrowRight') rightPressed = true;
+        else if(e.key === 'Left' || e.key === 'ArrowLeft') leftPressed = true;
+    });
+    document.addEventListener('keyup', e => {
+        if(e.key === 'Right' || e.key === 'ArrowRight') rightPressed = false;
+        else if(e.key === 'Left' || e.key === 'ArrowLeft') leftPressed = false;
+    });
+
+    // ==== Drawing helpers ====
+    function drawPaddle() {
+        ctx.fillStyle = '#0095DD';
+        ctx.fillRect(paddleX, canvas.height - PADDLE_HEIGHT, PADDLE_WIDTH, PADDLE_HEIGHT);
+    }
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, BALL_RADIUS, 0, Math.PI*2);
+        ctx.fillStyle = '#FFEE33';
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawBricks() {
+        for(let r = 0; r < BRICK_ROW_COUNT; r++) {
+            for(let c = 0; c < BRICK_COLUMN_COUNT; c++) {
+                const b = bricks[r][c];
+                if(b.status === 1) {
+                    const brickX = (c*(BRICK_WIDTH+BRICK_PADDING)) + BRICK_OFFSET_LEFT;
+                    const brickY = (r*(BRICK_HEIGHT+BRICK_PADDING)) + BRICK_OFFSET_TOP;
+                    b.x = brickX;
+                    b.y = brickY;
+                    ctx.fillStyle = `hsl(${r*30 + c*15},70%,55%)`;
+                    ctx.fillRect(brickX, brickY, BRICK_WIDTH, BRICK_HEIGHT);
+                }
+            }
+        }
+    }
+
+    // ==== Collision detection ====
+    function collisionDetection() {
+        for(let r = 0; r < BRICK_ROW_COUNT; r++) {
+            for(let c = 0; c < BRICK_COLUMN_COUNT; c++) {
+                const b = bricks[r][c];
+                if(b.status === 1) {
+                    if(
+                        x > b.x && x < b.x + BRICK_WIDTH &&
+                        y > b.y && y < b.y + BRICK_HEIGHT
+                    ) {
+                        dy = -dy;
+                        b.status = 0;
+                        // win condition
+                        if(isGameWon()){
+                            showMessage('You win! 🎉 Press ↔ to play again');
+                            resetGame();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function isGameWon() {
+        for(let r = 0; r < BRICK_ROW_COUNT; r++) {
+            for(let c = 0; c < BRICK_COLUMN_COUNT; c++) {
+                if(bricks[r][c].status === 1) return false;
+            }
+        }
+        return true;
+    }
+
+    // ==== Game loop ====
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        drawBricks();
+        drawBall();
+        drawPaddle();
+        collisionDetection();
+
+        // bounce off walls
+        if(x + dx > canvas.width - BALL_RADIUS || x + dx < BALL_RADIUS) dx = -dx;
+        if(y + dy < BALL_RADIUS) dy = -dy;
+        // bounce off paddle
+        if(y + dy > canvas.height - BALL_RADIUS - PADDLE_HEIGHT) {
+            if(x > paddleX && x < paddleX + PADDLE_WIDTH) {
+                // add a little spin based on where it hits the paddle
+                const hitPos = (x - (paddleX + PADDLE_WIDTH/2)) / (PADDLE_WIDTH/2);
+                dx = dx + hitPos; // small horizontal tweak
+                dy = -dy;
+            } else if(y + dy > canvas.height - BALL_RADIUS) {
+                // ball fell below paddle -> lose
+                showMessage('Game Over! Press ↔ to restart');
+                resetGame();
+                return;
+            }
+        }
+
+        // move paddle
+        if(rightPressed && paddleX < canvas.width - PADDLE_WIDTH) {
+            paddleX += 7;
+        } else if(leftPressed && paddleX > 0) {
+            paddleX -= 7;
+        }
+
+        x += dx;
+        y += dy;
+        requestAnimationFrame(draw);
+    }
+
+    // ==== Reset / UI ====
+    function resetGame() {
+        // reset ball
+        x = canvas.width / 2;
+        y = canvas.height - 30;
+        dx = 2;
+        dy = -2;
+        // reset paddle
+        paddleX = (canvas.width - PADDLE_WIDTH) / 2;
+        // reset bricks
+        for(let r = 0; r < BRICK_ROW_COUNT; r++) {
+            for(let c = 0; c < BRICK_COLUMN_COUNT; c++) {
+                bricks[r][c].status = 1;
+            }
+        }
+        // hide message after short delay
+        setTimeout(()=>msg.textContent = '', 2000);
+        // restart loop
+        requestAnimationFrame(draw);
+    }
+
+    function showMessage(text){
+        msg.textContent = text;
+    }
+
+    // ==== Start game ====
+    draw();   // start the animation loop
+})();
+</script>
+</body>
+</html>

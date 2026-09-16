@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nested Folder Tree</title>
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.4;
+    margin: 20px;
+  }
+  #counter {
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  ul.tree,
+  ul.tree ul {
+    list-style: none;
+    padding-left: 20px;
+    margin: 0;
+  }
+  .folder > .toggle {
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+  }
+  .folder > .toggle::before {
+    content: "▾";
+    display: inline-block;
+    width: 1.2em;
+  }
+  .folder.collapsed > .toggle::before {
+    content: "▸";
+  }
+  .folder.collapsed > ul {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h2>Folder Tree</h2>
+<div id="counter">Visible rows: 0</div>
+
+<ul class="tree">
+  <li class="folder collapsed"><span class="toggle">Folder A</span>
+    <ul>
+      <li class="folder collapsed"><span class="toggle">Subfolder A1</span>
+        <ul>
+          <li>File A1a</li>
+          <li>File A1b</li>
+        </ul>
+      </li>
+      <li class="folder collapsed"><span class="toggle">Subfolder A2</span>
+        <ul>
+          <li>File A2a</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li class="folder collapsed"><span class="toggle">Folder B</span>
+    <ul>
+      <li>File B1</li>
+      <li class="folder collapsed"><span class="toggle">Subfolder B1</span>
+        <ul>
+          <li>File B1a</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li class="folder collapsed"><span class="toggle">Folder C</span>
+    <ul>
+      <li class="folder collapsed"><span class="toggle">Subfolder C1</span>
+        <ul>
+          <li>File C1a</li>
+          <li>File C1b</li>
+        </ul>
+      </li>
+      <li class="folder collapsed"><span class="toggle">Subfolder C2</span>
+        <ul>
+          <li>File C2a</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Attach click listeners to all toggle spans
+  document.querySelectorAll('.folder > .toggle').forEach(function (toggle) {
+    toggle.addEventListener('click', function (e) {
+      const li = this.parentElement; // the <li class="folder">
+      li.classList.toggle('collapsed');
+      updateCounter();
+      e.stopPropagation(); // prevent bubbling to parent folders
+    });
+  });
+
+  // Initial count
+  updateCounter();
+
+  function updateCounter() {
+    const allLi = document.querySelectorAll('.tree li');
+    let visibleCount = 0;
+    allLi.forEach(function (li) {
+      // offsetParent is null when the element (or an ancestor) has display:none
+      if (li.offsetParent !== null) visibleCount++;
+    });
+    document.getElementById('counter').textContent = 'Visible rows: ' + visibleCount;
+  }
+});
+</script>
+
+</body>
+</html>

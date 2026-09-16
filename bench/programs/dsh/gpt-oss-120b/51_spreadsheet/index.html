@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>6x6 Mini Spreadsheet</title>
+<style>
+  body {font-family: Arial, sans-serif; padding: 20px;}
+  table {border-collapse: collapse;}
+  th, td {border: 1px solid #999; width: 80px; height: 30px; text-align: center;}
+  th {background:#f0f0f0;}
+  td {position: relative;}
+  .cell {
+    width: 100%; height: 100%;
+    outline: none; 
+    padding: 2px; 
+    box-sizing: border-box;
+  }
+  .error {background:#ffdddd;}
+</style>
+</head>
+<body>
+<h2>6x6 Editable Grid</h2>
+<table id="sheet"></table>
+<script>
+const cols = ['A','B','C','D','E','F'];
+const rows = 6;
+// Store raw input (string) for each cell
+const cells = {};
+
+function cellId(col, row){return col+row;}
+
+// Initialize table
+function init(){
+  const tbl = document.getElementById('sheet');
+  // header row
+  const head = document.createElement('tr');
+  const emptyTh = document.createElement('th');
+  head.appendChild(emptyTh);
+  cols.forEach(c=>{const th=document.createElement('th');th.textContent=c;head.appendChild(th);});
+  tbl.appendChild(head);
+
+  for(let r=1;r<=rows;r++){
+    const tr=document.createElement('tr');
+    const th=document.createElement('th'); th.textContent=r; tr.appendChild(th);
+    for(let c=0;c<cols.length;c++){
+      const td=document.createElement('td');
+      const div=document.createElement('div');
+      div.className='cell';
+      div.contentEditable=true;
+      const id=cellId(cols[c],r);
+      cells[id] = {raw:''};
+      div.dataset.id=id;
+      div.addEventListener('focus',onFocus);
+      div.addEventListener('blur',onBlur);
+      td.appendChild(div);
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+}
+
+function onFocus(e){
+  const el=e.target;
+  const id=el.dataset.id;
+  el.textContent = cells[id].raw; // show raw formula/value
+}
+
+function onBlur(e){
+  const el=e.target;
+  const id=el.dataset.id;
+  const txt=el.textContent.trim();
+  cells[id].raw = txt;
+  // recompute all cells after change
+  recomputeAll();
+  // after recompute, display computed values (or error) for non‑focused cells
+  updateDisplay();
+}
+
+function getCellValue(id, visited){
+  if(visited.has(id)) return {value:'#CIRC', error:true};
+  const cell=cells[id];
+  const raw=cell.raw;
+  if(!raw.startsWith('=')){
+    // plain value, try numeric conversion
+    const num = Number(raw);
+    return {value:isNaN(num)? raw : num, error:false};
+  }
+  // formula: parse dependencies and evaluate
+  const expr=raw.slice(1);
+  // replace cell references (e.g., A1) with their values
+  const replaced=expr.replace(/([A-F][1-6])/g,(match)=>{
+    const res = getCellValue(match, new Set([...visited, id]));
+    if(res.error) return 'NaN'; // will cause circular detection later
+    return typeof res.value==='number'?res.value:('"'+res.value+'"');
+  });
+  try{
+    // evaluate simple arithmetic using Function constructor
+    const fn = new Function('return ('+replaced+');');
+    const val = fn();
+    return {value:val, error:false};
+  }catch(e){
+    return {value:'#ERR', error:true};
+  }
+}
+
+function recomputeAll(){
+  // compute each cell, storing result for display
+  for(const id in cells){
+    const result = getCellValue(id, new Set());
+    cells[id].computed = result.value;
+    cells[id].error = result.error;
+  }
+}
+
+function updateDisplay(){
+  document.querySelectorAll('.cell').forEach(el=>{
+    const id=el.dataset.id;
+    if(document.activeElement===el) return; // keep raw while editing
+    const cell=cells[id];
+    el.textContent = cell.computed;
+    if(cell.error) el.classList.add('error'); else el.classList.remove('error');
+  });
+}
+
+init();
+recomputeAll();
+updateDisplay();
+</script>
+</body>
+</html>

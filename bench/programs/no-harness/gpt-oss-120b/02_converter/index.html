@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Temperature Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background:#f5f5f5;
+            margin:0;
+            padding:2rem;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            color:#333;
+        }
+        h1 {
+            margin-bottom:1rem;
+        }
+        .converter {
+            background:#fff;
+            border-radius:8px;
+            box-shadow:0 2px 6px rgba(0,0,0,.1);
+            padding:2rem;
+            max-width:320px;
+            width:100%;
+        }
+        .field {
+            margin-bottom:1.5rem;
+        }
+        label {
+            display:block;
+            font-weight:bold;
+            margin-bottom:.5rem;
+        }
+        input[type="number"] {
+            width:100%;
+            padding:.5rem;
+            font-size:1rem;
+            border:1px solid #ccc;
+            border-radius:4px;
+            box-sizing:border-box;
+        }
+        input[type="number"]:focus {
+            outline:none;
+            border-color:#66afe9;
+            box-shadow:0 0 5px rgba(102,175,233,.5);
+        }
+        .note {
+            font-size:.9rem;
+            color:#666;
+            text-align:center;
+            margin-top:1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Temperature Converter</h1>
+    <div class="converter">
+        <div class="field">
+            <label for="celsius">Celsius (°C)</label>
+            <input id="celsius" type="number" step="any" placeholder="Enter °C">
+        </div>
+        <div class="field">
+            <label for="fahrenheit">Fahrenheit (°F)</label>
+            <input id="fahrenheit" type="number" step="any" placeholder="Enter °F">
+        </div>
+        <div class="note">Values update instantly as you type.</div>
+    </div>
+
+    <script>
+        (function(){
+            const cInput = document.getElementById('celsius');
+            const fInput = document.getElementById('fahrenheit');
+            let suppress = false;   // prevents feedback loop
+
+            function round(num) {
+                // keep up to 2 decimal places, but trim trailing zeros
+                return Number.isNaN(num) ? '' :
+                    parseFloat(num.toFixed(2));
+            }
+
+            cInput.addEventListener('input', () => {
+                if (suppress) return;
+                const cVal = parseFloat(cInput.value);
+                if (cInput.value === '' || Number.isNaN(cVal)) {
+                    fInput.value = '';
+                    return;
+                }
+                const fVal = cVal * 9/5 + 32;
+                suppress = true;
+                fInput.value = round(fVal);
+                suppress = false;
+            });
+
+            fInput.addEventListener('input', () => {
+                if (suppress) return;
+                const fVal = parseFloat(fInput.value);
+                if (fInput.value === '' || Number.isNaN(fVal)) {
+                    cInput.value = '';
+                    return;
+                }
+                const cVal = (fVal - 32) * 5/9;
+                suppress = true;
+                cInput.value = round(cVal);
+                suppress = false;
+            });
+        })();
+    </script>
+</body>
+</html>

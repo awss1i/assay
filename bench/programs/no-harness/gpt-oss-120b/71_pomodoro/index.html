@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pomodoro Timer</title>
+<style>
+    body{
+        font-family:Arial,sans-serif;
+        background:#f0f4f8;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        margin:0;
+    }
+    #timer{
+        font-size:4rem;
+        margin:0.5rem;
+    }
+    #mode{
+        font-size:1.5rem;
+        margin:0.2rem;
+    }
+    #rounds{
+        margin:0.5rem;
+        font-size:1rem;
+    }
+    button{
+        padding:0.6rem 1.2rem;
+        margin:0.3rem;
+        font-size:1rem;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
+        background:#007bff;
+        color:#fff;
+        transition:background .2s;
+    }
+    button:hover{background:#0056b3;}
+    button:disabled{
+        background:#aaa;
+        cursor:not-allowed;
+    }
+</style>
+</head>
+<body>
+<h1>Pomodoro Timer</h1>
+<div id="mode">Work</div>
+<div id="timer">25:00</div>
+<div id="rounds">Completed rounds: 0</div>
+<div>
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="skipBtn">Skip</button>
+</div>
+
+<script>
+(() => {
+    const workDuration = 25 * 60;   // seconds
+    const breakDuration = 5 * 60;   // seconds
+
+    let mode = 'work';               // 'work' or 'break'
+    let remaining = workDuration;   // seconds left in current period
+    let timerId = null;
+    let rounds = 0;                 // completed work+break cycles
+
+    // DOM elements
+    const timerEl = document.getElementById('timer');
+    const modeEl = document.getElementById('mode');
+    const roundsEl = document.getElementById('rounds');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const skipBtn = document.getElementById('skipBtn');
+
+    function formatTime(sec) {
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function updateDisplay() {
+        timerEl.textContent = formatTime(remaining);
+        modeEl.textContent = mode === 'work' ? 'Work' : 'Break';
+        roundsEl.textContent = `Completed rounds: ${rounds}`;
+    }
+
+    function switchMode() {
+        if (mode === 'work') {
+            mode = 'break';
+            remaining = breakDuration;
+        } else {
+            mode = 'work';
+            remaining = workDuration;
+            rounds++; // a full work+break cycle finished
+        }
+        updateDisplay();
+    }
+
+    function tick() {
+        if (remaining > 0) {
+            remaining--;
+            updateDisplay();
+        } else {
+            switchMode(); // automatically move to next period
+        }
+    }
+
+    function startTimer() {
+        if (timerId) return; // already running
+        timerId = setInterval(tick, 1000);
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+    }
+
+    function pauseTimer() {
+        if (!timerId) return;
+        clearInterval(timerId);
+        timerId = null;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+    }
+
+    function skipPeriod() {
+        // Immediately end current period and switch
+        clearInterval(timerId);
+        timerId = null;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        switchMode();
+    }
+
+    // Event listeners
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    skipBtn.addEventListener('click', skipPeriod);
+
+    // Initial render
+    updateDisplay();
+})();
+</script>
+</body>
+</html>

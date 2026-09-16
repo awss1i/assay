@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:20px;}
+  .dashboard {display:flex; flex-direction:column; gap:20px; max-width:800px;}
+  .charts {display:flex; gap:20px; flex-wrap:wrap;}
+  .chart {border:1px solid #ccc; padding:10px; flex:1; min-width:250px;}
+  .chart h3 {margin-top:0; text-align:center;}
+  /* Bar chart */
+  .bars {display:flex; align-items:flex-end; height:150px; gap:2px;}
+  .bars div {background:#4caf50; width:20px;}
+  /* Line chart */
+  .line-svg {width:100%; height:150px;}
+  /* Pie chart */
+  .pie {width:150px; height:150px; border-radius:50%; background:conic-gradient(#2196f3 0deg, #2196f3 0deg, #ff9800 0deg, #ff9800 0deg, #f44336 0deg, #f44336 0deg);
+    margin:auto;}
+  .total {font-size:1.2em; font-weight:bold; text-align:center;}
+  .date-range {display:flex; gap:10px; align-items:center; margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <div class="date-range">
+    <label>From: <input type="date" id="startDate"></label>
+    <label>To: <input type="date" id="endDate"></label>
+  </div>
+  <div class="charts">
+    <div class="chart" id="barChart">
+      <h3>Bar Chart</h3>
+      <div class="bars"></div>
+    </div>
+    <div class="chart" id="lineChart">
+      <h3>Line Chart</h3>
+      <svg class="line-svg" viewBox="0 0 100 100"></svg>
+    </div>
+    <div class="chart" id="pieChart">
+      <h3>Pie Chart</h3>
+      <div class="pie"></div>
+    </div>
+  </div>
+  <div class="total" id="totalDisplay">Total: 0</div>
+</div>
+<script>
+function daysBetween(a,b){const ms=24*60*60*1000;return Math.round((b-a)/ms)+1;}
+function randomData(count){return Array.from({length:count},()=>Math.floor(Math.random()*100)+10);}
+function updateCharts(){const start=document.getElementById('startDate').value; const end=document.getElementById('endDate').value; if(!start||!end)return; const d1=new Date(start); const d2=new Date(end); if(d2< d1)return; const points=daysBetween(d1,d2);
+ const data=randomData(points);
+ // Bar chart
+ const barContainer=document.querySelector('#barChart .bars'); barContainer.innerHTML=''; const max=Math.max(...data);
+ data.forEach(v=>{ const bar=document.createElement('div'); const h=(v/max)*100; bar.style.height=h+"%"; barContainer.appendChild(bar);});
+ // Line chart (SVG)
+ const svg=document.querySelector('#lineChart svg'); svg.innerHTML=''; const w=100; const h=100; const step=w/(data.length-1||1);
+ const pointsStr=data.map((v,i)=>{ const x=i*step; const y=h - (v/max)*h; return x+','+y; }).join(' ');
+ const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline'); poly.setAttribute('points',pointsStr); poly.setAttribute('fill','none'); poly.setAttribute('stroke','#ff5722'); poly.setAttribute('stroke-width','2'); svg.appendChild(poly);
+ // Pie chart using conic-gradient
+ const pie=document.querySelector('#pieChart .pie'); const total=data.reduce((a,b)=>a+b,0); const angles=data.map(v=>v/total*360);
+ let deg=0; const grads=angles.map(a=>{ const start=deg; deg+=a; return `hsl(${Math.random()*360},70%,60%) ${start}deg ${deg}deg`; }).join(', ');
+ pie.style.background=`conic-gradient(${grads})`;
+ // Total display
+ document.getElementById('totalDisplay').textContent='Total: '+total;
+}
+document.getElementById('startDate').addEventListener('change',updateCharts);
+document.getElementById('endDate').addEventListener('change',updateCharts);
+// Initialize with today range
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('startDate').value=today;
+document.getElementById('endDate').value=today;
+updateCharts();
+</script>
+</body>
+</html>

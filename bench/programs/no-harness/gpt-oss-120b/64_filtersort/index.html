@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Searchable & Sortable Table</title>
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 20px;
+        background: #f9f9f9;
+    }
+    #searchBox {
+        padding: 6px 10px;
+        width: 250px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+    }
+    th, td {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    th {
+        background: #f0f0f0;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+    }
+    th:hover {
+        background: #e0e0e0;
+    }
+    th .arrow {
+        font-size: 0.7em;
+        margin-left: 4px;
+        visibility: hidden;
+    }
+    th.sorted-asc .arrow.up,
+    th.sorted-desc .arrow.down {
+        visibility: visible;
+    }
+    tr:nth-child(even) {
+        background: #fafafa;
+    }
+</style>
+</head>
+<body>
+
+<input type="search" id="searchBox" placeholder="Search...">
+
+<table id="myTable">
+    <thead>
+        <tr>
+            <th data-key="id">ID<span class="arrow up">▲</span><span class="arrow down">▼</span></th>
+            <th data-key="name">Name<span class="arrow up">▲</span><span class="arrow down">▼</span></th>
+            <th data-key="age">Age<span class="arrow up">▲</span><span class="arrow down">▼</span></th>
+            <th data-key="city">City<span class="arrow up">▲</span><span class="arrow down">▼</span></th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+(() => {
+    // ----- data -------------------------------------------------
+    const rows = [
+        { id: 1, name: "Alice",   age: 34, city: "New York" },
+        { id: 2, name: "Bob",     age: 28, city: "Los Angeles" },
+        { id: 3, name: "Charlie", age: 22, city: "Chicago" },
+        { id: 4, name: "David",   age: 45, city: "Houston" },
+        { id: 5, name: "Eve",     age: 31, city: "Phoenix" },
+        { id: 6, name: "Frank",   age: 27, city: "Philadelphia" },
+        { id: 7, name: "Grace",   age: 38, city: "San Antonio" },
+        { id: 8, name: "Heidi",   age: 24, city: "San Diego" },
+        { id: 9, name: "Ivan",    age: 29, city: "Dallas" },
+        { id:10, name: "Judy",    age: 36, city: "San Jose" }
+    ];
+
+    // ----- state ------------------------------------------------
+    let currentSort = { key: null, asc: true };
+    let filterText = "";
+
+    // ----- DOM references ---------------------------------------
+    const tbody = document.querySelector('#myTable tbody');
+    const searchBox = document.getElementById('searchBox');
+    const headers = document.querySelectorAll('#myTable th');
+
+    // ----- helpers ---------------------------------------------
+    const compare = (a, b, key, asc) => {
+        const valA = a[key];
+        const valB = b[key];
+        // numeric sort if both are numbers
+        if (typeof valA === 'number' && typeof valB === 'number') {
+            return asc ? valA - valB : valB - valA;
+        }
+        // otherwise string compare (case‑insensitive)
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        if (strA < strB) return asc ? -1 : 1;
+        if (strA > strB) return asc ? 1 : -1;
+        return 0;
+    };
+
+    const render = () => {
+        // 1️⃣ sort (if a column is selected)
+        let data = rows.slice(); // shallow copy
+        if (currentSort.key) {
+            data.sort((a,b)=>compare(a,b,currentSort.key,currentSort.asc));
+        }
+
+        // 2️⃣ filter
+        const term = filterText.trim().toLowerCase();
+        if (term) {
+            data = data.filter(row => {
+                return Object.values(row).some(v =>
+                    String(v).toLowerCase().includes(term)
+                );
+            });
+        }
+
+        // 3️⃣ populate tbody
+        tbody.innerHTML = "";
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.id}</td>
+                <td>${row.name}</td>
+                <td>${row.age}</td>
+                <td>${row.city}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // 4️⃣ update header UI (arrows)
+        headers.forEach(th => {
+            th.classList.remove('sorted-asc','sorted-desc');
+            if (th.dataset.key === currentSort.key) {
+                th.classList.add(currentSort.asc ? 'sorted-asc' : 'sorted-desc');
+            }
+        });
+    };
+
+    // ----- events ----------------------------------------------
+    headers.forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.key;
+            if (currentSort.key === key) {
+                // toggle direction
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort.key = key;
+                currentSort.asc = true; // default to ascending
+            }
+            render();
+        });
+    });
+
+    searchBox.addEventListener('input', e => {
+        filterText = e.target.value;
+        render();
+    });
+
+    // ----- initial render ---------------------------------------
+    render();
+})();
+</script>
+
+</body>
+</html>

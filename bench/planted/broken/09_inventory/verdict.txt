@@ -1,0 +1,14 @@
+# One line per planted bug, in the order bugs.md numbers them.
+#
+#   <n> found <case-id> <optional note>
+#   <n> missed <optional note>
+#
+# A bug is *found* when at least one failing case is caused by it. That is a
+# judgement: assay reports an act and a measurement, and whether that
+# measurement is this bug showing itself is what a person has to decide.
+
+1 missed the total changes, so the page changed
+2 missed an off-by-one in a total is a value judgement
+3 missed nothing says a note should be there when the page loads
+4 missed the total changes, so the page-wide signature moved
+5 missed the total changes; that it went negative is a value

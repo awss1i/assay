@@ -1,0 +1,10 @@
+bookmarks|a bookmark manager: type a title and a URL, press Save, and each saved row has an Open link and a Remove button, with a count of how many are saved
+poll|a single-question poll with four options, one vote allowed, showing a percentage bar per option after voting and a Change vote button that returns to the choices
+recipe|a recipe scaler with a servings number field and a list of ingredients whose quantities all rescale as the servings change, refusing zero and negative servings
+flashcards|a flashcard deck of six cards where clicking a card flips it between question and answer, Next and Previous move through the deck, and Shuffle reorders it
+budget|an expense tracker where Add Expense appends a labelled amount, each row can be deleted, and a running total and a remaining-budget line both update
+tagfilter|a list of twelve items each carrying tags, with tag buttons that toggle on and off, showing only items matching every selected tag and a message when nothing matches
+scheduler|a weekly grid of five days by four slots where clicking a slot books it, clicking again frees it, and a summary lists every booked slot by day
+colormix|three sliders for red, green and blue that fill a swatch with the mixed colour, show its hex code, and a Copy button that puts the hex in a readonly field
+inventory|a stock table where each row has Plus and Minus buttons that cannot take a quantity below zero, a low-stock warning under three, and a total units line
+ratings|a five-star rating widget with a comment box, where Submit adds the rating to a list of past ratings and shows a running average to one decimal place

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signature Pad</title>
+<style>
+  body {font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px;}
+  #signatureCanvas {border: 1px solid #000; touch-action: none;}
+  .buttons {margin-top: 10px;}
+  button {margin: 0 5px; padding: 5px 10px;}
+</style>
+</head>
+<body>
+<h2>Signature Pad</h2>
+<canvas id="signatureCanvas" width="600" height="200"></canvas>
+<div class="buttons">
+  <button id="clearBtn">Clear</button>
+  <button id="undoBtn">Undo</button>
+</div>
+<script>
+  (function(){
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    const paths = [];
+    let currentPath = [];
+    // Set line style
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000';
+    function getPos(e){
+      const rect = canvas.getBoundingClientRect();
+      if(e.touches && e.touches[0]){
+        return {x:e.touches[0].clientX-rect.left, y:e.touches[0].clientY-rect.top};
+      }
+      return {x:e.clientX-rect.left, y:e.clientY-rect.top};
+    }
+    function start(e){
+      e.preventDefault();
+      drawing = true;
+      currentPath = [];
+      const pos = getPos(e);
+      currentPath.push(pos);
+    }
+    function move(e){
+      if(!drawing) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      currentPath.push(pos);
+      ctx.beginPath();
+      const last = currentPath[currentPath.length-2];
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+    function end(e){
+      if(!drawing) return;
+      drawing = false;
+      paths.push(currentPath);
+    }
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start);
+    canvas.addEventListener('touchmove', move);
+    canvas.addEventListener('touchend', end);
+    document.getElementById('clearBtn').addEventListener('click',()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      paths.length = 0;
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(paths.length===0) return;
+      paths.pop();
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // redraw remaining paths
+      ctx.beginPath();
+      for(const p of paths){
+        for(let i=1;i<p.length;i++){
+          ctx.moveTo(p[i-1].x, p[i-1].y);
+          ctx.lineTo(p[i].x, p[i].y);
+        }
+      }
+      ctx.stroke();
+    });
+  })();
+</script>
+</body>
+</html>
