@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Country Search</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem; background:#f9f9f9;}
+  h1 {color:#333;}
+  #search {padding:0.5rem; width:100%; max-width:400px; font-size:1rem; margin-bottom:1rem;}
+  ul {list-style:none; padding:0; max-width:400px;}
+  li {background:#fff; margin:0.2rem 0; padding:0.5rem; border:1px solid #ddd; border-radius:4px;}
+  li.hidden {display:none;}
+</style>
+</head>
+<body>
+<h1>Search Countries</h1>
+<input type="text" id="search" placeholder="Type to filter..." autocomplete="off" />
+<ul id="countryList"></ul>
+<script>
+  const countries = [
+    "Argentina","Australia","Brazil","Canada","China","Denmark","Egypt","France","Germany","India",
+    "Italy","Japan","Mexico","Netherlands","Nigeria","Russia","South Africa","Spain","United Kingdom","United States"
+  ];
+  const listEl = document.getElementById('countryList');
+  const searchEl = document.getElementById('search');
+  // Load after short delay (500ms)
+  setTimeout(() => {
+    countries.forEach(country => {
+      const li = document.createElement('li');
+      li.textContent = country;
+      listEl.appendChild(li);
+    });
+  }, 500);
+  // Filter as you type
+  searchEl.addEventListener('input', () => {
+    const filter = searchEl.value.toLowerCase();
+    const items = listEl.getElementsByTagName('li');
+    for (let i = 0; i < items.length; i++) {
+      const txt = items[i].textContent.toLowerCase();
+      if (txt.includes(filter)) {
+        items[i].classList.remove('hidden');
+      } else {
+        items[i].classList.add('hidden');
+      }
+    }
+  });
+</script>
+</body>
+</html>

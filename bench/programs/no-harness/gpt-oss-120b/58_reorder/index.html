@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Drag‑and‑Drop Reorder Demo</title>
+<style>
+  body {font-family:Arial,sans-serif;padding:20px;background:#f9f9f9;}
+  h1 {margin-bottom:10px;}
+  #list {list-style:none;margin:0;padding:0;width:300px;}
+  #list li {
+    padding:10px 15px;
+    margin:5px 0;
+    background:#fff;
+    border:1px solid #ccc;
+    cursor:move;
+    user-select:none;
+  }
+  #list li.dragging {opacity:0.5;}
+  #list li.over {border-top:2px solid #007BFF;}
+  #order {
+    margin-top:15px;
+    font-weight:bold;
+    color:#333;
+  }
+</style>
+</head>
+<body>
+<h1>Drag the rows to reorder them</h1>
+<ul id="list">
+  <li draggable="true" data-id="1">Row 1</li>
+  <li draggable="true" data-id="2">Row 2</li>
+  <li draggable="true" data-id="3">Row 3</li>
+  <li draggable="true" data-id="4">Row 4</li>
+  <li draggable="true" data-id="5">Row 5</li>
+  <li draggable="true" data-id="6">Row 6</li>
+</ul>
+<div id="order">Current order: 1 2 3 4 5 6</div>
+
+<script>
+(function(){
+  const list = document.getElementById('list');
+  const orderDiv = document.getElementById('order');
+  let dragSrcEl = null;
+
+  function handleDragStart(e){
+    dragSrcEl = this;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.id);
+    this.classList.add('dragging');
+  }
+
+  function handleDragOver(e){
+    e.preventDefault(); // allow drop
+    e.dataTransfer.dropEffect = 'move';
+    // visual cue: which element we are over
+    if (this !== dragSrcEl) this.classList.add('over');
+    return false;
+  }
+
+  function handleDragLeave(e){
+    this.classList.remove('over');
+  }
+
+  function handleDrop(e){
+    e.stopPropagation(); // stops the browser from redirecting.
+    this.classList.remove('over');
+
+    if (dragSrcEl !== this) {
+      // Determine drop position (before or after)
+      const rect = this.getBoundingClientRect();
+      const offset = e.clientY - rect.top;
+      const before = offset < rect.height / 2;
+
+      if (before) {
+        list.insertBefore(dragSrcEl, this);
+      } else {
+        list.insertBefore(dragSrcEl, this.nextSibling);
+      }
+      updateOrder();
+    }
+    return false;
+  }
+
+  function handleDragEnd(e){
+    this.classList.remove('dragging');
+    const items = list.querySelectorAll('li');
+    items.forEach(item => item.classList.remove('over'));
+  }
+
+  function updateOrder(){
+    const ids = Array.from(list.children).map(li => li.dataset.id);
+    orderDiv.textContent = 'Current order: ' + ids.join(' ');
+  }
+
+  // attach listeners
+  const items = list.querySelectorAll('li');
+  items.forEach(item => {
+    item.addEventListener('dragstart', handleDragStart, false);
+    item.addEventListener('dragover',  handleDragOver, false);
+    item.addEventListener('dragleave',handleDragLeave,false);
+    item.addEventListener('drop',     handleDrop,     false);
+    item.addEventListener('dragend',  handleDragEnd,  false);
+  });
+})();
+</script>
+</body>
+</html>

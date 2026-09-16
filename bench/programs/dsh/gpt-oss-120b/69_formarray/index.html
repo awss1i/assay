@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Person Form</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    .person-entry {margin-bottom: 8px; display: flex; align-items: center; gap: 5px;}
+    .person-entry input {padding: 4px;}
+    .person-entry button {padding: 4px 8px;}
+    #summary {margin-top: 20px; font-weight: bold;}
+    #addBtn {margin-top: 10px; padding: 6px 12px;}
+  </style>
+</head>
+<body>
+  <h2>Add People</h2>
+  <div id="entries"></div>
+  <button id="addBtn">Add Person</button>
+  <div id="summary">No persons added yet.</div>
+
+  <script>
+    const entriesDiv = document.getElementById('entries');
+    const summaryDiv = document.getElementById('summary');
+    const addBtn = document.getElementById('addBtn');
+
+    function updateSummary() {
+      const persons = [];
+      const entryDivs = entriesDiv.querySelectorAll('.person-entry');
+      entryDivs.forEach(div => {
+        const name = div.querySelector('.name').value.trim();
+        const age = div.querySelector('.age').value.trim();
+        if (name && age) {
+          persons.push(`${name} (${age})`);
+        }
+      });
+      summaryDiv.textContent = persons.length ? 'People: ' + persons.join(', ') : 'No persons added yet.';
+    }
+
+    function removeEntry(event) {
+      const entry = event.target.parentNode;
+      entry.remove();
+      updateSummary();
+    }
+
+    function addPerson() {
+      const div = document.createElement('div');
+      div.className = 'person-entry';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Name';
+      nameInput.className = 'name';
+      nameInput.addEventListener('input', updateSummary);
+
+      const ageInput = document.createElement('input');
+      ageInput.type = 'number';
+      ageInput.placeholder = 'Age';
+      ageInput.min = '0';
+      ageInput.className = 'age';
+      ageInput.addEventListener('input', updateSummary);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', removeEntry);
+
+      div.appendChild(nameInput);
+      div.appendChild(ageInput);
+      div.appendChild(removeBtn);
+      entriesDiv.appendChild(div);
+    }
+
+    addBtn.addEventListener('click', addPerson);
+    // Initialize with one entry (optional)
+    // addPerson();
+  </script>
+</body>
+</html>

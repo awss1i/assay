@@ -1,0 +1,12 @@
+{
+  "name": "assay",
+  "description": "Opens a page you changed, drives every control it offers, and reports what it did and what happened. One line every time, clean or not.",
+  "version": "0.1.0",
+  "author": {
+    "name": "awss1i"
+  },
+  "homepage": "https://github.com/awss1i/assay",
+  "repository": "https://github.com/awss1i/assay",
+  "license": "MIT",
+  "keywords": ["testing", "browser", "verification", "html"]
+}

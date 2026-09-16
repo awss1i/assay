@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Draw – Undo/Redo, Colours, Sizes, Save</title>
+<style>
+  body { margin:0; display:flex; flex-direction:column; height:100vh; font-family:sans-serif; background:#fafafa; }
+  #toolbar { display:flex; flex-wrap:wrap; gap:0.5rem; padding:0.5rem; background:#e0e0e0; align-items:center; }
+  #toolbar > * { margin:0; }
+  #canvas { flex:1; border:1px solid #999; cursor:crosshair; }
+  button { padding:0.3rem 0.6rem; border:none; background:#fff; cursor:pointer; }
+  button.active { background:#ddd; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <label>Colour:
+    <input type="color" id="colPicker" value="#000000">
+  </label>
+
+  <label>Size:
+    <select id="sizePicker">
+      <option value="4">Small</option>
+      <option value="8" selected>Medium</option>
+      <option value="12">Large</option>
+    </select>
+  </label>
+
+  <button id="undoBtn">Undo</button>
+  <button id="redoBtn">Redo</button>
+  <button id="clearBtn">Clear</button>
+  <button id="saveBtn">Save</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Resize canvas to fill viewport (minus toolbar)
+  const resize = () => {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight - document.getElementById('toolbar').offsetHeight;
+    // redraw saved state or history after resize
+    if (historyStack.length) restoreFromImage(historyStack[historyStack.length - 1]);
+  };
+  window.addEventListener('resize', resize);
+  resize();
+
+  // State
+  let drawing = false;
+  let lastPos = {x:0, y:0};
+  const historyStack = [];   // stores base64 images for undo
+  const redoStack = [];
+
+  const maxHistory = 30; // limit memory usage
+
+  const pushState = () => {
+    if (historyStack.length >= maxHistory) historyStack.shift();
+    historyStack.push(canvas.toDataURL());
+    // clear redo on new action
+    redoStack.length = 0;
+    updateButtons();
+  };
+
+  const restoreFromImage = (dataURL) => {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0);
+    img.src = dataURL;
+  };
+
+  // Drawing
+  const getPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+  canvas.addEventListener('mousedown', (e) => {
+    drawing = true;
+    lastPos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastPos.x, lastPos.y);
+  });
+  canvas.addEventListener('mousemove', (e) => {
+    if (!drawing) return;
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastPos = pos;
+  });
+  const stopDrawing = () => {
+    if (drawing) {
+      drawing = false;
+      ctx.closePath();
+      pushState();
+    }
+  };
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseleave', stopDrawing);
+
+  // Toolbar
+  document.getElementById('colPicker').addEventListener('input', (e) => {
+    ctx.strokeStyle = e.target.value;
+  });
+  document.getElementById('sizePicker').addEventListener('change', (e) => {
+    ctx.lineWidth = parseInt(e.target.value, 10);
+  });
+  // initialise
+  ctx.strokeStyle = document.getElementById('colPicker').value;
+  ctx.lineWidth = parseInt(document.getElementById('sizePicker').value, 10);
+  ctx.lineCap = 'round';
+
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const saveBtn = document.getElementById('saveBtn');
+
+  const updateButtons = () => {
+    undoBtn.disabled = historyStack.length === 0;
+    redoBtn.disabled = redoStack.length === 0;
+  };
+
+  undoBtn.addEventListener('click', () => {
+    if (!historyStack.length) return;
+    const cur = historyStack.pop();
+    redoStack.push(cur);
+    const prev = historyStack[historyStack.length - 1];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (prev) restoreFromImage(prev);
+    updateButtons();
+  });
+
+  redoBtn.addEventListener('click', () => {
+    if (!redoStack.length) return;
+    const img = redoStack.pop();
+    historyStack.push(img);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    restoreFromImage(img);
+    updateButtons();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pushState();
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const data = canvas.toDataURL();
+    localStorage.setItem('drawing', data);
+    alert('Drawing saved. It will be restored on next load.');
+  });
+
+  // Load saved drawing on startup
+  const saved = localStorage.getItem('drawing');
+  if (saved) {
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      pushState(); // treat loaded image as initial state
+    };
+    img.src = saved;
+  } else {
+    pushState(); // initial blank state
+  }
+
+  updateButtons();
+})();
+</script>
+</body>
+</html>

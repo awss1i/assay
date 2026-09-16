@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calendar</title>
+<style>
+  body {font-family: Arial, sans-serif; display:flex; justify-content:center; padding:20px;}
+  #calendar {width:300px;}
+  #header {display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  #header button {background:#007BFF;color:#fff;border:none;padding:5px 10px;cursor:pointer;}
+  #header button:hover {background:#0056b3;}
+  #monthYear {font-weight:bold;}
+  table {width:100%; border-collapse:collapse;}
+  th, td {width:14.28%; text-align:center; padding:5px;}
+  th {background:#f0f0f0;}
+  td {border:1px solid #ddd;}
+  .today {background:#ffeb3b;}
+  .empty {border:none;}
+</style>
+</head>
+<body>
+<div id="calendar">
+  <div id="header">
+    <button id="prev">&lt; Prev</button>
+    <div id="monthYear"></div>
+    <button id="next">Next &gt;</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+      </tr>
+    </thead>
+    <tbody id="daysBody"></tbody>
+  </table>
+</div>
+<script>
+(function(){
+  const monthYearEl=document.getElementById('monthYear');
+  const daysBody=document.getElementById('daysBody');
+  const prevBtn=document.getElementById('prev');
+  const nextBtn=document.getElementById('next');
+
+  let today=new Date();
+  let curYear=today.getFullYear();
+  let curMonth=today.getMonth(); // 0-indexed
+
+  function isLeap(y){return (y%4===0 && y%100!==0) || (y%400===0);}
+  function daysInMonth(y,m){return [31, isLeap(y)?29:28,31,30,31,30,31,31,30,31,30,31][m];}
+  function render(){
+    monthYearEl.textContent=`${today.toLocaleString('default',{month:'long'})} ${curYear}`; // placeholder, will override
+    const monthName=new Date(curYear,curMonth).toLocaleString('default',{month:'long'});
+    monthYearEl.textContent=`${monthName} ${curYear}`;
+    const firstDay=new Date(curYear,curMonth,1).getDay(); // 0 Sun
+    const totalDays=daysInMonth(curYear,curMonth);
+    daysBody.innerHTML='';
+    let row=document.createElement('tr');
+    // empty cells before first day
+    for(let i=0;i<firstDay;i++){
+      const cell=document.createElement('td');
+      cell.className='empty';
+      row.appendChild(cell);
+    }
+    for(let d=1; d<=totalDays; d++){
+      if(row.children.length===7){
+        daysBody.appendChild(row);
+        row=document.createElement('tr');
+      }
+      const cell=document.createElement('td');
+      cell.textContent=d;
+      // highlight today
+      if(d===today.getDate() && curMonth===today.getMonth() && curYear===today.getFullYear()){
+        cell.classList.add('today');
+      }
+      row.appendChild(cell);
+    }
+    // fill remaining cells
+    while(row.children.length<7){
+      const cell=document.createElement('td');
+      cell.className='empty';
+      row.appendChild(cell);
+    }
+    daysBody.appendChild(row);
+  }
+  prevBtn.addEventListener('click',()=>{curMonth--; if(curMonth<0){curMonth=11;curYear--;}
+    render();});
+  nextBtn.addEventListener('click',()=>{curMonth++; if(curMonth>11){curMonth=0;curYear++;}
+    render();});
+  render();
+})();
+</script>
+</body>
+</html>

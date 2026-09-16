@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>World Clock</title>
+  <style>
+    body {font-family: Arial, sans-serif; background:#222; color:#eee; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0;}
+    h1 {margin-bottom:0.5rem;}
+    .clock-grid {display:grid; grid-template-columns:repeat(2, minmax(200px, 1fr)); gap:1rem; width:90%; max-width:600px;}
+    .city {background:#333; padding:1rem; border-radius:8px; text-align:center;}
+    .city-name {font-size:1.2rem; margin-bottom:0.3rem;}
+    .time {font-size:2rem; font-weight:bold;}
+    .toggle {margin-top:1rem; cursor:pointer; background:#555; border:none; color:#fff; padding:0.5rem 1rem; border-radius:4px;}
+  </style>
+</head>
+<body>
+  <h1>World Clock</h1>
+  <div class="clock-grid">
+    <div class="city" data-zone="America/New_York">
+      <div class="city-name">New York</div>
+      <div class="time"></div>
+    </div>
+    <div class="city" data-zone="Europe/London">
+      <div class="city-name">London</div>
+      <div class="time"></div>
+    </div>
+    <div class="city" data-zone="Asia/Tokyo">
+      <div class="city-name">Tokyo</div>
+      <div class="time"></div>
+    </div>
+    <div class="city" data-zone="Australia/Sydney">
+      <div class="city-name">Sydney</div>
+      <div class="time"></div>
+    </div>
+  </div>
+  <button class="toggle">Toggle 12/24‑Hour</button>
+
+  <script>
+    const cities = document.querySelectorAll('.city');
+    let use24 = true; // start with 24‑hour format
+
+    function updateClocks() {
+      const options = { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: !use24, timeZoneName: 'short' };
+      const fmt = new Intl.DateTimeFormat([], options);
+      const now = new Date();
+      cities.forEach(el => {
+        const tz = el.dataset.zone;
+        const parts = fmt.formatToParts(now);
+        // Build time string respecting 12/24 toggle (hour12 based on use24)
+        const hour = parts.find(p=>p.type==='hour').value;
+        const minute = parts.find(p=>p.type==='minute').value;
+        const second = parts.find(p=>p.type==='second').value;
+        const dayPeriod = parts.find(p=>p.type==='dayPeriod');
+        const tzName = parts.find(p=>p.type==='timeZoneName').value;
+        const timeStr = use24 ? `${hour}:${minute}:${second}` : `${hour}:${minute}:${second} ${dayPeriod ? dayPeriod.value : ''}`;
+        el.querySelector('.time').textContent = timeStr + ' ' + tzName;
+      });
+    }
+
+    // Initial display and tick every second
+    updateClocks();
+    setInterval(updateClocks, 1000);
+
+    document.querySelector('.toggle').addEventListener('click', () => {
+      use24 = !use24;
+      updateClocks();
+    });
+  </script>
+</body>
+</html>

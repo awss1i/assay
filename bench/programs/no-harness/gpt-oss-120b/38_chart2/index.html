@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bar / Line Chart Toggle</title>
+<style>
+    body{
+        font-family:Arial,Helvetica,sans-serif;
+        margin:20px;
+        background:#f8f8f8;
+        color:#333;
+    }
+    #controls{
+        margin-bottom:10px;
+    }
+    #toggleBtn{
+        padding:6px 12px;
+        font-size:14px;
+        cursor:pointer;
+    }
+    canvas{
+        background:#fff;
+        box-shadow:0 0 5px rgba(0,0,0,0.2);
+        border:1px solid #ccc;
+    }
+</style>
+</head>
+<body>
+
+<h1>Toggleable Chart</h1>
+
+<div id="controls">
+    <button id="toggleBtn">Switch to Bar</button>
+</div>
+
+<canvas id="chartCanvas" width="800" height="500"></canvas>
+
+<script>
+/* --------------------------------------------------------------
+   Simple chart that can be displayed as a line‑chart or a bar‑chart.
+   It automatically scales the axes, labels every point/value and
+   never crashes – an empty dataset shows a friendly message.
+   -------------------------------------------------------------- */
+
+(() => {
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // -----------------------------------------------------------------
+    //  Data – change this array to test different scenarios.
+    //  Empty array [] shows the “no data” handling.
+    // -----------------------------------------------------------------
+    const data = [
+        { label: 'Jan', value: 12 },
+        { label: 'Feb', value: 19 },
+        { label: 'Mar', value: 3 },
+        { label: 'Apr', value: 5 },
+        { label: 'May', value: 2 },
+        { label: 'Jun', value: 30 },
+        { label: 'Jul', value: 25 },
+        { label: 'Aug', value: 13 },
+        { label: 'Sep', value: 8 },
+        { label: 'Oct', value: 17 },
+        { label: 'Nov', value: 22 },
+        { label: 'Dec', value: 9 }
+    ];
+    // const data = [];            // Uncomment to test empty data
+
+    // -----------------------------------------------------------------
+    //  Chart state
+    // -----------------------------------------------------------------
+    let chartType = 'line';                     // 'line' or 'bar'
+
+    // -----------------------------------------------------------------
+    //  UI
+    // -----------------------------------------------------------------
+    const toggleBtn = document.getElementById('toggleBtn');
+    toggleBtn.addEventListener('click', () => {
+        chartType = chartType === 'line' ? 'bar' : 'line';
+        toggleBtn.textContent = chartType === 'line' ? 'Switch to Bar' : 'Switch to Line';
+        drawChart();
+    });
+
+    // -----------------------------------------------------------------
+    //  Main drawing routine
+    // -----------------------------------------------------------------
+    function drawChart() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const margin = { left: 60, right: 20, top: 40, bottom: 60 };
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // ------- Empty data handling ---------------------------------
+        if (!data || data.length === 0) {
+            ctx.font = '20px Arial';
+            ctx.fillStyle = '#777';
+            ctx.textAlign = 'center';
+            ctx.fillText('No data to display', w / 2, h / 2);
+            return;
+        }
+
+        // ------- Determine scaling ------------------------------------
+        const values = data.map(p => p.value);
+        const vMin = Math.min(...values);
+        const vMax = Math.max(...values);
+        // Add a little padding (10%)
+        const range = vMax - vMin || 1; // avoid zero
+        const pad = range * 0.1;
+        const yMin = Math.floor(vMin - pad);
+        const yMax = Math.ceil(vMax + pad);
+
+        // Convert a data value → y‑pixel
+        const plotHeight = h - margin.top - margin.bottom;
+        const plotWidth  = w - margin.left - margin.right;
+        const yScale = plotHeight / (yMax - yMin);
+        const xStep = plotWidth / data.length;
+
+        // ------- Axes -------------------------------------------------
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // y‑axis
+        ctx.moveTo(margin.left, margin.top);
+        ctx.lineTo(margin.left, h - margin.bottom);
+        // x‑axis
+        ctx.lineTo(w - margin.right, h - margin.bottom);
+        ctx.stroke();
+
+        // ----- Y‑ticks + labels ---------------------------------------
+        const tickCount = 6;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.font = '12px Arial';
+        for (let i = 0; i <= tickCount; i++) {
+            const val = yMin + i * (yMax - yMin) / tickCount;
+            const y = h - margin.bottom - (val - yMin) * yScale;
+            ctx.beginPath();
+            ctx.moveTo(margin.left - 5, y);
+            ctx.lineTo(margin.left, y);
+            ctx.stroke();
+            ctx.fillText(val.toFixed(0), margin.left - 8, y);
+        }
+
+        // ----- X‑labels -----------------------------------------------
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for (let i = 0; i < data.length; i++) {
+            const x = margin.left + (i + 0.5) * xStep;
+            ctx.fillText(data[i].label, x, h - margin.bottom + 5);
+        }
+
+        // ------- Draw chart --------------------------------------------
+        if (chartType === 'line') {
+            drawLineChart();
+        } else {
+            drawBarChart();
+        }
+
+        // -----------------------------------------------------------------
+        function drawLineChart() {
+            ctx.strokeStyle = '#0066cc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < data.length; i++) {
+                const x = margin.left + (i + 0.5) * xStep;
+                const y = h - margin.bottom - (data[i].value - yMin) * yScale;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // points and labels
+            ctx.fillStyle = '#0066cc';
+            ctx.font = '12px Arial';
+            for (let i = 0; i < data.length; i++) {
+                const x = margin.left + (i + 0.5) * xStep;
+                const y = h - margin.bottom - (data[i].value - yMin) * yScale;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // value label above point
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(data[i].value, x, y - 6);
+            }
+        }
+
+        // -----------------------------------------------------------------
+        function drawBarChart() {
+            const barWidth = xStep * 0.7;
+            ctx.fillStyle = '#ff6600';
+            ctx.strokeStyle = '#ff6600';
+            ctx.font = '12px Arial';
+
+            for (let i = 0; i < data.length; i++) {
+                const xCenter = margin.left + (i + 0.5) * xStep;
+                const x = xCenter - barWidth / 2;
+                const yBase = h - margin.bottom;
+                const yTop = yBase - (data[i].value - yMin) * yScale;
+
+                // bar
+                ctx.fillRect(x, yTop, barWidth, yBase - yTop);
+
+                // value label on top of bar
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(data[i].value, xCenter, yTop - 4);
+            }
+        }
+    }
+
+    // Initial draw
+    drawChart();
+})();
+</script>
+
+</body>
+</html>

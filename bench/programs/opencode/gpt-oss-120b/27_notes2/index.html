@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Local Notes</title>
+<style>
+  body {font-family:Arial,sans-serif;margin:0;padding:0;background:#f5f5f5;}
+  header {background:#283593;color:#fff;padding:1rem;text-align:center;}
+  #new-note, #search-bar {max-width:600px;margin:1rem auto;display:flex;gap:.5rem;}
+  #new-note input, #new-note textarea, #search-bar input{
+    flex:1;padding:.5rem;border:1px solid #ccc;border-radius:4px;
+  }
+  #new-note button, .pin-btn {background:#283593;color:#fff;border:none;padding:.5rem 1rem;border-radius:4px;cursor:pointer;}
+  .pin-btn {background:#ffb300;}
+  #notes {max-width:600px;margin:1rem auto;display:flex;flex-direction:column;gap:.5rem;}
+  .note {background:#fff;padding:1rem;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,.1);position:relative;}
+  .note.pinned {border-left:4px solid #ffb300;}
+  .note h3 {margin:0 0 .5rem;}
+  .note .actions {position:absolute;top:.5rem;right:.5rem;}
+  .note .actions button {margin-left:.25rem;}
+  .hidden {display:none;}
+</style>
+</head>
+<body>
+
+<header><h1>Local Notes</h1></header>
+
+<div id="search-bar">
+  <input type="text" id="search" placeholder="Search notes…" autocomplete="off">
+</div>
+
+<div id="new-note">
+  <input type="text" id="title" placeholder="Title" autocomplete="off">
+  <textarea id="body" rows="2" placeholder="Body"></textarea>
+  <button id="add">Add Note</button>
+</div>
+
+<div id="notes"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'local-notes-app';
+  let notes = [];
+
+  // ----- Helpers -------------------------------------------------
+  const saveNotes = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  const loadNotes = () => {
+    const data = localStorage.getItem(STORAGE_KEY);
+    notes = data ? JSON.parse(data) : [];
+  };
+  const createId = () => Date.now().toString(36) + Math.random().toString(36).substr(2,5);
+
+  // ----- Rendering ------------------------------------------------
+  const notesContainer = document.getElementById('notes');
+  const render = () => {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    notesContainer.innerHTML = '';
+    // Pinned notes first
+    const sorted = [...notes].sort((a,b)=> (b.pinned|0)-(a.pinned|0) || b.created - a.created);
+    for (const n of sorted) {
+      if (query && !(n.title.toLowerCase().includes(query) || n.body.toLowerCase().includes(query))) continue;
+      const noteEl = document.createElement('div');
+      noteEl.className = 'note' + (n.pinned ? ' pinned' : '');
+      noteEl.dataset.id = n.id;
+      noteEl.innerHTML = `
+        <h3>${escapeHTML(n.title)}</h3>
+        <p>${escapeHTML(n.body).replace(/\n/g,'<br>')}</p>
+        <div class="actions">
+          <button class="pin-btn">${n.pinned ? 'Unpin' : 'Pin'}</button>
+          <button class="del-btn">Delete</button>
+        </div>
+      `;
+      notesContainer.appendChild(noteEl);
+    }
+  };
+
+  // ----- Event Listeners -----------------------------------------
+  document.getElementById('add').addEventListener('click', () => {
+    const titleEl = document.getElementById('title');
+    const bodyEl = document.getElementById('body');
+    const title = titleEl.value.trim();
+    const body = bodyEl.value.trim();
+    if (!title && !body) return;
+    notes.push({id:createId(), title, body, pinned:false, created:Date.now()});
+    titleEl.value = ''; bodyEl.value = '';
+    saveNotes(); render();
+  });
+
+  document.getElementById('search').addEventListener('input', render);
+
+  notesContainer.addEventListener('click', e => {
+    const noteEl = e.target.closest('.note');
+    if (!noteEl) return;
+    const id = noteEl.dataset.id;
+    const note = notes.find(n=>n.id===id);
+    if (e.target.matches('.pin-btn')) {
+      note.pinned = !note.pinned;
+      saveNotes(); render();
+    }
+    if (e.target.matches('.del-btn')) {
+      notes = notes.filter(n=>n.id!==id);
+      saveNotes(); render();
+    }
+  });
+
+  // ----- Utility -------------------------------------------------
+  const escapeHTML = str => str.replace(/[&<>"']/g,
+    m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  // ----- Init ----------------------------------------------------
+  loadNotes(); render();
+})();
+</script>
+
+</body>
+</html>

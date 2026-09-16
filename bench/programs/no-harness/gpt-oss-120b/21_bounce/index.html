@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bouncing Balls Demo</title>
+<style>
+    html, body {
+        margin:0;
+        padding:0;
+        height:100%;
+        overflow:hidden;
+        background:#f0f0f0;
+        font-family:Arial, sans-serif;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+    }
+    #controls {
+        margin:10px;
+    }
+    button {
+        padding:8px 12px;
+        margin:0 5px;
+        font-size:14px;
+        cursor:pointer;
+    }
+    canvas {
+        background:#fff;
+        border:1px solid #ccc;
+        box-shadow:0 2px 6px rgba(0,0,0,.2);
+    }
+</style>
+</head>
+<body>
+<div id="controls">
+    <button id="addBtn">Add Ball</button>
+    <button id="removeBtn">Remove Ball</button>
+    <button id="pauseBtn">Pause</button>
+</div>
+<canvas id="canvas" width="800" height="600"></canvas>
+
+<script>
+(() => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const balls = [];
+
+    let paused = false;
+    const pauseBtn = document.getElementById('pauseBtn');
+
+    // Utility helpers ---------------------------------------------------------
+    function rand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function randomColor() {
+        const r = Math.floor(rand(0,255));
+        const g = Math.floor(rand(0,255));
+        const b = Math.floor(rand(0,255));
+        return `rgb(${r},${g},${b})`;
+    }
+
+    // Ball constructor ---------------------------------------------------------
+    function createBall() {
+        const radius = rand(10,30);
+        const x = rand(radius, canvas.width - radius);
+        const y = rand(radius, canvas.height - radius);
+        // Ensure non‑zero velocity
+        let vx = 0, vy = 0;
+        while (vx === 0 && vy === 0) {
+            vx = rand(-3,3);
+            vy = rand(-3,3);
+        }
+        const color = randomColor();
+        return {x, y, vx, vy, radius, color};
+    }
+
+    // Core animation -----------------------------------------------------------
+    function update(dt) {
+        for (const b of balls) {
+            b.x += b.vx * dt;
+            b.y += b.vy * dt;
+
+            // Collision with walls – simple elastic bounce
+            if (b.x - b.radius < 0) {
+                b.x = b.radius;
+                b.vx = -b.vx;
+            } else if (b.x + b.radius > canvas.width) {
+                b.x = canvas.width - b.radius;
+                b.vx = -b.vx;
+            }
+
+            if (b.y - b.radius < 0) {
+                b.y = b.radius;
+                b.vy = -b.vy;
+            } else if (b.y + b.radius > canvas.height) {
+                b.y = canvas.height - b.radius;
+                b.vy = -b.vy;
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for (const b of balls) {
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2);
+            ctx.fillStyle = b.color;
+            ctx.fill();
+        }
+    }
+
+    let lastTime = performance.now();
+    function loop(now) {
+        const dt = (now - lastTime) / 16; // normalize to ~60fps steps
+        lastTime = now;
+
+        if (!paused) {
+            update(dt);
+            draw();
+        }
+        requestAnimationFrame(loop);
+    }
+
+    // UI ----------------------------------------------------------------------
+    document.getElementById('addBtn').addEventListener('click', () => {
+        balls.push(createBall());
+    });
+
+    document.getElementById('removeBtn').addEventListener('click', () => {
+        balls.pop();
+        // Redraw immediately so the removed ball disappears even if paused
+        draw();
+    });
+
+    pauseBtn.addEventListener('click', () => {
+        paused = !paused;
+        pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+    });
+
+    // Start --------------------------------------------------------------------
+    requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

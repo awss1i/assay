@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Breakout</title>
+<style>
+  body {margin:0; background:#222; color:#fff; font-family:sans-serif; overflow:hidden;}
+  #gameCanvas {background:#000; display:block; margin:0 auto;}
+  #info {text-align:center; margin-top:5px;}
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="480" height="320"></canvas>
+<div id="info">Lives: <span id="lives">3</span> | Score: <span id="score">0</span></div>
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+
+  // Game state
+  let lives = 3;
+  let score = 0;
+  const livesSpan = document.getElementById('lives');
+  const scoreSpan = document.getElementById('score');
+
+  // Paddle
+  const paddle = {
+    width: 80,
+    height: 10,
+    x: (width - 80) / 2,
+    y: height - 20,
+    speed: 6,
+    moveLeft: false,
+    moveRight: false,
+  };
+
+  // Ball
+  const ball = {
+    radius: 5,
+    x: width / 2,
+    y: height - 30,
+    speed: 4,
+    dx: 4,
+    dy: -4,
+  };
+
+  // Bricks configuration
+  const brick = { rows: 5, cols: 8, width: 50, height: 15, padding: 5, offsetTop: 30, offsetLeft: 30 };
+  const bricks = [];
+  // Assign points per row (top row highest)
+  const rowPoints = [5,4,3,2,1];
+  for(let r=0;r<brick.rows;r++){
+    bricks[r] = [];
+    for(let c=0;c<brick.cols;c++){
+      const x = brick.offsetLeft + c*(brick.width+brick.padding);
+      const y = brick.offsetTop + r*(brick.height+brick.padding);
+      bricks[r][c] = { x, y, status: 1, points: rowPoints[r] };
+    }
+  }
+
+  // Input handling
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowLeft') paddle.moveLeft = true;
+    if(e.key === 'ArrowRight') paddle.moveRight = true;
+  });
+  document.addEventListener('keyup', e => {
+    if(e.key === 'ArrowLeft') paddle.moveLeft = false;
+    if(e.key === 'ArrowRight') paddle.moveRight = false;
+  });
+
+  function drawPaddle(){
+    ctx.fillStyle = '#0095DD';
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  }
+
+  function drawBall(){
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+    ctx.fillStyle = '#FFDD00';
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawBricks(){
+    for(let r=0;r<brick.rows;r++){
+      for(let c=0;c<brick.cols;c++){
+        const b = bricks[r][c];
+        if(b.status===1){
+          ctx.fillStyle = `hsl(${30*r},70%,50%)`;
+          ctx.fillRect(b.x,b.y,brick.width,brick.height);
+        }
+      }
+    }
+  }
+
+  function collisionDetection(){
+    for(let r=0;r<brick.rows;r++){
+      for(let c=0;c<brick.cols;c++){
+        const b = bricks[r][c];
+        if(b.status===1){
+          if(ball.x > b.x && ball.x < b.x+brick.width && ball.y - ball.radius > b.y && ball.y - ball.radius < b.y+brick.height){
+            ball.dy = -ball.dy;
+            b.status = 0;
+            score += b.points;
+            scoreSpan.textContent = score;
+            // Check win
+            if(isWin()){
+              // stop animation
+              cancelAnimationFrame(animationId);
+              alert('You win!');
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function isWin(){
+    for(let r=0;r<brick.rows;r++){
+      for(let c=0;c<brick.cols;c++){
+        if(bricks[r][c].status===1) return false;
+      }
+    }
+    return true;
+  }
+
+  function resetBall(){
+    ball.x = width/2;
+    ball.y = height - 30;
+    ball.dx = ball.speed;
+    ball.dy = -ball.speed;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,width,height);
+    drawBricks();
+    drawBall();
+    drawPaddle();
+    collisionDetection();
+
+    // Ball movement
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // Wall collisions
+    if(ball.x + ball.radius > width || ball.x - ball.radius < 0){
+      ball.dx = -ball.dx;
+    }
+    if(ball.y - ball.radius < 0){
+      ball.dy = -ball.dy;
+    }
+    // Paddle collision — adjust angle based on hit offset
+    if(ball.y + ball.radius > paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width){
+      // calculate hit position (-1 to 1)
+      const hitPos = ((ball.x - (paddle.x + paddle.width/2)) / (paddle.width/2));
+      const angle = hitPos * Math.PI/3; // max 60 degrees
+      const speed = Math.sqrt(ball.dx*ball.dx + ball.dy*ball.dy);
+      ball.dx = speed * Math.sin(angle);
+      ball.dy = -speed * Math.cos(angle);
+    }
+    // Bottom collision – lose life
+    if(ball.y + ball.radius > height){
+      lives--;
+      livesSpan.textContent = lives;
+      if(lives===0){
+        cancelAnimationFrame(animationId);
+        alert('Game Over');
+        return; // stop drawing
+      }
+      resetBall();
+    }
+
+    // Paddle movement
+    if(paddle.moveLeft && paddle.x > 0){
+      paddle.x -= paddle.speed;
+    }
+    if(paddle.moveRight && paddle.x + paddle.width < width){
+      paddle.x += paddle.speed;
+    }
+
+    animationId = requestAnimationFrame(draw);
+  }
+
+  let animationId = requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

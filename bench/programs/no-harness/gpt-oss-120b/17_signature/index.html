@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signature Pad</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 1rem;
+    background:#f5f5f5;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    box-sizing:border-box;
+  }
+  #container {
+    background:#fff;
+    padding:1rem;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+    text-align:center;
+  }
+  canvas {
+    border:2px solid #666;
+    border-radius:4px;
+    cursor:crosshair;
+    touch-action:none;   /* prevent page scrolling while signing */
+  }
+  button {
+    margin:0.5rem;
+    padding:0.5rem 1rem;
+    font-size:1rem;
+    border:none;
+    border-radius:4px;
+    background:#4a90e2;
+    color:#fff;
+    cursor:pointer;
+  }
+  button:hover {background:#357ab8;}
+</style>
+</head>
+<body>
+<div id="container">
+  <h2>Signature Pad</h2>
+  <canvas id="pad" width="600" height="300"></canvas><br>
+  <button id="clearBtn">Clear</button>
+  <button id="undoBtn">Undo</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('pad');
+  const ctx = canvas.getContext('2d');
+
+  // Store each stroke as an array of points [{x,y},...]
+  const strokes = [];
+  let currentStroke = null;
+  let drawing = false;
+
+  // Set drawing style
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#000';
+
+  // Helper to get mouse/touch position relative to canvas
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches) {
+      e = e.touches[0];
+    }
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }
+
+  // Start a new stroke
+  function startDraw(e) {
+    e.preventDefault();
+    drawing = true;
+    currentStroke = [];
+    const pos = getPos(e);
+    currentStroke.push(pos);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  }
+
+  // Continue the current stroke
+  function moveDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    currentStroke.push(pos);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+
+  // Finish the current stroke
+  function endDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    drawing = false;
+    strokes.push(currentStroke);
+    currentStroke = null;
+  }
+
+  // Redraw all stored strokes – used after undo/clear
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    for (const stroke of strokes) {
+      if (stroke.length === 0) continue;
+      ctx.moveTo(stroke[0].x, stroke[0].y);
+      for (let i = 1; i < stroke.length; i++) {
+        ctx.lineTo(stroke[i].x, stroke[i].y);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // Button handlers
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    strokes.length = 0;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  document.getElementById('undoBtn').addEventListener('click', () => {
+    strokes.pop();
+    redraw();
+  });
+
+  // Mouse events
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', moveDraw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+
+  // Touch events – for phones/tablets
+  canvas.addEventListener('touchstart', startDraw);
+  canvas.addEventListener('touchmove', moveDraw);
+  canvas.addEventListener('touchend', endDraw);
+  canvas.addEventListener('touchcancel', endDraw);
+})();
+</script>
+</body>
+</html>

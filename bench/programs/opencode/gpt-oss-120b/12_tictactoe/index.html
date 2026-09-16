@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic‑Tac‑Toe</title>
+<style>
+  body {font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; background:#f0f0f0;}
+  h1 {margin-bottom: 10px;}
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+  .cell {
+    background: #fff;
+    border: 2px solid #333;
+    font-size: 64px;
+    text-align: center;
+    line-height: 100px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #status {font-size: 1.2em;}
+</style>
+</head>
+<body>
+<h1>Tic‑Tac‑Toe</h1>
+<div id="board"></div>
+<div id="status">Player X's turn</div>
+<script>
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  const cells = [];
+  let turn = 'X';
+  let moves = 0;
+
+  // create cells
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.index = i;
+    cell.addEventListener('click', onClick);
+    boardEl.appendChild(cell);
+    cells.push(cell);
+  }
+
+  function onClick(e) {
+    const cell = e.target;
+    if (cell.textContent) return; // already taken
+    cell.textContent = turn;
+    moves++;
+    if (checkWinner()) {
+      statusEl.textContent = `Player ${turn} wins!`;
+      boardEl.removeEventListener('click', onClick, true);
+      disableBoard();
+      return;
+    }
+    if (moves === 9) {
+      statusEl.textContent = "It's a draw!";
+      return;
+    }
+    turn = turn === 'X' ? 'O' : 'X';
+    statusEl.textContent = `Player ${turn}'s turn`;
+  }
+
+  function disableBoard() {
+    cells.forEach(c => c.style.pointerEvents = 'none');
+  }
+
+  const winLines = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // columns
+    [0,4,8],[2,4,6] // diagonals
+  ];
+
+  function checkWinner() {
+    return winLines.some(line => {
+      const [a,b,c] = line;
+      return cells[a].textContent &&
+             cells[a].textContent === cells[b].textContent &&
+             cells[a].textContent === cells[c].textContent;
+    });
+  }
+</script>
+</body>
+</html>

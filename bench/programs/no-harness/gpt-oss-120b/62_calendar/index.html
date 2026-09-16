@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calendar</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif; margin:0; display:flex; flex-direction:column; align-items:center; background:#f0f0f0;}
+  #calendar {background:#fff; border:1px solid #ccc; width:320px; margin-top:20px; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
+  #header {display:flex; justify-content:space-between; align-items:center; background:#0066cc; color:#fff; padding:10px;}
+  #header button {background:#0055aa; border:none; color:#fff; padding:5px 10px; cursor:pointer;}
+  #header button:hover {background:#004499;}
+  #header span {font-weight:bold; font-size:1.2em;}
+  table {border-collapse:collapse; width:100%;}
+  th, td {width:14.28%; text-align:center; padding:8px 0; border:1px solid #e0e0e0;}
+  th {background:#e8e8e8;}
+  td {background:#fafafa;}
+  .today {background:#ffeb3b !important; font-weight:bold;}
+  .disabled {color:#aaa;}
+</style>
+</head>
+<body>
+
+<div id="calendar">
+  <div id="header">
+    <button id="prevBtn">&laquo; Prev</button>
+    <span id="monthYear"></span>
+    <button id="nextBtn">Next &raquo;</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+      </tr>
+    </thead>
+    <tbody id="daysBody"></tbody>
+  </table>
+</div>
+
+<script>
+(function(){
+  const monthYearEl = document.getElementById('monthYear');
+  const daysBody = document.getElementById('daysBody');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  const today = new Date();
+  let curYear = today.getFullYear();
+  let curMonth = today.getMonth(); // 0‑based
+
+  function renderCalendar(year, month){
+    // Update header
+    const monthNames = ['January','February','March','April','May','June',
+                        'July','August','September','October','November','December'];
+    monthYearEl.textContent = `${monthNames[month]} ${year}`;
+
+    // Clear previous cells
+    daysBody.innerHTML = '';
+
+    // First day of month (0 Sun … 6 Sat)
+    const firstDay = new Date(year, month, 1).getDay();
+
+    // Number of days in month (leap year handled automatically)
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+
+    // Build rows
+    let row = document.createElement('tr');
+    // Fill leading empty cells
+    for(let i=0;i<firstDay;i++){
+      const cell = document.createElement('td');
+      cell.classList.add('disabled');
+      row.appendChild(cell);
+    }
+
+    for(let day=1; day<=daysInMonth; day++){
+      const cell = document.createElement('td');
+      cell.textContent = day;
+      // Mark today
+      if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()){
+        cell.classList.add('today');
+      }
+      row.appendChild(cell);
+      // When Saturday start new row
+      if((firstDay+day)%7===0 && day!==daysInMonth){
+        daysBody.appendChild(row);
+        row = document.createElement('tr');
+      }
+    }
+
+    // Fill trailing empty cells
+    const remaining = (firstDay + daysInMonth) % 7;
+    if(remaining!==0){
+      for(let i=remaining;i<7;i++){
+        const cell = document.createElement('td');
+        cell.classList.add('disabled');
+        row.appendChild(cell);
+      }
+    }
+    daysBody.appendChild(row);
+  }
+
+  // Navigation
+  prevBtn.addEventListener('click', ()=>{
+    curMonth--;
+    if(curMonth < 0){
+      curMonth = 11;
+      curYear--;
+    }
+    renderCalendar(curYear, curMonth);
+  });
+
+  nextBtn.addEventListener('click', ()=>{
+    curMonth++;
+    if(curMonth > 11){
+      curMonth = 0;
+      curYear++;
+    }
+    renderCalendar(curYear, curMonth);
+  });
+
+  // Initial render
+  renderCalendar(curYear, curMonth);
+})();
+</script>
+
+</body>
+</html>

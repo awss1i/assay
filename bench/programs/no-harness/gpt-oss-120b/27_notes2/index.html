@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📝 Simple Notes App</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 0;
+    background:#f5f5f5;
+    color:#333;
+  }
+  header {
+    background:#4a90e2;
+    color:#fff;
+    padding:1rem;
+    text-align:center;
+  }
+  main {
+    max-width:800px;
+    margin:2rem auto;
+    padding:0 1rem;
+  }
+  .controls {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+    margin-bottom:1rem;
+  }
+  .controls input, .controls button, .controls textarea {
+    font:inherit;
+  }
+  .controls input[type=text], .controls textarea {
+    flex:1 1 200px;
+    padding:.5rem;
+    border:1px solid #ccc;
+    border-radius:4px;
+    background:#fff;
+  }
+  .controls textarea {
+    height:80px;
+    resize:vertical;
+  }
+  .controls label {
+    display:flex;
+    align-items:center;
+    gap:.25rem;
+  }
+  .controls button {
+    padding:.5rem 1rem;
+    background:#4a90e2;
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .controls button:hover { background:#357ab8; }
+  #searchBox {
+    width:100%;
+    max-width:400px;
+    padding:.5rem;
+    border:1px solid #ccc;
+    border-radius:4px;
+    margin-bottom:1rem;
+  }
+  .note {
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:4px;
+    padding:1rem;
+    margin-bottom:.75rem;
+    position:relative;
+  }
+  .note.pinned {
+    border-left:4px solid #ffcc00;
+  }
+  .note h3 {
+    margin:0 0 .5rem;
+    word-break:break-all;
+  }
+  .note p {
+    margin:0 0 1rem;
+    white-space:pre-wrap;
+    word-break:break-all;
+  }
+  .note .actions {
+    position:absolute;
+    top:.5rem;
+    right:.5rem;
+    display:flex;
+    gap:.25rem;
+  }
+  .note .actions button {
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    font-size:1rem;
+    padding:.25rem;
+  }
+  .note .actions button:hover { opacity:.7; }
+  .note .pin {
+    color:#ffcc00;
+  }
+  .note .del {
+    color:#c00;
+  }
+  .empty {
+    text-align:center;
+    color:#777;
+    margin-top:2rem;
+  }
+</style>
+</head>
+<body>
+
+<header><h1>📝 Simple Notes</h1></header>
+
+<main>
+  <input type="text" id="searchBox" placeholder="Search notes (by title or body)…">
+
+  <form id="noteForm" class="controls">
+    <input type="text" id="titleInput" placeholder="Title" required>
+    <textarea id="bodyInput" placeholder="Body…" required></textarea>
+    <label>
+      <input type="checkbox" id="pinInput">
+      Pin
+    </label>
+    <button type="submit">Add Note</button>
+  </form>
+
+  <section id="notesContainer"></section>
+</main>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'notes';
+  let notes = [];
+
+  // ---------- Utility ----------
+  const $(id) => document.getElementById(id);
+  const saveNotes = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  const loadNotes = () => {
+    const data = localStorage.getItem(STORAGE_KEY);
+    notes = data ? JSON.parse(data) : [];
+  };
+  const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2,5);
+
+  // ---------- Rendering ----------
+  const render = (filter = '') => {
+    const container = $('notesContainer');
+    container.innerHTML = '';
+
+    const lowerFilter = filter.toLowerCase();
+
+    // Sort: pinned first (preserve creation order), then others (newest first)
+    const sorted = [...notes].sort((a, b) => {
+      if (a.pinned !== b.pinned) return b.pinned - a.pinned; // pinned true first
+      return b.id.localeCompare(a.id); // recent first
+    });
+
+    const visible = sorted.filter(n =>
+      n.title.toLowerCase().includes(lowerFilter) ||
+      n.body.toLowerCase().includes(lowerFilter)
+    );
+
+    if (!visible.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = filter ? 'No matching notes.' : 'No notes yet. Add one below!';
+      container.appendChild(empty);
+      return;
+    }
+
+    visible.forEach(note => {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'note' + (note.pinned ? ' pinned' : '');
+      noteEl.dataset.id = note.id;
+
+      const title = document.createElement('h3');
+      title.textContent = note.title;
+      noteEl.appendChild(title);
+
+      const body = document.createElement('p');
+      body.textContent = note.body;
+      noteEl.appendChild(body);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const pinBtn = document.createElement('button');
+      pinBtn.className = 'pin';
+      pinBtn.title = note.pinned ? 'Unpin' : 'Pin';
+      pinBtn.innerHTML = note.pinned ? '📌' : '📍';
+      pinBtn.onclick = () => togglePin(note.id);
+      actions.appendChild(pinBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'del';
+      delBtn.title = 'Delete';
+      delBtn.innerHTML = '🗑️';
+      delBtn.onclick = () => deleteNote(note.id);
+      actions.appendChild(delBtn);
+
+      noteEl.appendChild(actions);
+      container.appendChild(noteEl);
+    });
+  };
+
+  // ---------- CRUD ----------
+  const addNote = (title, body, pinned) => {
+    const note = { id: generateId(), title, body, pinned };
+    notes.push(note);
+    saveNotes();
+    render($('searchBox').value);
+  };
+
+  const deleteNote = (id) => {
+    notes = notes.filter(n => n.id !== id);
+    saveNotes();
+    render($('searchBox').value);
+  };
+
+  const togglePin = (id) => {
+    const note = notes.find(n => n.id === id);
+    if (note) {
+      note.pinned = !note.pinned;
+      saveNotes();
+      render($('searchBox').value);
+    }
+  };
+
+  // ---------- Event Listeners ----------
+  $('noteForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const title = $('titleInput').value.trim();
+    const body = $('bodyInput').value.trim();
+    const pinned = $('pinInput').checked;
+    if (title && body) {
+      addNote(title, body, pinned);
+      $('titleInput').value = '';
+      $('bodyInput').value = '';
+      $('pinInput').checked = false;
+    }
+  });
+
+  $('searchBox').addEventListener('input', e => {
+    render(e.target.value);
+  });
+
+  // ---------- Init ----------
+  loadNotes();
+  render();
+})();
+</script>
+
+</body>
+</html>

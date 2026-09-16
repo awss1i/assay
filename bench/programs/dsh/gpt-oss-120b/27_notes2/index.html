@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Notes App</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:0; padding:20px; background:#f5f5f5;}
+  h1 {text-align:center;}
+  #app {max-width:800px; margin:auto; background:#fff; padding:20px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  .controls {display:flex; gap:10px; margin-bottom:15px;}
+  .controls input, .controls textarea {flex:1; padding:8px; border:1px solid #ccc; border-radius:4px;}
+  .controls button {padding:8px 12px; border:none; background:#28a745; color:#fff; border-radius:4px; cursor:pointer;}
+  .controls button:hover {background:#218838;}
+  #search {margin-bottom:15px;}
+  .note {border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:4px; background:#fafafa; position:relative;}
+  .note.pinned {border-color:#ff9800; background:#fff8e1;}
+  .note h3 {margin:0 0 5px;}
+  .note .body {white-space:pre-wrap;}
+  .note .actions {position:absolute; top:5px; right:5px; display:flex; gap:5px;}
+  .note .actions button {background:none; border:none; cursor:pointer; padding:2px 5px; font-size:0.9em;}
+  .note .actions button.pin {color:#ff9800;}
+  .note .actions button.delete {color:#d32f2f;}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Notes</h1>
+  <div class="controls">
+    <input type="text" id="title" placeholder="Title" />
+  </div>
+  <div class="controls">
+    <textarea id="body" rows="4" placeholder="Note body"></textarea>
+  </div>
+  <div class="controls">
+    <button id="addBtn">Add Note</button>
+  </div>
+  <input type="text" id="search" placeholder="Search..." />
+  <div id="notesContainer"></div>
+</div>
+<script>
+(function(){
+  const storageKey = 'notesAppData';
+  let notes = [];
+  const notesContainer = document.getElementById('notesContainer');
+  const titleInput = document.getElementById('title');
+  const bodyInput = document.getElementById('body');
+  const addBtn = document.getElementById('addBtn');
+  const searchInput = document.getElementById('search');
+
+  function loadNotes(){
+    const data = localStorage.getItem(storageKey);
+    if(data){
+      try{ notes = JSON.parse(data); }
+      catch(e){ notes = []; }
+    }
+    render();
+  }
+
+  function saveNotes(){
+    localStorage.setItem(storageKey, JSON.stringify(notes));
+  }
+
+  function render(){
+    const filter = searchInput.value.toLowerCase();
+    // Sort: pinned notes first, then by creation order (assuming notes array order)
+    const sorted = [...notes].sort((a,b)=>{
+      if(a.pinned===b.pinned) return 0;
+      return a.pinned? -1 : 1;
+    });
+    notesContainer.innerHTML = '';
+    sorted.forEach(note=>{
+      if(filter && !(note.title.toLowerCase().includes(filter) || note.body.toLowerCase().includes(filter))) return;
+      const div = document.createElement('div');
+      div.className = 'note' + (note.pinned? ' pinned' : '');
+      const h3 = document.createElement('h3');
+      h3.textContent = note.title;
+      const bodyDiv = document.createElement('div');
+      bodyDiv.className = 'body';
+      bodyDiv.textContent = note.body;
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const pinBtn = document.createElement('button');
+      pinBtn.className = 'pin';
+      pinBtn.textContent = note.pinned ? 'Unpin' : 'Pin';
+      pinBtn.onclick =()=>{ togglePin(note.id); };
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete';
+      delBtn.textContent = 'Delete';
+      delBtn.onclick =()=>{ deleteNote(note.id); };
+      actions.append(pinBtn, delBtn);
+      div.append(h3, bodyDiv, actions);
+      notesContainer.appendChild(div);
+    });
+  }
+
+  function addNote(){
+    const title = titleInput.value.trim();
+    const body = bodyInput.value.trim();
+    if(!title && !body) return;
+    const note = {id: Date.now()+Math.random(), title, body, pinned:false};
+    notes.unshift(note); // newest on top
+    saveNotes();
+    titleInput.value='';
+    bodyInput.value='';
+    render();
+  }
+
+  function togglePin(id){
+    const note = notes.find(n=>n.id===id);
+    if(note){ note.pinned = !note.pinned; saveNotes(); render(); }
+  }
+
+  function deleteNote(id){
+    notes = notes.filter(n=>n.id!==id);
+    saveNotes();
+    render();
+  }
+
+  addBtn.addEventListener('click', addNote);
+  searchInput.addEventListener('input', render);
+
+  loadNotes();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+build/
+dist/
+*.egg-info/
+*.pyc
+__pycache__/
+.pytest_cache/
+shots/
+.venv/
+
+# A generated test program once landed at the repo root, twice, because a
+# generator was run from the wrong directory. Nothing here should ever be a
+# page.
+/index.html

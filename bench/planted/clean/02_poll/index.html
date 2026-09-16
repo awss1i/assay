@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Poll</title>
+<style>
+body {font-family:Arial, sans-serif; max-width:600px; margin:20px auto;}
+h2 {margin-bottom:10px;}
+.poll-option {margin:5px 0;}
+button {margin-top:10px; padding:5px 10px;}
+.result-bar {background:#4caf50; height:20px; width:0%; color:white; text-align:center; line-height:20px; transition:width 0.5s;}
+.result {margin:5px 0;}
+</style>
+</head>
+<body>
+<h2>What is your favorite season?</h2>
+<div id="poll">
+  <label class="poll-option"><input type="radio" name="option" value="0"> Spring</label><br>
+  <label class="poll-option"><input type="radio" name="option" value="1"> Summer</label><br>
+  <label class="poll-option"><input type="radio" name="option" value="2"> Autumn</label><br>
+  <label class="poll-option"><input type="radio" name="option" value="3"> Winter</label><br>
+  <button id="voteBtn">Vote</button>
+</div>
+<div id="results" style="display:none;">
+  <div class="result"><span>Spring</span><div class="result-bar" id="bar0"></div></div>
+  <div class="result"><span>Summer</span><div class="result-bar" id="bar1"></div></div>
+  <div class="result"><span>Autumn</span><div class="result-bar" id="bar2"></div></div>
+  <div class="result"><span>Winter</span><div class="result-bar" id="bar3"></div></div>
+  <button id="changeBtn">Change vote</button>
+</div>
+<script>
+(function(){
+ const options = ["Spring","Summer","Autumn","Winter"];
+ const storageKey = "simplePollVotes";
+ const userKey = "simplePollUserVote";
+ function getVotes(){
+   const data = localStorage.getItem(storageKey);
+   if(data){
+     try{ return JSON.parse(data); }catch(e){ return [0,0,0,0]; }
+   }
+   return [0,0,0,0];
+ }
+ function setVotes(v){
+   localStorage.setItem(storageKey, JSON.stringify(v));
+ }
+ function getUserVote(){
+   const v = localStorage.getItem(userKey);
+   return v===null? null : Number(v);
+ }
+ function setUserVote(v){
+   localStorage.setItem(userKey, v);
+ }
+ function clearUserVote(){
+   localStorage.removeItem(userKey);
+ }
+ function showResults(){
+   const votes = getVotes();
+   const total = votes.reduce((a,b)=>a+b,0) || 1;
+   votes.forEach((cnt,i)=>{
+     const perc = Math.round(cnt/total*100);
+     const bar = document.getElementById("bar"+i);
+     bar.style.width = perc+"%";
+     bar.textContent = perc+"%";
+   });
+   document.getElementById("poll").style.display="none";
+   document.getElementById("results").style.display="block";
+ }
+ function resetPoll(){
+   const prev = getUserVote();
+   if(prev!==null){
+     const votes = getVotes();
+     votes[prev] = Math.max(0, votes[prev]-1);
+     setVotes(votes);
+   }
+   clearUserVote();
+   document.getElementById("poll").style.display="block";
+   document.getElementById("results").style.display="none";
+   const radios = document.querySelectorAll('input[name="option"]');
+   radios.forEach(r=>r.checked=false);
+ }
+ document.getElementById("voteBtn").addEventListener("click",()=>{
+   const sel = document.querySelector('input[name="option"]:checked');
+   if(!sel) return alert("Please select an option.");
+   const choice = Number(sel.value);
+   const prev = getUserVote();
+   const votes = getVotes();
+   if(prev!==null){
+     votes[prev] = Math.max(0, votes[prev]-1);
+   }
+   votes[choice] = (votes[choice]||0)+1;
+   setVotes(votes);
+   setUserVote(choice);
+   showResults();
+ });
+ document.getElementById("changeBtn").addEventListener("click",()=>{ resetPoll(); });
+ const already = getUserVote();
+ if(already!==null){
+   showResults();
+   const radios = document.querySelectorAll('input[name="option"]');
+   radios.forEach(r=>{ if(Number(r.value)===already) r.checked=true; });
+ }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Todo List</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 2rem; background: #f9f9f9;}
+        h1 {color: #333;}
+        #new-task {width: 70%; padding: 0.5rem; font-size: 1rem;}
+        #add-btn {padding: 0.5rem 1rem; font-size: 1rem;}
+        ul {list-style: none; padding: 0;}
+        li {background: #fff; margin: 0.5rem 0; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ddd; border-radius: 4px;}
+        .delete-btn {background: #e74c3c; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 3px; cursor: pointer;}
+        .delete-btn:hover {background: #c0392b;}
+    </style>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <input type="text" id="new-task" placeholder="Enter a new task" />
+    <button id="add-btn">Add</button>
+    <ul id="task-list"></ul>
+
+    <script>
+        // Add a new task to the list
+        document.getElementById('add-btn').addEventListener('click', function() {
+            const input = document.getElementById('new-task');
+            const text = input.value.trim();
+            if (text === '') return;
+            const li = document.createElement('li');
+            const span = document.createElement('span');
+            span.textContent = text;
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'Delete';
+            delBtn.className = 'delete-btn';
+            delBtn.addEventListener('click', function() {
+                li.remove();
+            });
+            li.appendChild(span);
+            li.appendChild(delBtn);
+            document.getElementById('task-list').appendChild(li);
+            input.value = '';
+        });
+        // Also allow pressing Enter to add task
+        document.getElementById('new-task').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('add-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>

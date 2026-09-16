@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Click Counter</title>
+<style>
+  /* Simple, clean layout – all styling is inline */
+  body {
+    font-family: system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: #f9f9f9;
+  }
+
+  #counter {
+    font-size: 4rem;
+    margin: 20px;
+    color: #333;
+  }
+
+  .btn {
+    padding: 0.6rem 1.2rem;
+    margin: 0 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    transition: opacity 0.2s;
+  }
+
+  #inc {
+    background: #4caf50;
+    color: #fff;
+  }
+
+  #reset {
+    background: #f44336;
+    color: #fff;
+  }
+
+  .btn:active {
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+
+<div id="counter">0</div>
+
+<div>
+  <button id="inc" class="btn">Increment</button>
+  <button id="reset" class="btn">Reset</button>
+</div>
+
+<script>
+  (function () {
+    const counterEl = document.getElementById('counter');
+    const incBtn    = document.getElementById('inc');
+    const resetBtn = document.getElementById('reset');
+
+    // Preserve count between page reloads (optional)
+    let count = Number(localStorage.getItem('clickCount')) || 0;
+    const updateDisplay = () => { counterEl.textContent = count; };
+
+    incBtn.addEventListener('click', () => {
+      count++;
+      updateDisplay();
+      localStorage.setItem('clickCount', count);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      count = 0;
+      updateDisplay();
+      localStorage.setItem('clickCount', count);
+    });
+
+    // Initialise display on first load
+    updateDisplay();
+  })();
+</script>
+
+</body>
+</html>

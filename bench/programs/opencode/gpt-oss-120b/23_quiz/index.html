@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Five‑Question Quiz</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 2rem; background:#f9f9f9;}
+    .quiz {max-width: 600px; margin:auto; background:#fff; padding:1.5rem; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+    h1 {text-align:center;}
+    .question {margin-top:1rem;}
+    .answers label {display:block; margin:0.3rem 0; cursor:pointer;}
+    button {margin-top:1.5rem; padding:0.6rem 1.2rem; font-size:1rem;}
+    #result {font-size:1.2rem; font-weight:bold; margin-top:1.5rem; text-align:center;}
+  </style>
+</head>
+<body>
+<div class="quiz">
+  <h1>Five‑Question Quiz</h1>
+  <form id="quizForm">
+    <div class="question" data-correct="b">
+      <p>1. What is the capital of France?</p>
+      <div class="answers">
+        <label><input type="radio" name="q1" value="a"> Berlin</label>
+        <label><input type="radio" name="q1" value="b"> Paris</label>
+        <label><input type="radio" name="q1" value="c"> Madrid</label>
+      </div>
+    </div>
+    <div class="question" data-correct="c">
+      <p>2. Which language runs in the browser?</p>
+      <div class="answers">
+        <label><input type="radio" name="q2" value="a"> Python</label>
+        <label><input type="radio" name="q2" value="b"> C++</label>
+        <label><input type="radio" name="q2" value="c"> JavaScript</label>
+      </div>
+    </div>
+    <div class="question" data-correct="a">
+      <p>3. 2 + 2 equals?</p>
+      <div class="answers">
+        <label><input type="radio" name="q3" value="a"> 4</label>
+        <label><input type="radio" name="q3" value="b"> 22</label>
+        <label><input type="radio" name="q3" value="c"> 5</label>
+      </div>
+    </div>
+    <div class="question" data-correct="b">
+      <p>4. Which planet is known as the Red Planet?</p>
+      <div class="answers">
+        <label><input type="radio" name="q4" value="a"> Venus</label>
+        <label><input type="radio" name="q4" value="b"> Mars</label>
+        <label><input type="radio" name="q4" value="c"> Jupiter</label>
+      </div>
+    </div>
+    <div class="question" data-correct="c">
+      <p>5. Which HTML tag is used for the largest heading?</p>
+      <div class="answers">
+        <label><input type="radio" name="q5" value="a"> &lt;h2&gt;</label>
+        <label><input type="radio" name="q5" value="b"> &lt;header&gt;</label>
+        <label><input type="radio" name="q5" value="c"> &lt;h1&gt;</label>
+      </div>
+    </div>
+    <button type="button" id="submitBtn">Submit</button>
+    <div id="result"></div>
+  </form>
+</div>
+<script>
+  document.getElementById('submitBtn').addEventListener('click', function() {
+    const questions = document.querySelectorAll('.question');
+    let score = 0;
+    questions.forEach((q, idx) => {
+      const name = q.querySelector('input[name]').name; // get name attribute
+      const selected = q.querySelector('input[name="' + name + '"]:checked');
+      if (selected && selected.value === q.dataset.correct) {
+        score++;
+      }
+    });
+    const resultDiv = document.getElementById('result');
+    resultDiv.textContent = `Your score: ${score} / ${questions.length}`;
+  });
+</script>
+</body>
+</html>

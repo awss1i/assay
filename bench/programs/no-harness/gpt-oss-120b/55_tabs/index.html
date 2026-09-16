@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tabbed Panels Demo</title>
+<style>
+  body{
+    font-family:system-ui,Arial,sans-serif;
+    margin:2rem;
+    background:#f9f9f9;
+  }
+  .tabs{
+    display:flex;
+    border-bottom:2px solid #aaa;
+    margin-bottom:1rem;
+  }
+  .tabs button{
+    background:none;
+    border:none;
+    padding:.75rem 1.5rem;
+    cursor:pointer;
+    font-size:1rem;
+    border-bottom:4px solid transparent;
+    transition:border-color .2s;
+  }
+  .tabs button[aria-selected="true"]{
+    border-bottom-color:#0066cc;
+    color:#0066cc;
+    font-weight:bold;
+  }
+  .panel{
+    display:none;
+    padding:1rem;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:4px;
+  }
+  .panel[hidden="false"]{
+    display:block;
+  }
+</style>
+</head>
+<body>
+
+<h1>Four Tabbed Panels</h1>
+
+<div class="tab-interface">
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-0" aria-controls="panel-0" aria-selected="true" tabindex="0">Tab 1</button>
+    <button role="tab" id="tab-1" aria-controls="panel-1" aria-selected="false" tabindex="-1">Tab 2</button>
+    <button role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1">Tab 3</button>
+    <button role="tab" id="tab-3" aria-controls="panel-3" aria-selected="false" tabindex="-1">Tab 4</button>
+  </div>
+
+  <div id="panel-0" class="panel" role="tabpanel" aria-labelledby="tab-0" hidden="false">
+    <h2>Panel 1</h2>
+    <p>This is the content of the first panel.</p>
+  </div>
+  <div id="panel-1" class="panel" role="tabpanel" aria-labelledby="tab-1" hidden="true">
+    <h2>Panel 2</h2>
+    <p>This is the content of the second panel.</p>
+  </div>
+  <div id="panel-2" class="panel" role="tabpanel" aria-labelledby="tab-2" hidden="true">
+    <h2>Panel 3</h2>
+    <p>This is the content of the third panel.</p>
+  </div>
+  <div id="panel-3" class="panel" role="tabpanel" aria-labelledby="tab-3" hidden="true">
+    <h2>Panel 4</h2>
+    <p>This is the content of the fourth panel.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  let current = 0; // index of the active tab
+
+  const activate = (newIndex) => {
+    if (newIndex < 0 || newIndex >= tabs.length) return;
+    // deactivate old
+    tabs[current].setAttribute('aria-selected','false');
+    tabs[current].setAttribute('tabindex','-1');
+    panels[current].setAttribute('hidden','true');
+
+    // activate new
+    tabs[newIndex].setAttribute('aria-selected','true');
+    tabs[newIndex].setAttribute('tabindex','0');
+    tabs[newIndex].focus();
+    panels[newIndex].removeAttribute('hidden');
+
+    current = newIndex;
+  };
+
+  // Click handling
+  tabs.forEach((tab,i) => {
+    tab.addEventListener('click', () => activate(i));
+  });
+
+  // Keyboard navigation (when focus is on any tab)
+  document.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (!['ArrowLeft','ArrowRight','Home','End'].includes(key)) return;
+    e.preventDefault();
+    if (key === 'ArrowLeft') {
+      activate((current - 1 + tabs.length) % tabs.length);
+    } else if (key === 'ArrowRight') {
+      activate((current + 1) % tabs.length);
+    } else if (key === 'Home') {
+      activate(0);
+    } else if (key === 'End') {
+      activate(tabs.length-1);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

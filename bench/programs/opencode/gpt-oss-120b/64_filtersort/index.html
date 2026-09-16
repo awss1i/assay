@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Searchable & Sortable Table</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  #search {margin-bottom: 10px; padding: 5px; width: 200px;}
+  table {border-collapse: collapse; width: 100%;}
+  th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+  th {background: #f2f2f2; cursor: pointer; user-select: none;}
+  th.sort-asc::after {content: " ▲";}
+  th.sort-desc::after {content: " ▼";}
+</style>
+</head>
+<body>
+
+<input type="text" id="search" placeholder="Search…">
+
+<table id="myTable">
+  <thead>
+    <tr>
+      <th data-key="name">Name</th>
+      <th data-key="age">Age</th>
+      <th data-key="city">City</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+(() => {
+  // ---- Data --------------------------------------------------------------
+  const rows = [
+    {name: 'Alice',   age: 30, city: 'New York'},
+    {name: 'Bob',     age: 25, city: 'Paris'},
+    {name: 'Charlie', age: 35, city: 'London'},
+    {name: 'Diana',   age: 28, city: 'Tokyo'},
+    {name: 'Eve',     age: 22, city: 'Berlin'},
+    {name: 'Frank',   age: 40, city: 'Sydney'}
+  ];
+
+  // ---- State -------------------------------------------------------------
+  let sortKey = null;          // column being sorted
+  let sortDir = 1;             // 1 = asc, -1 = desc
+  let filterText = '';         // current search term
+
+  // ---- DOM references -----------------------------------------------------
+  const tbody = document.querySelector('#myTable tbody');
+  const searchInput = document.getElementById('search');
+  const headers = document.querySelectorAll('#myTable th');
+
+  // ---- Rendering -----------------------------------------------------------
+  function render() {
+    // 1️⃣ Filter
+    const filtered = rows.filter(row => {
+      const haystack = Object.values(row).join(' ').toLowerCase();
+      return haystack.includes(filterText.toLowerCase());
+    });
+
+    // 2️⃣ Sort (if a column is selected)
+    if (sortKey) {
+      filtered.sort((a, b) => {
+        const av = a[sortKey];
+        const bv = b[sortKey];
+        if (typeof av === 'number' && typeof bv === 'number')
+          return (av - bv) * sortDir;
+        return av.toString().localeCompare(bv.toString()) * sortDir;
+      });
+    }
+
+    // 3️⃣ Build rows
+    tbody.innerHTML = '';
+    for (const r of filtered) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.name}</td><td>${r.age}</td><td>${r.city}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // ---- Event handling ------------------------------------------------------
+  // Search box
+  searchInput.addEventListener('input', e => {
+    filterText = e.target.value;
+    render();               // re‑render keeps existing sort
+  });
+
+  // Column header click for sorting
+  headers.forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key;
+      if (sortKey === key) {
+        // toggle direction
+        sortDir = -sortDir;
+      } else {
+        sortKey = key;
+        sortDir = 1;
+      }
+      // update visual markers
+      headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+      th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+      render();            // re‑render keeps current filter
+    });
+  });
+
+  // Initial render
+  render();
+})();
+</script>
+
+</body>
+</html>

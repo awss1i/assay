@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>One‑Question‑At‑A‑Time Quiz</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif; margin:20px; background:#f9f9f9; color:#333}
+  #quiz {max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+  h2 {margin-top:0}
+  .options label {display:block; margin:8px 0; cursor:pointer}
+  .nav {margin-top:20px; display:flex; justify-content:space-between}
+  button {padding:8px 16px; font-size:1rem; border:none; border-radius:4px; background:#0066cc; color:#fff; cursor:pointer}
+  button:disabled {background:#999; cursor:not-allowed}
+  /* Progress bar */
+  #progressContainer {height:12px; background:#e0e0e0; border-radius:6px; overflow:hidden; margin-bottom:20px}
+  #progressBar {height:100%; background:#4caf50; width:0%}
+  /* Review */
+  #review {display:none; max-width:600px; margin:auto}
+  .review-item {margin-bottom:15px; padding:10px; background:#fafafa; border-left:4px solid #4caf50}
+  .incorrect {border-left-color:#e53935}
+  .review-item p {margin:4px 0}
+</style>
+</head>
+<body>
+
+<div id="quiz">
+  <div id="progressContainer"><div id="progressBar"></div></div>
+  <h2 id="questionText"></h2>
+  <form id="optionsForm" class="options"></form>
+  <div class="nav">
+    <button id="backBtn" type="button">Back</button>
+    <button id="nextBtn" type="button">Next</button>
+  </div>
+</div>
+
+<div id="review">
+  <h2>Review</h2>
+  <div id="reviewList"></div>
+  <button id="restartBtn" type="button">Restart Quiz</button>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "What is the capital of France?",
+    choices: ["Paris", "Rome", "Berlin", "Madrid"],
+    correct: 0
+  },
+  {
+    q: "Which language runs in the browser?",
+    choices: ["Python", "C", "JavaScript", "Ruby"],
+    correct: 2
+  },
+  {
+    q: "What does HTML stand for?",
+    choices: [
+      "Hyper Text Markup Language",
+      "Home Tool Markup Language",
+      "Hyperlinks and Text Markup Language",
+      "Hyperlinking Text Mark Language"
+    ],
+    correct: 0
+  }
+];
+
+let current = 0;
+const answers = new Array(questions.length).fill(null);
+
+const questionEl = document.getElementById('questionText');
+const formEl = document.getElementById('optionsForm');
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressBar = document.getElementById('progressBar');
+const quizDiv = document.getElementById('quiz');
+const reviewDiv = document.getElementById('review');
+const reviewList = document.getElementById('reviewList');
+const restartBtn = document.getElementById('restartBtn');
+
+function renderQuestion() {
+  const q = questions[current];
+  questionEl.textContent = q.q;
+
+  // Build radio options
+  formEl.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const id = `opt${i}`;
+    const checked = answers[current] === i ? 'checked' : '';
+    const opt = document.createElement('label');
+    opt.innerHTML = `
+      <input type="radio" name="answer" value="${i}" id="${id}" ${checked}>
+      ${c}
+    `;
+    formEl.appendChild(opt);
+  });
+
+  // Update navigation buttons
+  backBtn.disabled = current === 0;
+  nextBtn.textContent = current === questions.length - 1 ? 'Finish' : 'Next';
+  nextBtn.disabled = answers[current] === null;
+
+  // Update progress bar
+  const percent = (current / questions.length) * 100;
+  progressBar.style.width = percent + '%';
+}
+
+// Save selected answer whenever a radio is clicked
+formEl.addEventListener('change', e => {
+  const val = parseInt(e.target.value, 10);
+  answers[current] = val;
+  nextBtn.disabled = false;
+});
+
+backBtn.addEventListener('click', () => {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showReview();
+  }
+});
+
+function showReview() {
+  quizDiv.style.display = 'none';
+  reviewDiv.style.display = 'block';
+  reviewList.innerHTML = '';
+
+  questions.forEach((q, idx) => {
+    const userAns = answers[idx];
+    const correct = q.correct;
+    const correctText = q.choices[correct];
+    const userText = userAns !== null ? q.choices[userAns] : 'No answer';
+
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    if (userAns !== correct) item.classList.add('incorrect');
+
+    item.innerHTML = `
+      <p><strong>Question ${idx + 1}:</strong> ${q.q}</p>
+      <p>Your answer: ${userText}</p>
+      <p>Correct answer: ${correctText}</p>
+    `;
+    reviewList.appendChild(item);
+  });
+}
+
+restartBtn.addEventListener('click', () => {
+  // reset state
+  current = 0;
+  answers.fill(null);
+  reviewDiv.style.display = 'none';
+  quizDiv.style.display = 'block';
+  renderQuestion();
+});
+
+// initial render
+renderQuestion();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Text Compare</title>
+<style>
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    margin:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .container{
+    display:flex;
+    width:100%;
+    max-width:1000px;
+    gap:10px;
+  }
+  .pane{
+    flex:1;
+    border:1px solid #aaa;
+    padding:5px;
+    height:400px;
+    overflow:auto;
+    font-family:monospace;
+    white-space:pre;
+    outline:none;
+  }
+  button{
+    margin:10px 0;
+    padding:6px 12px;
+    font-size:1rem;
+  }
+  span.added   {background:#c8e6c9;}   /* light green */
+  span.removed {background:#ffcdd2;}   /* light red */
+  span.unchanged{}
+</style>
+</head>
+<body>
+
+<h2>Side‑by‑side Text Compare</h2>
+<div class="container">
+  <div id="leftPane" class="pane" contenteditable="true">
+Line 1
+Line 2
+Line 3
+  </div>
+  <div id="rightPane" class="pane" contenteditable="true">
+Line 1
+Line 2 modified
+Line 4
+  </div>
+</div>
+
+<button id="compareBtn">Compare</button>
+
+<script>
+/* Utility – escape HTML so lines are shown literally */
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#39;')
+            .replace(/\s/g,'&nbsp;'); // keeps empty lines visible
+}
+
+/* Simple line‑based LCS diff */
+function diffLines(a,b){
+  const n=a.length, m=b.length;
+  const dp=Array.from({length:n+1},()=>Array(m+1).fill(0));
+
+  for(let i=n-1;i>=0;i--){
+    for(let j=m-1;j>=0;j--){
+      if(a[i]===b[j]) dp[i][j]=dp[i+1][j+1]+1;
+      else dp[i][j]=Math.max(dp[i+1][j],dp[i][j+1]);
+    }
+  }
+
+  const left=[], right=[];
+  let i=0, j=0;
+  while(i<n && j<m){
+    if(a[i]===b[j]){
+      left.push({type:'unchanged', text:a[i]});
+      right.push({type:'unchanged', text:b[j]});
+      i++; j++;
+    }else if(dp[i+1][j] >= dp[i][j+1]){
+      left.push({type:'removed', text:a[i]});
+      i++;
+    }else{
+      right.push({type:'added', text:b[j]});
+      j++;
+    }
+  }
+  while(i<n){ left.push({type:'removed', text:a[i]}); i++; }
+  while(j<m){ right.push({type:'added', text:b[j]}); j++; }
+
+  return {left,right};
+}
+
+/* Render a pane given an array of line objects */
+function renderPane(pane, lines){
+  pane.innerHTML = lines.map(l=>`<span class="${l.type}">${escapeHtml(l.text)}</span>`).join('\n');
+}
+
+/* Main diff routine */
+function runDiff(){
+  const leftText  = leftPane.innerText;
+  const rightText = rightPane.innerText;
+  const a = leftText.split('\n');
+  const b = rightText.split('\n');
+  const diff = diffLines(a,b);
+  renderPane(leftPane, diff.left);
+  renderPane(rightPane, diff.right);
+}
+
+/* Debounce helper – prevents excessive recomputation while typing */
+function debounce(fn, wait){
+  let t;
+  return (...args)=>{
+    clearTimeout(t);
+    t = setTimeout(()=>fn.apply(this,args), wait);
+  };
+}
+
+/* Elements */
+const leftPane  = document.getElementById('leftPane');
+const rightPane = document.getElementById('rightPane');
+const compareBtn = document.getElementById('compareBtn');
+
+/* Events */
+compareBtn.addEventListener('click', runDiff);
+leftPane.addEventListener('input', debounce(runDiff,300));
+rightPane.addEventListener('input', debounce(runDiff,300));
+
+/* Initial diff on load */
+runDiff();
+</script>
+</body>
+</html>

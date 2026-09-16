@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resizable Split Pane</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+  #container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    user-select: none; /* avoid text selection while dragging */
+  }
+  .pane {
+    flex-grow: 0;
+    flex-shrink: 0;
+    overflow: auto;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  #left {
+    background: #f0f0f0;
+    min-width: 10%;
+  }
+  #right {
+    background: #e0e0e0;
+    flex-grow: 1; /* take remaining space */
+    min-width: 10%;
+  }
+  #divider {
+    width: 5px;
+    background: #888;
+    cursor: col-resize;
+  }
+  #info {
+    position: fixed;
+    bottom: 5px;
+    left: 5px;
+    background: rgba(255,255,255,0.8);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="left" class="pane">Left pane content</div>
+  <div id="divider"></div>
+  <div id="right" class="pane">Right pane content</div>
+</div>
+<div id="info"></div>
+<script>
+  (function(){
+    const container = document.getElementById('container');
+    const left = document.getElementById('left');
+    const right = document.getElementById('right');
+    const divider = document.getElementById('divider');
+    const info = document.getElementById('info');
+    const minPercent = 10; // Minimum width percent for each pane
+    let isDragging = false;
+    let startX = 0;
+    let startLeftWidth = 0;
+
+    function updateInfo(){
+      const leftPct = (left.offsetWidth / container.offsetWidth * 100).toFixed(1);
+      const rightPct = (right.offsetWidth / container.offsetWidth * 100).toFixed(1);
+      info.textContent = `Left: ${leftPct}% | Right: ${rightPct}%`;
+    }
+    updateInfo();
+
+    divider.addEventListener('mousedown', e => {
+      isDragging = true;
+      startX = e.clientX;
+      startLeftWidth = left.getBoundingClientRect().width;
+      document.body.style.cursor = 'col-resize';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const containerWidth = container.getBoundingClientRect().width;
+      let newLeftWidth = startLeftWidth + dx;
+      // Convert to percent then enforce min
+      let leftPct = newLeftWidth / containerWidth * 100;
+      if (leftPct < minPercent) leftPct = minPercent;
+      if (leftPct > 100 - minPercent) leftPct = 100 - minPercent;
+      left.style.width = leftPct + '%';
+      right.style.width = (100 - leftPct) + '%';
+      updateInfo();
+    });
+    window.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        document.body.style.cursor = '';
+      }
+    });
+    // Handle window resize to keep percentages consistent
+    window.addEventListener('resize', updateInfo);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>World Clock</title>
+<style>
+  body {font-family: sans-serif; background:#f0f0f0; display:flex; flex-direction:column; align-items:center; padding:20px;}
+  h1 {margin-bottom:10px;}
+  #toggle {margin:10px; padding:5px 10px;}
+  .clocks {display:grid; grid-template-columns: repeat(2, 200px); gap:20px;}
+  .clock {background:#fff; border-radius:8px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.2); text-align:center;}
+  .city {font-weight:bold; margin-bottom:5px;}
+  .time {font-size:1.2em;}
+</style>
+</head>
+<body>
+<h1>World Clock</h1>
+<button id="toggle">Switch to 24‑hour</button>
+<div class="clocks">
+  <div class="clock" data-zone="America/New_York">
+    <div class="city">New York</div>
+    <div class="time"></div>
+  </div>
+  <div class="clock" data-zone="Europe/London">
+    <div class="city">London</div>
+    <div class="time"></div>
+  </div>
+  <div class="clock" data-zone="Asia/Tokyo">
+    <div class="city">Tokyo</div>
+    <div class="time"></div>
+  </div>
+  <div class="clock" data-zone="Australia/Sydney">
+    <div class="city">Sydney</div>
+    <div class="time"></div>
+  </div>
+</div>
+<script>
+  const format24 = {value:false};
+  const toggleBtn = document.getElementById('toggle');
+  toggleBtn.addEventListener('click',()=>{
+    format24.value = !format24.value;
+    toggleBtn.textContent = format24.value ? 'Switch to 12‑hour' : 'Switch to 24‑hour';
+    // update immediately to reflect change
+    updateClocks();
+  });
+  function formatTime(date, tz){
+    const options = {
+      hour: 'numeric', minute: '2-digit', second: '2-digit',
+      hour12: !format24.value,
+      timeZone: tz
+    };
+    return date.toLocaleTimeString('en-US', options);
+  }
+  function updateClocks(){
+    const now = new Date();
+    document.querySelectorAll('.clock').forEach(div=>{
+      const tz = div.dataset.zone;
+      const timeDiv = div.querySelector('.time');
+      timeDiv.textContent = formatTime(now, tz);
+    });
+  }
+  // initial call and then every second
+  updateClocks();
+  setInterval(updateClocks, 1000);
+</script>
+</body>
+</html>

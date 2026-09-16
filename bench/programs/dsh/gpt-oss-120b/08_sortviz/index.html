@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bubble Sort Visualizer</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:0; padding:20px; background:#f0f0f0;}
+  #controls {margin-bottom:20px;}
+  button {margin-right:10px; padding:8px 12px; font-size:14px;}
+  #array {display:flex; align-items:flex-end; height:300px; border:1px solid #ccc; background:#fff;}
+  .bar {flex:1; margin:0 1px; background:#4caf50; width:20px; min-width:5px;}
+</style>
+</head>
+<body>
+<div id="controls">
+  <button id="shuffleBtn">Shuffle</button>
+  <button id="sortBtn">Sort</button>
+</div>
+<div id="array"></div>
+<script>
+  const BAR_COUNT = 50;
+  const ANIMATION_DELAY = 50; // ms
+  let values = [];
+  const arrayDiv = document.getElementById('array');
+
+  function createBars() {
+    arrayDiv.innerHTML = '';
+    for (let i = 0; i < values.length; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = values[i] + 'px';
+      bar.dataset.index = i;
+      arrayDiv.appendChild(bar);
+    }
+  }
+
+  function randomize() {
+    values = [];
+    for (let i = 0; i < BAR_COUNT; i++) {
+      // Random height between 10 and 300
+      values.push(Math.floor(Math.random() * 290) + 10);
+    }
+    createBars();
+  }
+
+  function swap(i, j) {
+    // swap values
+    const temp = values[i];
+    values[i] = values[j];
+    values[j] = temp;
+    // swap DOM elements heights
+    const bars = arrayDiv.children;
+    bars[i].style.height = values[i] + 'px';
+    bars[j].style.height = values[j] + 'px';
+  }
+
+  async function bubbleSort() {
+    const n = values.length;
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = 0; j < n - i - 1; j++) {
+        if (values[j] > values[j + 1]) {
+          swap(j, j + 1);
+          await new Promise(r => setTimeout(r, ANIMATION_DELAY));
+        }
+      }
+    }
+  }
+
+  document.getElementById('shuffleBtn').addEventListener('click', () => {
+    randomize();
+  });
+
+  document.getElementById('sortBtn').addEventListener('click', async () => {
+    // Disable buttons during sort
+    document.getElementById('shuffleBtn').disabled = true;
+    document.getElementById('sortBtn').disabled = true;
+    await bubbleSort();
+    document.getElementById('shuffleBtn').disabled = false;
+    document.getElementById('sortBtn').disabled = false;
+  });
+
+  // Initialise on load
+  randomize();
+</script>
+</body>
+</html>

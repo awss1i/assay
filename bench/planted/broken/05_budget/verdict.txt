@@ -1,0 +1,14 @@
+# One line per planted bug, in the order bugs.md numbers them.
+#
+#   <n> found <case-id> <optional note>
+#   <n> missed <optional note>
+#
+# A bug is *found* when at least one failing case is caused by it. That is a
+# judgement: assay reports an act and a measurement, and whether that
+# measurement is this bug showing itself is what a person has to decide.
+
+1 missed only 25 or nothing is typed as an amount, never 0
+2 missed the cell holds a number either way
+3 found F001 the total follows the list up and not down
+4 missed typing in a field asserts nothing on its own
+5 missed remaining does change, and the sign is a value judgement

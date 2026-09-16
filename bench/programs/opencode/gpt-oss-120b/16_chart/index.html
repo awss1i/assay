@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Bar Chart</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 20px;
+    background: #fafafa;
+  }
+  #controls {
+    margin-bottom: 10px;
+  }
+  #inputValues {
+    width: 300px;
+    padding: 5px;
+    font-size: 1rem;
+  }
+  #addBtn {
+    padding: 5px 10px;
+    font-size: 1rem;
+    margin-left: 5px;
+  }
+  canvas {
+    border: 1px solid #333;
+    background: #fff;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <label for="inputValues">Enter numbers (comma‑separated):</label>
+  <input id="inputValues" type="text" placeholder="e.g. 5,12,8">
+  <button id="addBtn">Add</button>
+</div>
+
+<canvas id="chart" width="600" height="400"></canvas>
+
+<script>
+  const input = document.getElementById('inputValues');
+  const addBtn = document.getElementById('addBtn');
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+
+  // Store the numbers that make up the chart
+  let data = [];
+
+  // Parse a comma‑separated string into an array of numbers
+  function parseValues(str) {
+    return str.split(',')
+              .map(v => v.trim())
+              .filter(v => v.length)
+              .map(Number)
+              .filter(v => !isNaN(v));
+  }
+
+  // Redraw the whole chart from the current data array
+  function drawChart() {
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (data.length === 0) return;
+
+    const maxVal = Math.max(...data);
+    const barWidth = w / data.length * 0.8; // leave some space between bars
+    const gap = w / data.length * 0.2;
+
+    data.forEach((val, i) => {
+      const barHeight = (val / maxVal) * (h * 0.8);
+      const x = i * (barWidth + gap) + gap / 2;
+      const y = h - barHeight;
+
+      // bar color – vary hue based on index
+      const hue = (i * 60) % 360;
+      ctx.fillStyle = `hsl(${hue},70%,50%)`;
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      // draw value label above bar
+      ctx.fillStyle = '#000';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(val, x + barWidth / 2, y - 5);
+    });
+  }
+
+  // When the "Add" button is pressed, parse the input and append to data
+  addBtn.addEventListener('click', () => {
+    const newVals = parseValues(input.value);
+    if (newVals.length) {
+      data = data.concat(newVals);
+      drawChart();
+      input.value = '';
+    }
+  });
+
+  // Optional: allow pressing Enter to add
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      addBtn.click();
+    }
+  });
+</script>
+
+</body>
+</html>

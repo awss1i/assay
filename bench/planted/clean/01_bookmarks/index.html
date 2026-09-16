@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bookmark Manager</title>
+    <style>
+        body {font-family: sans-serif; margin: 2rem; background: #f5f5f5;}
+        h1 {margin-bottom: 0.5rem;}
+        #form {display: flex; gap: 0.5rem; margin-bottom: 1rem;}
+        #form input[type="text"] {flex: 1; padding: 0.4rem;}
+        #form button {padding: 0.4rem 0.8rem;}
+        #bookmarks {margin-top: 1rem;}
+        .bookmark {display: flex; align-items: center; background: #fff; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 4px;}
+        .bookmark span.title {flex: 1;}
+        .bookmark a {margin-right: 0.5rem; color: #0066cc; text-decoration: none;}
+        .bookmark button {margin-left: 0.5rem;}
+        #count {font-weight: bold;}
+    </style>
+</head>
+<body>
+    <h1>Bookmark Manager</h1>
+    <div id="form">
+        <input type="text" id="title" placeholder="Title" />
+        <input type="text" id="url" placeholder="URL" />
+        <button id="saveBtn">Save</button>
+    </div>
+    <div>Saved: <span id="count">0</span></div>
+    <div id="bookmarks"></div>
+
+    <script>
+        const storageKey = "bookmarks";
+        let bookmarks = [];
+        const titleInput = document.getElementById('title');
+        const urlInput = document.getElementById('url');
+        const saveBtn = document.getElementById('saveBtn');
+        const bookmarksDiv = document.getElementById('bookmarks');
+        const countSpan = document.getElementById('count');
+
+        function loadBookmarks() {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                try { bookmarks = JSON.parse(stored); }
+                catch(e) { bookmarks = []; }
+            }
+        }
+        function saveBookmarks() {
+            localStorage.setItem(storageKey, JSON.stringify(bookmarks));
+        }
+        function render() {
+            bookmarksDiv.innerHTML = '';
+            bookmarks.forEach((b, i) => {
+                const div = document.createElement('div');
+                div.className = 'bookmark';
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'title';
+                titleSpan.textContent = b.title;
+                const openLink = document.createElement('a');
+                openLink.href = b.url;
+                openLink.target = '_blank';
+                openLink.textContent = 'Open';
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.onclick = () => {
+                    bookmarks.splice(i, 1);
+                    saveBookmarks();
+                    render();
+                };
+                div.appendChild(titleSpan);
+                div.appendChild(openLink);
+                div.appendChild(removeBtn);
+                bookmarksDiv.appendChild(div);
+            });
+            countSpan.textContent = bookmarks.length;
+        }
+        function addBookmark() {
+            const title = titleInput.value.trim();
+            const url = urlInput.value.trim();
+            if (!title || !url) { alert('Both title and URL are required'); return; }
+            // simple URL validation
+            try { new URL(url); } catch { alert('Invalid URL'); return; }
+            bookmarks.push({title, url});
+            saveBookmarks();
+            render();
+            titleInput.value = '';
+            urlInput.value = '';
+        }
+        saveBtn.addEventListener('click', addBookmark);
+        // Load and render on page load
+        loadBookmarks();
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Country Search</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+    background: #f9f9f9;
+    color: #333;
+  }
+  #search {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    border: 2px solid #888;
+    border-radius: 4px;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  li {
+    background: #fff;
+    margin: 0.25rem 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+  li:hover {
+    background: #e0f7fa;
+  }
+  .hidden {
+    display: none;
+  }
+  .loading {
+    font-style: italic;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<h1>Search Countries</h1>
+<input id="search" type="text" placeholder="Type to filter..." autocomplete="off">
+
+<p id="status" class="loading">Loading list…</p>
+<ul id="country-list" class="hidden"></ul>
+
+<script>
+  // List of 20 countries
+  const countries = [
+    "Argentina", "Australia", "Brazil", "Canada", "China",
+    "Denmark", "Egypt", "France", "Germany", "India",
+    "Indonesia", "Japan", "Mexico", "Netherlands", "Nigeria",
+    "Norway", "Russia", "South Africa", "Spain", "United Kingdom"
+  ];
+
+  const listEl = document.getElementById('country-list');
+  const statusEl = document.getElementById('status');
+  const searchEl = document.getElementById('search');
+
+  // Populate the list after a short delay
+  setTimeout(() => {
+    countries.forEach(name => {
+      const li = document.createElement('li');
+      li.textContent = name;
+      listEl.appendChild(li);
+    });
+    statusEl.remove();          // remove loading message
+    listEl.classList.remove('hidden');
+    // Focus the search box after load
+    searchEl.focus();
+  }, 500); // 0.5 second delay
+
+  // Filter as you type
+  searchEl.addEventListener('input', () => {
+    const filter = searchEl.value.toLowerCase();
+    const items = listEl.getElementsByTagName('li');
+    for (let i = 0; i < items.length; i++) {
+      const txt = items[i].textContent.toLowerCase();
+      items[i].classList.toggle('hidden', !txt.includes(filter));
+    }
+  });
+</script>
+
+</body>
+</html>

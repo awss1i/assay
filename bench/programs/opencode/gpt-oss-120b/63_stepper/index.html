@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quantity Control</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 2rem;
+    background: #f9f9f9;
+    color: #333;
+  }
+  .counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .counter button {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.2rem;
+    border: none;
+    background: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .counter button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+  .counter input {
+    width: 3rem;
+    text-align: center;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.2rem;
+  }
+  .price {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+  }
+</style>
+</head>
+<body>
+
+<h2>Product Quantity</h2>
+
+<div class="counter">
+  <button id="minus">−</button>
+  <input type="number" id="quantity" value="1" min="1" max="10">
+  <button id="plus">+</button>
+</div>
+
+<div class="price">
+  Total: $<span id="total">9.99</span>
+</div>
+
+<script>
+  (function() {
+    const unitPrice = 9.99;               // price per item
+    const qtyInput = document.getElementById('quantity');
+    const btnMinus = document.getElementById('minus');
+    const btnPlus  = document.getElementById('plus');
+    const totalEl = document.getElementById('total');
+
+    // Update UI based on current quantity
+    function update() {
+      let qty = parseInt(qtyInput.value, 10);
+      if (isNaN(qty) || qty < 1) qty = 1;
+      if (qty > 10) qty = 10;
+      qtyInput.value = qty;
+
+      btnMinus.disabled = qty <= 1;
+      btnPlus.disabled  = qty >= 10;
+
+      totalEl.textContent = (qty * unitPrice).toFixed(2);
+    }
+
+    // Handlers
+    btnMinus.addEventListener('click', () => {
+      qtyInput.value = parseInt(qtyInput.value, 10) - 1;
+      update();
+    });
+
+    btnPlus.addEventListener('click', () => {
+      qtyInput.value = parseInt(qtyInput.value, 10) + 1;
+      update();
+    });
+
+    qtyInput.addEventListener('input', update);
+    qtyInput.addEventListener('blur', update); // enforce limits on blur
+
+    // Initialise
+    update();
+  })();
+</script>
+
+</body>
+</html>

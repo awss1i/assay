@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign‑Up Form</title>
+<style>
+    body{
+        font-family:system-ui,Arial,sans-serif;
+        background:#f4f7fa;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        margin:0;
+    }
+    .card{
+        background:#fff;
+        padding:2rem;
+        border-radius:8px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.1);
+        width:320px;
+    }
+    h2{
+        margin-top:0;
+        text-align:center;
+    }
+    .field{
+        margin-bottom:1.2rem;
+        position:relative;
+    }
+    label{
+        display:block;
+        margin-bottom.4rem;
+        font-size:0.9rem;
+        color:#333;
+    }
+    input{
+        width:100%;
+        padding:0.6rem;
+        font-size:1rem;
+        border:1px solid #ccc;
+        border-radius:4px;
+        box-sizing:border-box;
+    }
+    input:focus{
+        border-color:#5b9dd9;
+        outline:none;
+    }
+    .strength-meter{
+        height:6px;
+        width:100%;
+        background:#e0e0e0;
+        border-radius:3px;
+        overflow:hidden;
+        margin-top:0.3rem;
+    }
+    .strength-meter div{
+        height:100%;
+        width:0;
+        transition:width .3s ease;
+    }
+    .strength-0{background:#e74c3c;}
+    .strength-1{background:#e67e22;}
+    .strength-2{background:#f1c40f;}
+    .strength-3{background:#2ecc71;}
+    .msg{
+        font-size:0.85rem;
+        color:#e74c3c;
+        position:absolute;
+        bottom:-1.2rem;
+        left:0;
+    }
+    button{
+        width:100%;
+        padding:0.7rem;
+        font-size:1rem;
+        background:#5b9dd9;
+        color:#fff;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        opacity:0.6;
+        transition:opacity .2s;
+    }
+    button:enabled{
+        opacity:1;
+    }
+    button:disabled{
+        cursor:not-allowed;
+    }
+</style>
+</head>
+<body>
+<div class="card">
+    <h2>Create Account</h2>
+    <form id="signup" novalidate>
+        <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+            <div class="msg" id="emailMsg"></div>
+        </div>
+
+        <div class="field">
+            <label for="pwd">Password</label>
+            <input type="password" id="pwd" required autocomplete="new-password">
+            <div class="strength-meter"><div id="strengthBar"></div></div>
+            <div class="msg" id="pwdMsg"></div>
+        </div>
+
+        <div class="field">
+            <label for="cpwd">Confirm Password</label>
+            <input type="password" id="cpwd" required autocomplete="new-password">
+            <div class="msg" id="cpwdMsg"></div>
+        </div>
+
+        <button type="submit" id="submitBtn" disabled>Sign Up</button>
+    </form>
+</div>
+
+<script>
+(function(){
+    const email   = document.getElementById('email');
+    const pwd     = document.getElementById('pwd');
+    const cpwd    = document.getElementById('cpwd');
+    const submit  = document.getElementById('submitBtn');
+
+    const emailMsg = document.getElementById('emailMsg');
+    const pwdMsg   = document.getElementById('pwdMsg');
+    const cpwdMsg  = document.getElementById('cpwdMsg');
+    const strengthBar = document.getElementById('strengthBar');
+
+    // Helper: test password strength
+    function getStrength(p){
+        let score = 0;
+        if(p.length >= 8) score++;                           // length
+        if(/[A-Z]/.test(p)) score++;                         // uppercase
+        if(/[0-9]/.test(p)) score++;                         // digit
+        if(/[^A-Za-z0-9]/.test(p)) score++;                  // special char
+        return score; // 0‑4
+    }
+
+    function updateStrength(){
+        const val = pwd.value;
+        const strength = getStrength(val);
+        strengthBar.style.width = (strength*25)+'%';
+        strengthBar.className = '';
+        if(strength>0) strengthBar.classList.add('strength-'+(strength-1));
+        //message
+        if(val.length===0){
+            pwdMsg.textContent = '';
+        }else if(strength<3){
+            pwdMsg.textContent = 'Password is weak';
+        }else{
+            pwdMsg.textContent = '';
+        }
+    }
+
+    function validateEmail(){
+        if(email.value.trim()===''){
+            emailMsg.textContent = 'Email required';
+            return false;
+        }
+        // HTML5 email validation (built‑in)
+        if(email.checkValidity()){
+            emailMsg.textContent = '';
+            return true;
+        }else{
+            emailMsg.textContent = 'Enter a valid email';
+            return false;
+        }
+    }
+
+    function validatePassword(){
+        const strength = getStrength(pwd.value);
+        return strength >= 3; // at least 3 out of 4 criteria
+    }
+
+    function validateConfirm(){
+        if(cpwd.value === pwd.value && cpwd.value.length>0){
+            cpwdMsg.textContent = '';
+            return true;
+        }else{
+            cpwdMsg.textContent = 'Passwords do not match';
+            return false;
+        }
+    }
+
+    function toggleSubmit(){
+        const ok = validateEmail() && validatePassword() && validateConfirm();
+        submit.disabled = !ok;
+    }
+
+    // Event listeners
+    email.addEventListener('input',()=>{validateEmail(); toggleSubmit();});
+    pwd.addEventListener('input',()=>{
+        updateStrength();
+        validatePassword();      // just for internal use
+        validateConfirm();       // to clear mismatch message if user changes original
+        toggleSubmit();
+    });
+    cpwd.addEventListener('input',()=>{validateConfirm(); toggleSubmit();});
+
+    // Prevent actual submission for demo purposes
+    document.getElementById('signup').addEventListener('submit',e=>{
+        e.preventDefault();
+        alert('Form submitted! 🎉');
+    });
+
+    // Initialise
+    updateStrength();
+})();
+</script>
+</body>
+</html>

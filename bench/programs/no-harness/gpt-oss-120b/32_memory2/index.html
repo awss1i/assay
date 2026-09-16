@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Game</title>
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        background:#f0f4f8;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-start;
+        min-height:100vh;
+        margin:0;
+        padding:20px;
+    }
+    h1 { margin:0 0 10px; }
+    .stats {
+        margin-bottom:15px;
+        font-size:1.1rem;
+    }
+    .stats span { margin:0 10px; }
+    .grid {
+        display:grid;
+        grid-template-columns: repeat(4, 80px);
+        grid-gap:10px;
+    }
+    .card {
+        width:80px;
+        height:80px;
+        perspective:600px;
+        cursor:pointer;
+    }
+    .inner {
+        width:100%;
+        height:100%;
+        position:relative;
+        transform-style:preserve-3d;
+        transition:transform .4s;
+    }
+    .flipped .inner {
+        transform:rotateY(180deg);
+    }
+    .face {
+        position:absolute;
+        width:100%;
+        height:100%;
+        backface-visibility:hidden;
+        border-radius:8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:2rem;
+        user-select:none;
+    }
+    .front {
+        background:#2c3e50;
+        color:#ecf0f1;
+    }
+    .back {
+        background:#ecf0f1;
+        color:#2c3e50;
+        transform:rotateY(180deg);
+        border:2px solid #2c3e50;
+    }
+    #winOverlay {
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.6);
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:2rem;
+        flex-direction:column;
+        visibility:hidden;
+    }
+    #winOverlay button {
+        margin-top:15px;
+        padding:8px 16px;
+        font-size:1rem;
+        cursor:pointer;
+    }
+</style>
+</head>
+<body>
+
+<h1>Memory Game</h1>
+<div class="stats">
+    <span>Moves: <span id="moves">0</span></span>
+    <span>Time: <span id="timer">00:00</span></span>
+    <span>Pairs found: <span id="pairs">0</span></span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div id="winOverlay">
+    🎉 Congratulations! You won! 🎉
+    <button id="restartBtn">Play Again</button>
+</div>
+
+<script>
+(() => {
+    const symbols = ['😀','🐶','🍎','⚽','🚗','🌙','💡','🎵']; // 8 unique symbols
+    const totalPairs = symbols.length;
+    const cards = symbols.concat(symbols); // duplicate for pairs
+    const grid = document.getElementById('grid');
+    const movesEl = document.getElementById('moves');
+    const timerEl = document.getElementById('timer');
+    const pairsEl = document.getElementById('pairs');
+    const winOverlay = document.getElementById('winOverlay');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let moves = 0;
+    let pairsFound = 0;
+    let timer = null;
+    let seconds = 0;
+
+    // ---------- Helper ----------
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function formatTime(sec) {
+        const m = String(Math.floor(sec / 60)).padStart(2,'0');
+        const s = String(sec % 60).padStart(2,'0');
+        return `${m}:${s}`;
+    }
+
+    function startTimer() {
+        if (timer) return;
+        timer = setInterval(() => {
+            seconds++;
+            timerEl.textContent = formatTime(seconds);
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timer);
+        timer = null;
+    }
+
+    function resetGame() {
+        // reset vars
+        firstCard = secondCard = null;
+        lockBoard = false;
+        moves = 0;
+        pairsFound = 0;
+        seconds = 0;
+        clearInterval(timer);
+        timer = null;
+        movesEl.textContent = moves;
+        pairsEl.textContent = pairsFound;
+        timerEl.textContent = formatTime(seconds);
+        winOverlay.style.visibility = 'hidden';
+
+        // build cards
+        const shuffled = shuffle(cards.slice());
+        grid.innerHTML = '';
+        shuffled.forEach(sym => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.symbol = sym;
+
+            const inner = document.createElement('div');
+            inner.className = 'inner';
+
+            const front = document.createElement('div');
+            front.className = 'face front';
+            front.textContent = '?';
+
+            const back = document.createElement('div');
+            back.className = 'face back';
+            back.textContent = sym;
+
+            inner.appendChild(front);
+            inner.appendChild(back);
+            card.appendChild(inner);
+            grid.appendChild(card);
+        });
+    }
+
+    // ---------- Card Logic ----------
+    function flipCard(card) {
+        if (lockBoard) return;
+        if (card === firstCard) return; // ignore double click
+
+        card.classList.add('flipped');
+        if (!firstCard) {
+            firstCard = card;
+            startTimer(); // timer starts on first flip
+            return;
+        }
+        secondCard = card;
+        moves++;
+        movesEl.textContent = moves;
+
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        const isMatch = firstCard.dataset.symbol === secondCard.dataset.symbol;
+        if (isMatch) {
+            disableCards();
+        } else {
+            unflipCards();
+        }
+    }
+
+    function disableCards() {
+        firstCard.removeEventListener('click', cardClick);
+        secondCard.removeEventListener('click', cardClick);
+        firstCard = null;
+        secondCard = null;
+        pairsFound++;
+        pairsEl.textContent = pairsFound;
+        if (pairsFound === totalPairs) {
+            setTimeout(() => {
+                stopTimer();
+                winOverlay.style.visibility = 'visible';
+            }, 500);
+        }
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            secondCard.classList.remove('flipped');
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+        }, 800);
+    }
+
+    function cardClick(e) {
+        flipCard(e.currentTarget);
+    }
+
+    // ---------- Init ----------
+    function init() {
+        resetGame();
+        // add listeners
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', cardClick);
+        });
+    }
+
+    // Re‑attach listeners after reset
+    grid.addEventListener('DOMNodeInserted', (e) => {
+        if (e.target.classList && e.target.classList.contains('card')) {
+            e.target.addEventListener('click', cardClick);
+        }
+    });
+
+    restartBtn.addEventListener('click', resetGame);
+
+    // start
+    init();
+})();
+</script>
+</body>
+</html>

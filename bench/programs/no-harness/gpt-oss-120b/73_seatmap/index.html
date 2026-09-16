@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Seat Selector</title>
+<style>
+  body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+    background:#f9f9f9;
+  }
+  h1{
+    text-align:center;
+  }
+  #seating{
+    display:grid;
+    grid-template-columns: repeat(10, 40px);
+    gap:8px;
+    justify-content:center;
+    margin-bottom:20px;
+  }
+  .seat{
+    width:40px;
+    height:40px;
+    line-height:40px;
+    text-align:center;
+    border:2px solid #555;
+    border-radius:4px;
+    cursor:pointer;
+    user-select:none;
+    background:#fff;
+    transition:background .2s;
+  }
+  .seat.free:hover{
+    background:#e0f7ff;
+  }
+  .seat.selected{
+    background:#4caf50;
+    color:#fff;
+  }
+  .seat.booked{
+    background:#bbb;
+    color:#666;
+    cursor:not-allowed;
+  }
+  #total{
+    text-align:center;
+    font-size:1.2em;
+  }
+</style>
+</head>
+<body>
+
+<h1>Movie Theatre Seat Selection</h1>
+
+<div id="seating"></div>
+
+<div id="total">Total: $0</div>
+
+<script>
+/* Configuration */
+const ROWS = 5;
+const COLS = 10;
+const PRICE_PER_SEAT = 12; // dollars
+
+/* Hard‑coded set of already‑booked seats (row,col) – zero based */
+const bookedSeats = new Set([
+  '0-3','0-4','0-5',
+  '1-0','1-9',
+  '2-2','2-3','2-4','2-5',
+  '3-7',
+  '4-0','4-9'
+]);
+
+/* Build the grid */
+const seatingDiv = document.getElementById('seating');
+
+for(let r=0; r<ROWS; r++){
+  for(let c=0; c<COLS; c++){
+    const seat = document.createElement('div');
+    seat.classList.add('seat');
+    const key = `${r}-${c}`;
+    seat.dataset.key = key;
+    seat.dataset.row = r;
+    seat.dataset.col = c;
+    seat.textContent = String.fromCharCode(65+r) + (c+1); // A1, A2…
+    if(bookedSeats.has(key)){
+      seat.classList.add('booked');
+    }else{
+      seat.classList.add('free');
+      seat.addEventListener('click', toggleSeat);
+    }
+    seatingDiv.appendChild(seat);
+  }
+}
+
+/* Toggle a free seat */
+function toggleSeat(e){
+  const seat = e.currentTarget;
+  seat.classList.toggle('selected');
+  updateTotal();
+}
+
+/* Update the price total */
+function updateTotal(){
+  const selected = document.querySelectorAll('.seat.selected');
+  const total = selected.length * PRICE_PER_SEAT;
+  document.getElementById('total').textContent = `Total: $${total}`;
+}
+</script>
+
+</body>
+</html>

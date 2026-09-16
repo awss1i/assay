@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>9x9 Minesweeper</title>
+<style>
+  body {font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin:0; background:#222; color:#eee;}
+  #board {display: grid; grid-template-columns: repeat(9, 30px); grid-template-rows: repeat(9, 30px); gap:2px;}
+  .cell {width:30px; height:30px; background:#555; border:1px solid #666; display:flex; justify-content:center; align-items:center; font-weight:bold; cursor:pointer; user-select:none;}
+  .cell.revealed {background:#ddd; color:#000; cursor:default;}
+  .cell.mine {background:#c33;}
+  .cell.flag {background:#555; color:#ff0;}
+</style>
+</head>
+<body>
+<h1>9x9 Minesweeper</h1>
+<div id="board"></div>
+<script>
+// Config
+const ROWS = 9;
+const COLS = 9;
+const MINES_COUNT = 10;
+
+const boardEl = document.getElementById('board');
+let board = [];
+
+function initBoard() {
+  // create empty cells
+  board = new Array(ROWS);
+  for(let r=0;r<ROWS;r++){
+    board[r]=new Array(COLS);
+    for(let c=0;c<COLS;c++){
+      board[r][c]={mine:false, revealed:false, flagged:false, adjacent:0};
+    }
+  }
+  // place mines randomly
+  let placed=0;
+  while(placed<MINES_COUNT){
+    const r = Math.floor(Math.random()*ROWS);
+    const c = Math.floor(Math.random()*COLS);
+    if(!board[r][c].mine){
+      board[r][c].mine=true;
+      placed++;
+    }
+  }
+  // compute adjacent counts
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      if(board[r][c].mine) continue;
+      let count=0;
+      for(let dr=-1;dr<=1;dr++){
+        for(let dc=-1;dc<=1;dc++){
+          if(dr===0 && dc===0) continue;
+          const nr=r+dr, nc=c+dc;
+          if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && board[nr][nc].mine) count++;
+        }
+      }
+      board[r][c].adjacent=count;
+    }
+  }
+}
+
+function renderBoard(){
+  boardEl.innerHTML='';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cellEl=document.createElement('div');
+      cellEl.className='cell';
+      cellEl.dataset.r=r; cellEl.dataset.c=c;
+      cellEl.addEventListener('click', onCellClick);
+      cellEl.addEventListener('contextmenu', onCellRightClick);
+      boardEl.appendChild(cellEl);
+    }
+  }
+}
+
+function onCellClick(e){
+  const r=+this.dataset.r, c=+this.dataset.c;
+  const cell=board[r][c];
+  if(cell.flagged || cell.revealed) return;
+  revealCell(r,c);
+}
+
+function onCellRightClick(e){
+  e.preventDefault();
+  const r=+this.dataset.r, c=+this.dataset.c;
+  const cell=board[r][c];
+  if(cell.revealed) return;
+  cell.flagged=!cell.flagged;
+  this.classList.toggle('flag',cell.flagged);
+  this.textContent=cell.flagged?'⚑':'';
+}
+
+function revealCell(r,c){
+  const cell=board[r][c];
+  if(cell.revealed || cell.flagged) return;
+  cell.revealed=true;
+  const el = boardEl.children[r*COLS + c];
+  el.classList.add('revealed');
+  if(cell.mine){
+    el.classList.add('mine');
+    el.textContent='💣';
+    gameOver(false);
+    return;
+  }
+  if(cell.adjacent>0){
+    el.textContent=cell.adjacent;
+  } else {
+    // flood fill neighbors
+    for(let dr=-1;dr<=1;dr++){
+      for(let dc=-1;dc<=1;dc++){
+        if(dr===0 && dc===0) continue;
+        const nr=r+dr, nc=c+dc;
+        if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS){
+          revealCell(nr,nc);
+        }
+      }
+    }
+  }
+  checkWin();
+}
+
+function gameOver(won){
+  // reveal all mines
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell=board[r][c];
+      const el=boardEl.children[r*COLS + c];
+      if(cell.mine){
+        el.classList.add('revealed','mine');
+        el.textContent='💣';
+      }
+      el.removeEventListener('click', onCellClick);
+      el.removeEventListener('contextmenu', onCellRightClick);
+    }
+  }
+  setTimeout(()=>{
+    alert(won? 'Congratulations! You cleared the board.' : 'Game Over!');
+  },100);
+}
+
+function checkWin(){
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell=board[r][c];
+      if(!cell.mine && !cell.revealed) return;
+    }
+  }
+  gameOver(true);
+}
+
+// Initialize
+initBoard();
+renderBoard();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Temperature Converter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    .converter {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    input {
+      width: 150px;
+      padding: 5px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="converter">
+    <label>
+      Celsius:
+      <input type="number" id="celsius" placeholder="°C" />
+    </label>
+    <label>
+      Fahrenheit:
+      <input type="number" id="fahrenheit" placeholder="°F" />
+    </label>
+  </div>
+  <script>
+    const cInput = document.getElementById('celsius');
+    const fInput = document.getElementById('fahrenheit');
+    let ignore = false; // Prevent feedback loop
+    cInput.addEventListener('input', () => {
+      if (ignore) return;
+      const c = parseFloat(cInput.value);
+      if (!isNaN(c)) {
+        ignore = true;
+        fInput.value = (c * 9 / 5 + 32).toFixed(2);
+        ignore = false;
+      } else {
+        fInput.value = '';
+      }
+    });
+    fInput.addEventListener('input', () => {
+      if (ignore) return;
+      const f = parseFloat(fInput.value);
+      if (!isNaN(f)) {
+        ignore = true;
+        cInput.value = ((f - 32) * 5 / 9).toFixed(2);
+        ignore = false;
+      } else {
+        cInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>

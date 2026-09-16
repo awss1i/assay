@@ -1,0 +1,14 @@
+# One line per planted bug, in the order bugs.md numbers them.
+#
+#   <n> found <case-id> <optional note>
+#   <n> missed <optional note>
+#
+# A bug is *found* when at least one failing case is caused by it. That is a
+# judgement: assay reports an act and a measurement, and whether that
+# measurement is this bug showing itself is what a person has to decide.
+
+1 missed front and back both carry text; that they match is a value judgement
+2 missed no expectation of how many cards there are
+3 found F001 Previous never answers while Next always does
+4 missed pressing Shuffle asserts nothing, and it changes nothing to notice
+5 missed a button only has to survive being pressed

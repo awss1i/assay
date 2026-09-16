@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Undo / Redo Demo</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem; background:#f9f9f9;}
+  .container {max-width: 600px; margin:auto;}
+  textarea {
+    width: 100%; height: 200px; padding: .5rem; box-sizing:border-box;
+    font-size:1rem; line-height:1.5; resize:vertical;
+  }
+  button {
+    margin: .2rem; padding:.4rem .8rem; font-size:1rem;
+    cursor:pointer;
+  }
+  button:disabled {opacity:.5; cursor:default;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Editable Text with Undo / Redo</h2>
+  <button id="undoBtn" disabled>Undo</button>
+  <button id="redoBtn" disabled>Redo</button>
+  <textarea id="editor" placeholder="Type something…"></textarea>
+</div>
+
+<script>
+  const editor   = document.getElementById('editor');
+  const undoBtn  = document.getElementById('undoBtn');
+  const redoBtn  = document.getElementById('redoBtn');
+
+  // History stack – start with empty string
+  let history = [''];
+  let pointer = 0; // points to current state in history
+
+  function updateButtons() {
+    undoBtn.disabled = pointer === 0;
+    redoBtn.disabled = pointer === history.length - 1;
+  }
+
+  // Record a new state whenever the content changes
+  editor.addEventListener('input', () => {
+    const current = editor.value;
+    // If the change didn’t actually modify the value, ignore it
+    if (current === history[pointer]) return;
+
+    // Discard any redo states that existed beyond the current pointer
+    history = history.slice(0, pointer + 1);
+    history.push(current);
+    pointer++;
+    updateButtons();
+  });
+
+  undoBtn.addEventListener('click', () => {
+    if (pointer === 0) return;
+    pointer--;
+    editor.value = history[pointer];
+    updateButtons();
+    // Move caret to end after undo
+    editor.selectionStart = editor.selectionEnd = editor.value.length;
+  });
+
+  redoBtn.addEventListener('click', () => {
+    if (pointer >= history.length - 1) return;
+    pointer++;
+    editor.value = history[pointer];
+    updateButtons();
+    // Move caret to end after redo
+    editor.selectionStart = editor.selectionEnd = editor.value.length;
+  });
+
+  // Initial button state
+  updateButtons();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Shape Selector</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  #canvasContainer {border: 1px solid #ccc; display: inline-block;}
+  .swatch {width: 30px; height: 30px; margin: 2px; display: inline-block; cursor: pointer; border: 2px solid transparent;}
+  .swatch.selected {border-color: #000;}
+  #swatches {margin-top: 10px;}
+</style>
+</head>
+<body>
+<h2>Canvas Shape Selector</h2>
+<div id="canvasContainer">
+  <canvas id="myCanvas" width="400" height="200"></canvas>
+</div>
+<div id="swatches">
+  <div class="swatch" data-color="#ff0000" style="background:#ff0000;"></div>
+  <div class="swatch" data-color="#00ff00" style="background:#00ff00;"></div>
+  <div class="swatch" data-color="#0000ff" style="background:#0000ff;"></div>
+  <div class="swatch" data-color="#ffff00" style="background:#ffff00;"></div>
+  <div class="swatch" data-color="#ff00ff" style="background:#ff00ff;"></div>
+  <div class="swatch" data-color="#00ffff" style="background:#00ffff;"></div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+  // Define three shapes (rectangles). Each shape: {type:'rect', x,y,width,height,color}
+  const shapes = [
+    {type:'rect', x:50, y:50, w:80, h:80, color:'#ff9999'},
+    {type:'rect', x:160, y:50, w:80, h:80, color:'#99ff99'},
+    {type:'rect', x:270, y:50, w:80, h:80, color:'#9999ff'}
+  ];
+  let selectedIndex = null; // no shape selected initially
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    shapes.forEach((sh,i)=>{
+      ctx.fillStyle = sh.color;
+      ctx.fillRect(sh.x, sh.y, sh.w, sh.h);
+      // draw outline if selected
+      if(i===selectedIndex){
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(sh.x, sh.y, sh.w, sh.h);
+      }
+    });
+  }
+
+  // hit test for rectangle
+  function hitTest(x,y){
+    for(let i=shapes.length-1;i>=0;i--){ // reverse for topmost first
+      const s = shapes[i];
+      if(x>=s.x && x<=s.x+s.w && y>=s.y && y<=s.y+s.h){
+        return i;
+      }
+    }
+    return null;
+  }
+
+  canvas.addEventListener('click', (e)=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const idx = hitTest(x,y);
+    selectedIndex = idx;
+    draw();
+  });
+
+  // colour swatches handling
+  const swatchEls = document.querySelectorAll('.swatch');
+  swatchEls.forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(selectedIndex===null) return; // nothing selected, ignore
+      const color = el.getAttribute('data-color');
+      shapes[selectedIndex].color = color;
+      draw();
+    });
+  });
+
+  // initial draw
+  draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Generator</title>
+<style>
+    body {font-family: Arial, sans-serif; background:#f0f0f0; margin:0; display:flex; align-items:center; justify-content:center; height:100vh;}
+    .container {background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:350px; width:100%;}
+    h1 {font-size:1.5rem; margin-bottom:1rem; text-align:center;}
+    .control {margin-bottom:0.8rem; display:flex; align-items:center; justify-content:space-between;}
+    .control label {display:flex; align-items:center; gap:0.4rem;}
+    #password {width:100%; padding:0.5rem; margin-top:0.5rem; font-family: monospace; border:1px solid #ccc; border-radius:4px;}
+    button {padding:0.5rem 1rem; border:none; border-radius:4px; background:#007bff; color:#fff; cursor:pointer;}
+    button:hover {background:#0056b3;}
+    .small-btn {font-size:0.9rem; padding:0.4rem 0.8rem;}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Password Generator</h1>
+    <div class="control">
+        <label for="length">Length: <input type="range" id="length" min="4" max="32" value="12"></label>
+        <span id="lenValue">12</span>
+    </div>
+    <div class="control">
+        <label><input type="checkbox" id="includeDigits" checked> Digits</label>
+        <label><input type="checkbox" id="includeSymbols"> Symbols</label>
+    </div>
+    <button id="generate" class="small-btn">Generate</button>
+    <input type="text" id="password" readonly placeholder="Your password will appear here">
+    <button id="copy" class="small-btn">Copy</button>
+</div>
+<script>
+    const lengthInput = document.getElementById('length');
+    const lenValue = document.getElementById('lenValue');
+    const includeDigits = document.getElementById('includeDigits');
+    const includeSymbols = document.getElementById('includeSymbols');
+    const generateBtn = document.getElementById('generate');
+    const copyBtn = document.getElementById('copy');
+    const passwordField = document.getElementById('password');
+
+    // Update displayed length
+    lengthInput.addEventListener('input', () => { lenValue.textContent = lengthInput.value; });
+
+    function getRandomChar(chars) {
+        return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function generatePassword() {
+        const length = parseInt(lengthInput.value, 10);
+        const useDigits = includeDigits.checked;
+        const useSymbols = includeSymbols.checked;
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const digits = '0123456789';
+        const symbols = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
+        let pool = lower + upper;
+        if (useDigits) pool += digits;
+        if (useSymbols) pool += symbols;
+        if (pool.length === 0) return '';
+        let pwd = '';
+        // Ensure at least one of each selected type
+        const mandatory = [];
+        if (useDigits) mandatory.push(getRandomChar(digits));
+        if (useSymbols) mandatory.push(getRandomChar(symbols));
+        // Fill remaining length
+        for (let i = 0; i < length - mandatory.length; i++) {
+            pwd += getRandomChar(pool);
+        }
+        // Insert mandatory characters at random positions
+        mandatory.forEach(ch => {
+            const pos = Math.floor(Math.random() * (pwd.length + 1));
+            pwd = pwd.slice(0, pos) + ch + pwd.slice(pos);
+        });
+        return pwd;
+    }
+
+    generateBtn.addEventListener('click', () => {
+        const pwd = generatePassword();
+        passwordField.value = pwd;
+    });
+
+    copyBtn.addEventListener('click', async () => {
+        const pwd = passwordField.value;
+        if (!pwd) return;
+        try {
+            await navigator.clipboard.writeText(pwd);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+        } catch (e) {
+            // Fallback for older browsers
+            passwordField.select();
+            document.execCommand('copy');
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+        }
+    });
+</script>
+</body>
+</html>

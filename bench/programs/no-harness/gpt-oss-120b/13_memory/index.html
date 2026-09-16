@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Match – 4 × 4</title>
+<style>
+    body{
+        font-family:system-ui,Arial,sans-serif;
+        background:#f0f4f8;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        margin:0;
+    }
+    #board{
+        display:grid;
+        grid-template-columns:repeat(4,100px);
+        grid-gap:12px;
+    }
+    .card{
+        width:100px;
+        height:140px;
+        perspective:600px;
+        cursor:pointer;
+    }
+    .inner{
+        position:relative;
+        width:100%;
+        height:100%;
+        transform-style:preserve-3d;
+        transition:transform .5s;
+    }
+    .card.flipped .inner{
+        transform:rotateY(180deg);
+    }
+    .face{
+        position:absolute;
+        width:100%;
+        height:100%;
+        border-radius:8px;
+        backface-visibility:hidden;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:2rem;
+        user-select:none;
+    }
+    .front{
+        background:#fff;
+        color:#333;
+        transform:rotateY(180deg);
+        box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    }
+    .back{
+        background:#2e3d49;
+        color:#fff;
+        box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    }
+    .card.matched .back{
+        background:#4caf50;
+    }
+</style>
+</head>
+<body>
+<div id="board"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('board');
+    const values = [];
+    // create pairs 1‑8
+    for (let i = 1; i <= 8; i++) {
+        values.push(i, i);
+    }
+    // Fisher‑Yates shuffle
+    for (let i = values.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [values[i], values[j]] = [values[j], values[i]];
+    }
+
+    // build cards
+    values.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.value = v;
+
+        const inner = document.createElement('div');
+        inner.className = 'inner';
+
+        const front = document.createElement('div');
+        front.className = 'face front';
+        front.textContent = v;               // show the number when face‑up
+
+        const back = document.createElement('div');
+        back.className = 'face back';
+        back.textContent = '?';               // back side symbol
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        card.appendChild(inner);
+        board.appendChild(card);
+    });
+
+    let firstCard = null;
+    let lockBoard = false;
+
+    board.addEventListener('click', e => {
+        const card = e.target.closest('.card');
+        if (!card || lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+        card.classList.add('flipped');
+
+        if (!firstCard) {
+            firstCard = card;
+            return;
+        }
+
+        // second card
+        if (firstCard.dataset.value === card.dataset.value) {
+            firstCard.classList.add('matched');
+            card.classList.add('matched');
+            resetTurn();
+        } else {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                card.classList.remove('flipped');
+                resetTurn();
+            }, 1000);
+        }
+    });
+
+    function resetTurn() {
+        firstCard = null;
+        lockBoard = false;
+    }
+});
+</script>
+</body>
+</html>

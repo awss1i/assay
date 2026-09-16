@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FAQ – Collapsible Sections</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 2rem;
+    background: #f9f9f9;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .faq {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .item {
+    border-top: 1px solid #e0e0e0;
+  }
+  .item:first-child { border-top: none; }
+  .question {
+    padding: 1rem;
+    cursor: pointer;
+    background: #f0f0f0;
+    user-select: none;
+    position: relative;
+  }
+  .question::after {
+    content: "▸";
+    position: absolute;
+    right: 1rem;
+    transition: transform .2s;
+  }
+  .question.active::after {
+    transform: rotate(90deg);
+  }
+  .answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease;
+    padding: 0 1rem;
+    background: #fff;
+  }
+  .answer p {
+    margin: 1rem 0;
+  }
+</style>
+</head>
+<body>
+<h1>Frequently Asked Questions</h1>
+<div class="faq" id="faq">
+  <div class="item">
+    <div class="question">What is this page about?</div>
+    <div class="answer"><p>This page demonstrates a simple FAQ with collapsible sections built purely with HTML, CSS, and JavaScript.</p></div>
+  </div>
+  <div class="item">
+    <div class="question">How does the collapsible behavior work?</div>
+    <div class="answer"><p>When a heading is clicked, JavaScript toggles its active state and expands its answer while collapsing any other open answer.</p></div>
+  </div>
+  <div class="item">
+    <div class="question">Can I add more sections?</div>
+    <div class="answer"><p>Yes – just copy one of the <code>.item</code> blocks and modify the text of the question and answer.</p></div>
+  </div>
+  <div class="item">
+    <div class="question">Is any external library required?</div>
+    <div class="answer"><p>No. All styles and scripts are inline, so the page works offline without any build step.</p></div>
+  </div>
+  <div class="item">
+    <div class="question">Will this work in all browsers?</div>
+    <div class="answer"><p>It uses only standard HTML5, CSS3, and vanilla JavaScript, so it works in any modern browser.</p></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const faq = document.getElementById('faq');
+  faq.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('question')) return;
+
+    const clicked = e.target;
+    const currentlyActive = faq.querySelector('.question.active');
+
+    // Close currently open item if it's not the one clicked
+    if (currentlyActive && currentlyActive !== clicked) {
+      currentlyActive.classList.remove('active');
+      currentlyActive.nextElementSibling.style.maxHeight = null;
+    }
+
+    // Toggle clicked item
+    const answer = clicked.nextElementSibling;
+    const isOpen = clicked.classList.toggle('active');
+    answer.style.maxHeight = isOpen ? answer.scrollHeight + 'px' : null;
+  });
+});
+</script>
+</body>
+</html>

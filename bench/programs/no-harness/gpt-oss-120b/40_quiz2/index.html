@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Quiz</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 30px auto;
+    line-height: 1.5;
+    color: #333;
+  }
+  h1, h2 { text-align: center; }
+  #progressContainer{
+    background:#e0e0e0;
+    border-radius:5px;
+    overflow:hidden;
+    height:20px;
+    margin-bottom:20px;
+  }
+  #progressBar{
+    background:#4caf50;
+    height:100%;
+    width:0%;
+    transition:width .3s;
+  }
+  .question { margin-bottom:15px; font-size:1.1em; }
+  .options label{
+    display:block;
+    margin:6px 0;
+    cursor:pointer;
+  }
+  nav{
+    text-align:center;
+    margin-top:15px;
+  }
+  nav button{
+    padding:8px 14px;
+    margin:0 5px;
+    font-size:1em;
+  }
+  #review{ display:none; }
+  .review-item{
+    margin-bottom:20px;
+    border-bottom:1px solid #ccc;
+    padding-bottom:10px;
+  }
+  .review-item h3{margin:0;}
+</style>
+</head>
+<body>
+
+<h1>Simple Quiz</h1>
+
+<div id="progressContainer"><div id="progressBar"></div></div>
+
+<div id="quiz">
+  <div id="questionNumber"></div>
+  <div id="questionText" class="question"></div>
+  <div id="options" class="options"></div>
+
+  <nav>
+    <button id="prevBtn">Previous</button>
+    <button id="nextBtn">Next</button>
+  </nav>
+</div>
+
+<div id="review">
+  <h2>Review</h2>
+  <div id="reviewList"></div>
+</div>
+
+<script>
+/* ---------- Quiz data ---------- */
+const questions = [
+  {
+    text: "What is the capital of France?",
+    choices: ["Paris", "London", "Berlin", "Madrid"]
+  },
+  {
+    text: "Which planet is known as the Red Planet?",
+    choices: ["Earth", "Mars", "Jupiter", "Saturn"]
+  },
+  {
+    text: "What is 2 + 2?",
+    choices: ["3", "4", "5", "22"]
+  }
+];
+
+/* ---------- State ---------- */
+let current = 0;                                 // index of displayed question
+const answers = new Array(questions.length).fill(null); // store chosen index per question
+
+/* ---------- DOM references ---------- */
+const progressBar   = document.getElementById('progressBar');
+const qNumberEl     = document.getElementById('questionNumber');
+const qTextEl       = document.getElementById('questionText');
+const optionsEl     = document.getElementById('options');
+const prevBtn       = document.getElementById('prevBtn');
+const nextBtn       = document.getElementById('nextBtn');
+const quizDiv       = document.getElementById('quiz');
+const reviewDiv     = document.getElementById('review');
+const reviewList    = document.getElementById('reviewList');
+
+/* ---------- Render helpers ---------- */
+function updateProgress(){
+  const percent = ((current + 1) / questions.length) * 100;
+  progressBar.style.width = percent + '%';
+}
+
+function renderQuestion(){
+  const q = questions[current];
+  qNumberEl.textContent = `Question ${current + 1} of ${questions.length}`;
+  qTextEl.textContent   = q.text;
+
+  // build radio list
+  optionsEl.innerHTML = '';
+  q.choices.forEach((choice, i) => {
+    const id = `q${current}_c${i}`;
+    const label = document.createElement('label');
+    const radio = document.createElement('input');
+
+    radio.type = 'radio';
+    radio.name = 'answer';
+    radio.id   = id;
+    radio.value = i;
+    if (answers[current] === i) radio.checked = true;
+
+    radio.addEventListener('change', () => {
+      answers[current] = i;
+    });
+
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(' ' + choice));
+    optionsEl.appendChild(label);
+  });
+
+  // navigation button state
+  prevBtn.disabled = current === 0;
+  nextBtn.textContent = (current === questions.length - 1) ? 'Finish' : 'Next';
+
+  updateProgress();
+}
+
+/* ---------- Navigation ---------- */
+prevBtn.addEventListener('click', () => {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (current < questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showReview();
+  }
+});
+
+/* ---------- Review ---------- */
+function showReview(){
+  quizDiv.style.display = 'none';
+  reviewDiv.style.display = 'block';
+  reviewList.innerHTML = '';
+
+  questions.forEach((q, idx) => {
+    const div = document.createElement('div');
+    div.className = 'review-item';
+
+    const heading = document.createElement('h3');
+    heading.textContent = `Question ${idx + 1}`;
+
+    const qText = document.createElement('p');
+    qText.textContent = q.text;
+
+    const ans = document.createElement('p');
+    const chosenIdx = answers[idx];
+    const answerTxt = (chosenIdx !== null) ? q.choices[chosenIdx] : 'No answer';
+    ans.innerHTML = `<strong>Your answer:</strong> ${answerTxt}`;
+
+    div.appendChild(heading);
+    div.appendChild(qText);
+    div.appendChild(ans);
+    reviewList.appendChild(div);
+  });
+}
+
+/* ---------- Initialise ---------- */
+renderQuestion();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Branching Questionnaire</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif; margin:2rem; background:#f9f9f9;}
+  #container { max-width:600px; margin:auto; background:#fff; padding:1.5rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+  .question {font-size:1.2rem; margin-bottom:1rem;}
+  button {margin:0.3rem; padding:0.5rem 1rem; font-size:1rem; cursor:pointer; border:none; border-radius:4px; background:#0066cc; color:#fff;}
+  button:hover {background:#004c99;}
+  #backBtn {background:#777;}
+  #result {white-space:pre-wrap;}
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="questionBox"></div>
+  <div id="controls">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+    <button id="backBtn" style="display:none;">Back</button>
+  </div>
+  <div id="result" style="display:none; margin-top:1rem; font-weight:bold;"></div>
+</div>
+
+<script>
+// Define questionnaire structure
+const questions = {
+  q1: {text: "Do you like coffee?", yes: "q2", no: "q3"},
+  q2: {text: "Do you add sugar?", yes: "end", no: "end"},
+  q3: {text: "Do you prefer tea?", yes: "end", no: "end"},
+  end: {text: ""} // terminal node
+};
+
+let currentId = "q1";
+const history = []; // stack of visited question ids
+const answers = []; // parallel array of {question, answer}
+
+const questionBox = document.getElementById('questionBox');
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+const backBtn = document.getElementById('backBtn');
+const resultDiv = document.getElementById('result');
+
+function render() {
+  if (currentId === 'end') {
+    // show result
+    questionBox.style.display = 'none';
+    yesBtn.style.display = 'none';
+    noBtn.style.display = 'none';
+    backBtn.style.display = 'none';
+    const lines = answers.map(a => `${a.question} → ${a.answer}`);
+    resultDiv.textContent = 'Path taken:\n' + lines.join('\n');
+    resultDiv.style.display = 'block';
+    return;
+  }
+  const q = questions[currentId];
+  questionBox.textContent = q.text;
+  questionBox.style.display = 'block';
+  yesBtn.style.display = 'inline-block';
+  noBtn.style.display = 'inline-block';
+  backBtn.style.display = history.length ? 'inline-block' : 'none';
+  resultDiv.style.display = 'none';
+}
+
+function answer(choice) {
+  const q = questions[currentId];
+  // store answer
+  answers.push({question: q.text, answer: choice});
+  // push current to history before moving
+  history.push(currentId);
+  // move to next id
+  const nextId = choice === 'Yes' ? q.yes : q.no;
+  currentId = nextId;
+  render();
+}
+
+function goBack() {
+  if (!history.length) return;
+  // remove last answer
+  answers.pop();
+  // pop previous question id
+  currentId = history.pop();
+  render();
+}
+
+yesBtn.addEventListener('click', () => answer('Yes'));
+noBtn.addEventListener('click', () => answer('No'));
+backBtn.addEventListener('click', goBack);
+
+// initial render
+render();
+</script>
+</body>
+</html>

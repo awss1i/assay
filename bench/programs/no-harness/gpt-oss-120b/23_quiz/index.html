@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Five‑Question Quiz</title>
+<style>
+    body {
+        font-family: sans-serif;
+        background:#f9f9f9;
+        margin:0;
+        padding:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-height:100vh;
+    }
+    #container{
+        background:#fff;
+        padding:20px 30px;
+        border-radius:8px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.1);
+        max-width:600px;
+        width:100%;
+    }
+    h1{
+        text-align:center;
+        margin-bottom:1rem;
+    }
+    .question{
+        margin-bottom:1.5rem;
+    }
+    .question p{
+        margin:0 0 .5rem;
+        font-weight:600;
+    }
+    .options label{
+        display:block;
+        margin-bottom:.3rem;
+        cursor:pointer;
+    }
+    .options input{
+        margin-right:.5rem;
+    }
+    #submitBtn{
+        display:block;
+        width:100%;
+        padding:.7rem;
+        font-size:1rem;
+        background:#0069d9;
+        color:#fff;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+    }
+    #submitBtn:hover{
+        background:#0053aa;
+    }
+    #result{
+        text-align:center;
+        font-size:1.2rem;
+        margin-top:1rem;
+    }
+</style>
+</head>
+<body>
+<div id="container">
+    <h1>General Knowledge Quiz</h1>
+    <div id="quiz">
+        <div class="question" data-correct="b">
+            <p>1. Which planet is known as the Red Planet?</p>
+            <div class="options">
+                <label><input type="radio" name="q1" value="a"> Earth</label>
+                <label><input type="radio" name="q1" value="b"> Mars</label>
+                <label><input type="radio" name="q1" value="c"> Jupiter</label>
+                <label><input type="radio" name="q1" value="d"> Venus</label>
+            </div>
+        </div>
+
+        <div class="question" data-correct="c">
+            <p>2. Who wrote the play “Romeo and Juliet”?</p>
+            <div class="options">
+                <label><input type="radio" name="q2" value="a"> Charles Dickens</label>
+                <label><input type="radio" name="q2" value="b"> Mark Twain</label>
+                <label><input type="radio" name="q2" value="c"> William Shakespeare</label>
+                <label><input type="radio" name="q2" value="d"> Jane Austen</label>
+            </div>
+        </div>
+
+        <div class="question" data-correct="a">
+            <p>3. What is the chemical symbol for water?</p>
+            <div class="options">
+                <label><input type="radio" name="q3" value="a"> H₂O</label>
+                <label><input type="radio" name="q3" value="b"> CO₂</label>
+                <label><input type="radio" name="q3" value="c"> NaCl</label>
+                <label><input type="radio" name="q3" value="d"> O₂</label>
+            </div>
+        </div>
+
+        <div class="question" data-correct="d">
+            <p>4. Which country hosted the 2016 Summer Olympics?</p>
+            <div class="options">
+                <label><input type="radio" name="q4" value="a"> China</label>
+                <label><input type="radio" name="q4" value="b"> United Kingdom</label>
+                <label><input type="radio" name="q4" value="c"> Russia</label>
+                <label><input type="radio" name="q4" value="d"> Brazil</label>
+            </div>
+        </div>
+
+        <div class="question" data-correct="b">
+            <p>5. Which animal is known for its ability to change colour?</p>
+            <div class="options">
+                <label><input type="radio" name="q5" value="a"> Elephant</label>
+                <label><input type="radio" name="q5" value="b"> Chameleon</label>
+                <label><input type="radio" name="q5" value="c"> Giraffe</label>
+                <label><input type="radio" name="q5" value="d"> Dolphin</label>
+            </div>
+        </div>
+
+        <button id="submitBtn">Show My Score</button>
+    </div>
+
+    <div id="result" style="display:none;"></div>
+</div>
+
+<script>
+document.getElementById('submitBtn').addEventListener('click', function () {
+    const questions = document.querySelectorAll('.question');
+    let score = 0;
+    questions.forEach((q, index) => {
+        const selected = q.querySelector('input[name="q' + (index+1) + '"]:checked');
+        const correct = q.dataset.correct;
+        if (selected && selected.value === correct) {
+            score++;
+        }
+    });
+
+    // Show result
+    const resultDiv = document.getElementById('result');
+    resultDiv.textContent = `You scored ${score} out of ${questions.length}!`;
+    resultDiv.style.display = 'block';
+
+    // Optionally hide the quiz
+    document.getElementById('quiz').style.display = 'none';
+});
+</script>
+</body>
+</html>

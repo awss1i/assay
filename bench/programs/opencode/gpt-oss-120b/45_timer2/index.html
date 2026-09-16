@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Countdown Timer</title>
+  <style>
+    body {font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: auto;}
+    .display {font-size: 2em; margin: 10px 0;}
+    .controls button {margin-right: 5px;}
+    .alarm {color: red; font-weight: bold; display: none;}
+  </style>
+</head>
+<body>
+  <h2>Countdown Timer</h2>
+  <label>
+    Minutes: <input type="number" id="minutes" min="0" value="0" style="width:60px;"/>
+  </label>
+  <label>
+    Seconds: <input type="number" id="seconds" min="0" max="59" value="0" style="width:60px;"/>
+  </label>
+  <div class="display" id="timeDisplay">00:00</div>
+  <div class="alarm" id="alarmText">Time's up!</div>
+  <div class="controls">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="resumeBtn" disabled>Resume</button>
+    <button id="resetBtn" disabled>Reset</button>
+  </div>
+  <script>
+    const display = document.getElementById('timeDisplay');
+    const alarmText = document.getElementById('alarmText');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const minutesInput = document.getElementById('minutes');
+    const secondsInput = document.getElementById('seconds');
+
+    let totalMs = 0;          // total remaining milliseconds
+    let intervalId = null;    // interval reference
+    let lastTick = 0;         // timestamp of last tick
+    let paused = false;
+
+    function formatTime(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    }
+
+    function updateDisplay() {
+      display.textContent = formatTime(totalMs);
+    }
+
+    function beep() {
+      // Simple beep using Web Audio API
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = ctx.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, ctx.currentTime); // A4
+        oscillator.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.5);
+      } catch (e) {
+        // fallback: no sound
+      }
+    }
+
+    function finish() {
+      clearInterval(intervalId);
+      intervalId = null;
+      alarmText.style.display = 'block';
+      beep();
+      pauseBtn.disabled = true;
+      resumeBtn.disabled = true;
+      startBtn.disabled = false;
+    }
+
+    function tick() {
+      const now = Date.now();
+      const elapsed = now - lastTick;
+      totalMs = Math.max(0, totalMs - elapsed);
+      lastTick = now;
+      updateDisplay();
+      if (totalMs <= 0) {
+        finish();
+      }
+    }
+
+    startBtn.addEventListener('click', () => {
+      const mins = parseInt(minutesInput.value, 10) || 0;
+      const secs = parseInt(secondsInput.value, 10) || 0;
+      totalMs = (mins * 60 + secs) * 1000;
+      if (totalMs <= 0) return;
+      alarmText.style.display = 'none';
+      updateDisplay();
+      lastTick = Date.now();
+      intervalId = setInterval(tick, 200);
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      resetBtn.disabled = false;
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      if (!intervalId) return;
+      clearInterval(intervalId);
+      intervalId = null;
+      paused = true;
+      pauseBtn.disabled = true;
+      resumeBtn.disabled = false;
+    });
+
+    resumeBtn.addEventListener('click', () => {
+      if (!paused) return;
+      lastTick = Date.now();
+      intervalId = setInterval(tick, 200);
+      paused = false;
+      resumeBtn.disabled = true;
+      pauseBtn.disabled = false;
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = null;
+      paused = false;
+      totalMs = 0;
+      updateDisplay();
+      alarmText.style.display = 'none';
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      resumeBtn.disabled = true;
+      resetBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>

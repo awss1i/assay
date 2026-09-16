@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three‑Step Signup Wizard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  /* ----- General layout ----- */
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:#f5f7fa;
+    margin:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+  }
+  .wizard {
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    width: 320px;
+    max-width:95%;
+    padding:20px 24px 28px;
+  }
+  h1{
+    margin:0 0 1rem;
+    font-size:1.4rem;
+    text-align:center;
+  }
+
+  /* ----- Progress bar ----- */
+  .progress {
+    height:8px;
+    background:#e0e0e0;
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:1.5rem;
+  }
+  .progress-fill {
+    height:100%;
+    background:#4a90e2;
+    width:0%;
+    transition:width .35s ease;
+  }
+
+  /* ----- Step panels ----- */
+  .step {
+    display:none;
+    animation:fadeIn .3s ease forwards;
+  }
+  .step.active {
+    display:block;
+  }
+  .step label {
+    display:block;
+    margin:0.5rem 0 0.2rem;
+    font-weight:600;
+  }
+  .step input, .step select {
+    width:100%;
+    padding:0.5rem;
+    margin-bottom:0.8rem;
+    border:1px solid #ccc;
+    border-radius:4px;
+    box-sizing:border-box;
+    font-size:0.94rem;
+  }
+
+  /* ----- Navigation buttons ----- */
+  .nav {
+    display:flex;
+    justify-content:space-between;
+    margin-top:1rem;
+  }
+  button {
+    background:#4a90e2;
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    padding:0.5rem 1rem;
+    font-size:0.94rem;
+    cursor:pointer;
+    transition:background .2s;
+  }
+  button:disabled {
+    background:#aaa;
+    cursor:not-allowed;
+  }
+  button:hover:not(:disabled) {
+    background:#357ab8;
+  }
+
+  @keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wizard">
+  <h1>Sign Up</h1>
+
+  <!-- Progress bar -->
+  <div class="progress">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <!-- Step 1 -->
+  <section class="step active" id="step1">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="John Doe">
+
+    <label for="email">Email address</label>
+    <input type="email" id="email" placeholder="example@domain.com">
+  </section>
+
+  <!-- Step 2 -->
+  <section class="step" id="step2">
+    <label for="username">Choose a username</label>
+    <input type="text" id="username" placeholder="username123">
+
+    <label for="password">Create a password</label>
+    <input type="password" id="password">
+  </section>
+
+  <!-- Step 3 -->
+  <section class="step" id="step3">
+    <label for="plan">Select a plan</label>
+    <select id="plan">
+      <option value="free">Free – Limited features</option>
+      <option value="basic">Basic – $5 / month</option>
+      <option value="pro">Pro – $15 / month</option>
+    </select>
+
+    <label for="terms">
+      <input type="checkbox" id="terms">
+      I agree to the <a href="#" target="_blank">terms &amp; conditions</a>
+    </label>
+  </section>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <button id="backBtn" disabled>Back</button>
+    <button id="nextBtn">Next</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const progressFill = document.getElementById('progressFill');
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let cur = 0; // zero‑based index of current step
+
+    function updateUI() {
+      // Show/hide steps
+      steps.forEach((s, i) => s.classList.toggle('active', i === cur));
+
+      // Update progress bar (percentage based on steps count)
+      const percent = (cur) / (steps.length - 1) * 100;
+      progressFill.style.width = percent + '%';
+
+      // Enable/disable navigation buttons
+      backBtn.disabled = cur === 0;
+      nextBtn.textContent = cur === steps.length - 1 ? 'Submit' : 'Next';
+    }
+
+    backBtn.addEventListener('click', () => {
+      if (cur > 0) {
+        cur--;
+        updateUI();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (cur < steps.length - 1) {
+        cur++;
+        updateUI();
+      } else {
+        // Final submission – just demo an alert with gathered data
+        const data = {
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value,
+          plan: document.getElementById('plan').value,
+          termsAccepted: document.getElementById('terms').checked
+        };
+        alert('Submitted!\n\n' + JSON.stringify(data, null, 2));
+        // Reset wizard (optional)
+        cur = 0;
+        steps.forEach(s => s.reset?.()); // if any form elements need resetting
+        updateUI();
+      }
+    });
+
+    // Initial render
+    updateUI();
+  })();
+</script>
+</body>
+</html>

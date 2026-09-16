@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Four Tabbed Panels</title>
+<style>
+  body {font-family: sans-serif; margin: 20px;}
+  .tablist {
+    display: flex;
+    border-bottom: 2px solid #ccc;
+  }
+  .tab {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-right: 2px;
+    outline: none;
+  }
+  .tab[aria-selected="true"] {
+    background: #fff;
+    font-weight: bold;
+  }
+  .tabpanel {
+    border: 1px solid #ccc;
+    padding: 16px;
+    display: none;
+  }
+  .tabpanel[hidden] {display: none;}
+  .tabpanel:not([hidden]) {display: block;}
+</style>
+</head>
+<body>
+
+<div role="tablist" aria-label="Sample Tabs" class="tablist">
+  <button role="tab" aria-selected="true" tabindex="0" id="tab-1" class="tab">Tab 1</button>
+  <button role="tab" aria-selected="false" tabindex="-1" id="tab-2" class="tab">Tab 2</button>
+  <button role="tab" aria-selected="false" tabindex="-1" id="tab-3" class="tab">Tab 3</button>
+  <button role="tab" aria-selected="false" tabindex="-1" id="tab-4" class="tab">Tab 4</button>
+</div>
+
+<div id="panel-1" role="tabpanel" aria-labelledby="tab-1" class="tabpanel">
+  <h2>Panel 1</h2>
+  <p>This is the content of the first panel.</p>
+</div>
+<div id="panel-2" role="tabpanel" aria-labelledby="tab-2" class="tabpanel" hidden>
+  <h2>Panel 2</h2>
+  <p>This is the content of the second panel.</p>
+</div>
+<div id="panel-3" role="tabpanel" aria-labelledby="tab-3" class="tabpanel" hidden>
+  <h2>Panel 3</h2>
+  <p>This is the content of the third panel.</p>
+</div>
+<div id="panel-4" role="tabpanel" aria-labelledby="tab-4" class="tabpanel" hidden>
+  <h2>Panel 4</h2>
+  <p>This is the content of the fourth panel.</p>
+</div>
+
+<script>
+(() => {
+  const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = tabs.map(tab => document.getElementById(tab.id.replace('tab', 'panel')));
+
+  function activateTab(index, setFocus = true) {
+    tabs.forEach((t, i) => {
+      const selected = i === index;
+      t.setAttribute('aria-selected', selected);
+      t.setAttribute('tabindex', selected ? '0' : '-1');
+      panels[i].hidden = !selected;
+      if (selected && setFocus) t.focus();
+    });
+  }
+
+  // Click handling
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => activateTab(i, false));
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    const current = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+    let newIndex = null;
+
+    switch (e.key) {
+      case 'ArrowRight':
+        newIndex = (current + 1) % tabs.length;
+        break;
+      case 'ArrowLeft':
+        newIndex = (current - 1 + tabs.length) % tabs.length;
+        break;
+      case 'Home':
+        newIndex = 0;
+        break;
+      case 'End':
+        newIndex = tabs.length - 1;
+        break;
+    }
+
+    if (newIndex !== null) {
+      e.preventDefault();
+      activateTab(newIndex);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

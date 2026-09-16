@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Todo List</title>
+<style>
+  body {font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:0;}
+  .app {max-width:500px; margin:40px auto; background:#fff; padding:20px;
+        box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+  h1 {text-align:center; margin:0 0 20px;}
+  #new-todo {width:100%; padding:10px; font-size:16px; box-sizing:border-box;
+              border:1px solid #ccc; border-radius:4px;}
+  ul {list-style:none; padding:0; margin:20px 0;}
+  li {display:flex; align-items:center; padding:5px 0; border-bottom:1px solid #eee;}
+  li:last-child {border-bottom:none;}
+  li.done label {text-decoration:line-through; color:#888;}
+  li label {flex:1; padding:0 10px; cursor:pointer;}
+  li input.edit {flex:1; padding:5px; font-size:16px;}
+  .filters {display:flex; justify-content:center; gap:10px; margin:10px 0;}
+  .filters button {border:none; background:none; padding:5px 10px; cursor:pointer;}
+  .filters button.active {border-bottom:2px solid #000;}
+  .footer {display:flex; justify-content:space-between; align-items:center;
+           font-size:14px; color:#555;}
+  .clear {background:none; border:none; cursor:pointer; color:#d00;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>Todos</h1>
+  <input id="new-todo" placeholder="What needs to be done?" autocomplete="off">
+  <ul id="todo-list"></ul>
+  <div class="filters">
+    <button data-filter="all" class="active">All</button>
+    <button data-filter="active">Active</button>
+    <button data-filter="done">Done</button>
+  </div>
+  <div class="footer">
+    <span id="count"></span>
+    <button class="clear" id="clear-completed">Clear completed</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const state = {
+    todos: [],               // {id, text, done}
+    filter: 'all',           // all | active | done
+    nextId: 1
+  };
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  const newTodoInput = $('#new-todo');
+  const listEl = $('#todo-list');
+  const countEl = $('#count');
+  const filterButtons = $$('.filters button');
+  const clearBtn = $('#clear-completed');
+
+  // ---- Rendering -------------------------------------------------
+  function render() {
+    // render list
+    listEl.innerHTML = '';
+    const filtered = state.todos.filter(t => {
+      if (state.filter === 'active') return !t.done;
+      if (state.filter === 'done') return t.done;
+      return true;
+    });
+    filtered.forEach(t => {
+      const li = document.createElement('li');
+      li.dataset.id = t.id;
+      if (t.done) li.classList.add('done');
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = t.done;
+      cb.addEventListener('change', () => toggleDone(t.id));
+
+      const label = document.createElement('label');
+      label.textContent = t.text;
+      label.addEventListener('dblclick', () => startEdit(t.id, label));
+
+      li.append(cb, label);
+      listEl.appendChild(li);
+    });
+
+    // render count
+    const left = state.todos.filter(t => !t.done).length;
+    countEl.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
+
+    // update filter button styles
+    filterButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === state.filter);
+    });
+  }
+
+  // ---- Actions ---------------------------------------------------
+  function addTodo(text) {
+    if (!text.trim()) return;
+    state.todos.push({id: state.nextId++, text: text.trim(), done: false});
+    newTodoInput.value = '';
+    render();
+  }
+
+  function toggleDone(id) {
+    const todo = state.todos.find(t => t.id === id);
+    if (todo) todo.done = !todo.done;
+    render();
+  }
+
+  function deleteDone() {
+    state.todos = state.todos.filter(t => !t.done);
+    render();
+  }
+
+  function setFilter(f) {
+    state.filter = f;
+    render();
+  }
+
+  // ---- Inline editing --------------------------------------------
+  function startEdit(id, labelEl) {
+    const li = labelEl.parentElement;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'edit';
+    input.value = labelEl.textContent;
+    input.addEventListener('blur', () => finishEdit(id, input));
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') input.blur();
+      if (e.key === 'Escape') { input.value = labelEl.textContent; input.blur(); }
+    });
+    li.replaceChild(input, labelEl);
+    input.focus();
+    input.select();
+  }
+
+  function finishEdit(id, inputEl) {
+    const li = inputEl.parentElement;
+    const newText = inputEl.value.trim();
+    const todo = state.todos.find(t => t.id === id);
+    if (todo && newText) todo.text = newText;
+    // restore label
+    const label = document.createElement('label');
+    label.textContent = todo ? todo.text : '';
+    label.addEventListener('dblclick', () => startEdit(id, label));
+    li.replaceChild(label, inputEl);
+    render();
+  }
+
+  // ---- Event bindings ---------------------------------------------
+  newTodoInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo(newTodoInput.value);
+  });
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+  });
+
+  clearBtn.addEventListener('click', deleteDone);
+
+  // ---- Init -------------------------------------------------------
+  render();
+})();
+</script>
+</body>
+</html>

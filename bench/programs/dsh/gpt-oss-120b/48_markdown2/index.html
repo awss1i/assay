@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Markdown Preview</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; height: 100vh;}
+  #editor {width: 50%; padding: 10px; box-sizing: border-box; border-right: 1px solid #ccc; overflow:auto;}
+  #preview {width: 50%; padding: 10px; box-sizing: border-box; overflow:auto;}
+  textarea {width: 100%; height: calc(100% - 40px); resize: none; font-family: inherit; font-size: 14px;}
+  #wordCount {margin-top: 5px; font-size: 12px; color: #555;}
+  a {color: #06c; text-decoration: none;}
+  a:hover {text-decoration: underline;}
+</style>
+</head>
+<body>
+  <div id="editor">
+    <textarea id="mdInput" placeholder="Type markdown here..." spellcheck="false"></textarea>
+    <div id="wordCount">Words: 0</div>
+  </div>
+  <div id="preview"></div>
+<script>
+function markdownToHtml(md) {
+  const lines = md.split('\n');
+  let html = '';
+  let inList = false;
+  lines.forEach(line => {
+    if (/^\s*-\s+/.test(line)) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      const li = line.replace(/^\s*-\s+/, '');
+      html += '<li>' + li + '</li>';
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      if (/^######\s+(.*)/.test(line)) html += '<h6>' + RegExp.$1 + '</h6>';
+      else if (/^#####\s+(.*)/.test(line)) html += '<h5>' + RegExp.$1 + '</h5>';
+      else if (/^####\s+(.*)/.test(line)) html += '<h4>' + RegExp.$1 + '</h4>';
+      else if (/^###\s+(.*)/.test(line)) html += '<h3>' + RegExp.$1 + '</h3>';
+      else if (/^##\s+(.*)/.test(line)) html += '<h2>' + RegExp.$1 + '</h2>';
+      else if (/^#\s+(.*)/.test(line)) html += '<h1>' + RegExp.$1 + '</h1>';
+      else if (line.trim() === '') html += '<br>';
+      else {
+        let txt = line;
+        txt = txt.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        txt = txt.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        txt = txt.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+        html += '<p>' + txt + '</p>';        
+      }
+    }
+  });
+  if (inList) html += '</ul>';
+  return html;
+}
+function update() {
+  const md = document.getElementById('mdInput').value;
+  document.getElementById('preview').innerHTML = markdownToHtml(md);
+  const words = md.trim().split(/\s+/).filter(w=>w.length>0).length;
+  document.getElementById('wordCount').textContent = 'Words: ' + words;
+}
+document.getElementById('mdInput').addEventListener('input', update);
+// Initialize with empty content
+update();
+</script>
+</body>
+</html>

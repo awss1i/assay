@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Shopping Cart</title>
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 2rem;
+        background: #f9f9f9;
+        color: #333;
+    }
+    h1, h2 {
+        text-align: center;
+    }
+    #products, #basket-container {
+        max-width: 800px;
+        margin: 1rem auto;
+        background: #fff;
+        padding: 1rem;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .product {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    .product:last-child { border-bottom: none; }
+    .product-name {
+        font-weight: bold;
+    }
+    .product-price {
+        color: #555;
+    }
+    button {
+        background: #28a745;
+        border: none;
+        color: #fff;
+        padding: .4rem .8rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: .9rem;
+    }
+    button:hover { background: #218838; }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    th, td {
+        padding: .5rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th { background: #f0f0f0; }
+    tfoot td {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    .empty-basket {
+        text-align: center;
+        color: #777;
+        padding: 1rem 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>Shopping Cart Demo</h1>
+
+<div id="products">
+    <h2>Products</h2>
+    <!-- Product list will be rendered here -->
+</div>
+
+<div id="basket-container">
+    <h2>Basket</h2>
+    <table id="basket">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="empty-basket"><td colspan="4">Your basket is empty.</td></tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3">Total</td>
+                <td id="total-price">$0.00</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+/* ---------- Data ---------- */
+const PRODUCTS = [
+    { id: 1, name: "Apple", price: 0.99 },
+    { id: 2, name: "Bread", price: 2.49 },
+    { id: 3, name: "Cheese", price: 4.75 },
+    { id: 4, name: "Milk", price: 1.29 }
+];
+
+/* ---------- State ---------- */
+const basket = {}; // key: product.id, value: quantity
+
+/* ---------- Helper Functions ---------- */
+function formatMoney(num) {
+    return "$" + num.toFixed(2);
+}
+
+/* ---------- Rendering ---------- */
+function renderProducts() {
+    const container = document.getElementById('products');
+    const list = document.createElement('div');
+
+    PRODUCTS.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+            <span class="product-name">${p.name}</span>
+            <span class="product-price">${formatMoney(p.price)}</span>
+            <button data-id="${p.id}">Add</button>
+        `;
+        list.appendChild(div);
+    });
+
+    container.appendChild(list);
+
+    // Attach click listeners
+    container.addEventListener('click', e => {
+        if (e.target.tagName === 'BUTTON') {
+            const id = Number(e.target.dataset.id);
+            addToBasket(id);
+        }
+    });
+}
+
+function renderBasket() {
+    const tbody = document.querySelector('#basket tbody');
+    tbody.innerHTML = ''; // clear current rows
+
+    const entries = Object.entries(basket);
+    if (entries.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.className = 'empty-basket';
+        emptyRow.innerHTML = '<td colspan="4">Your basket is empty.</td>';
+        tbody.appendChild(emptyRow);
+        document.getElementById('total-price').textContent = formatMoney(0);
+        return;
+    }
+
+    let total = 0;
+    entries.forEach(([idStr, qty]) => {
+        const id = Number(idStr);
+        const product = PRODUCTS.find(p => p.id === id);
+        const subtotal = product.price * qty;
+        total += subtotal;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${product.name}</td>
+            <td>${qty}</td>
+            <td>${formatMoney(product.price)}</td>
+            <td>${formatMoney(subtotal)}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    document.getElementById('total-price').textContent = formatMoney(total);
+}
+
+/* ---------- Interaction ---------- */
+function addToBasket(productId) {
+    basket[productId] = (basket[productId] || 0) + 1;
+    renderBasket();
+}
+
+/* ---------- Init ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+    renderProducts();
+    renderBasket(); // show empty state initially
+});
+</script>
+
+</body>
+</html>
