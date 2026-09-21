@@ -27,10 +27,10 @@ on the skill: the agent runs the check itself. opencode and the harnesses under
 [Everywhere Else](#everywhere-else-the-skill-on-its-own) take the skill alone,
 and the DeepSeek Harness takes the hook alone, through its Claude Code bridge.
 
-All fifteen need `assay` on your `PATH` first:
+All fifteen need `assay` on your `PATH` first. It needs Python 3.10 or newer:
 
 ```bash
-pip install assay-ui
+pip install assay-ui        # or: uv tool install assay-ui, pipx install assay-ui
 ```
 
 ## Claude Code

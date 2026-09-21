@@ -54,6 +54,15 @@ tells you what broke.
 pip install assay-ui
 ```
 
+Needs Python 3.10 or newer. If `pip` is not found, use
+`python3 -m pip install assay-ui`.
+
+For an isolated install that brings its own Python:
+
+```bash
+uv tool install assay-ui    # or: pipx install assay-ui
+```
+
 The command is `assay`. The first run fetches a browser if there is not one
 already, so there is no second command to forget.
 

@@ -1,6 +1,6 @@
 [project]
 name = "assay-ui"
-version = "0.1.2"
+version = "0.1.3"
 description = "Find out whether a generated web page actually works."
 keywords = ["testing", "llm", "codegen", "playwright", "evaluation", "qa",
             "ai-agents", "browser-testing"]
