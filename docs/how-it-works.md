@@ -10,6 +10,7 @@ measurement that set the rule.
 
 ## Contents
 
+- [It serves the folder and never builds it](#it-serves-the-folder-and-never-builds-it)
 - [It waits until the page stops arriving](#it-waits-until-the-page-stops-arriving)
 - [It measures the surface](#it-measures-the-surface)
 - [It derives a plan](#it-derives-a-plan)
@@ -18,6 +19,23 @@ measurement that set the rule.
 - [It reports pass, fail, or could not tell](#it-reports-pass-fail-or-could-not-tell)
 - [What it will not claim](#what-it-will-not-claim)
 - [What it will claim, without an opinion about design](#what-it-will-claim-without-an-opinion-about-design)
+
+## It serves the folder and never builds it
+
+The page is served over loopback rather than opened off the disk, because a
+`file://` origin blocks every module the page loads.
+
+What it will not do is run your build. `npm install` executes whatever the
+dependency tree asks for, as whoever typed the command, and this is a tool for
+checking code nobody has read. Point it at a source tree and it says so:
+
+```console
+$ assay ./my-vite-app
+assay: index.html loads /src/main.jsx, which a browser cannot run. This is a source tree, not a built one.
+  Build it first, in your own shell, then check the output:
+    npm install && npm run build && assay my-vite-app/dist
+  assay will not run that for you: installing dependencies executes their setup scripts, and this is a tool for checking code nobody has read.
+```
 
 ## It waits until the page stops arriving
 

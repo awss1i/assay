@@ -207,14 +207,10 @@ No key, no network.
 
 ## How It Works
 
-**It waits until the page stops arriving**, watching whether the set of
-controls is still changing rather than pausing for a fixed time. **It measures
-the surface** from the rendered page and never the markup, down to a grid of
-plain divs, because a pointer cursor is the page saying *click this* and a
-handler attached in JavaScript cannot be read any other way. **It derives a
-plan from that** and carries all of it out in a fresh tab, measuring painted
-pixels per canvas, their centroid and mean colour, an exact pixel hash, the
-visible text, what is in the fields, and a hash over every element's style.
+**It drives the page the way a person would.** It waits until the page stops
+arriving, finds every control from the rendered page rather than the markup,
+works out a plan from what it finds, and carries all of it out in a fresh tab,
+measuring what changed on screen after every step.
 
 **It is deliberately narrow about what counts as a failure.** A plan derived
 from the page cannot know what a control is *for*, so a button only has to
@@ -224,13 +220,9 @@ a working program for having a Clear button on an empty canvas.
 What it can judge without knowing the design is whether the program
 contradicts itself. A surface that took the first stroke has to take the
 second. A control that does nothing on its first press and something on its
-second, from the same state, is one press behind. And if nothing on the page
-responds to anything, the script probably never ran.
-
-The same goes for what a page shows about itself: a counter reading -1 over
-an empty list, a total that follows the list up and not down, a Remove that
-takes a different row, `NaN` where a value belongs, two labels pointing at
-one control.
+second, from the same state, is one press behind. A counter reads -1 over an
+empty list, a total follows the list up and not down, `NaN` sits where a value
+belongs. And if nothing responds to anything, the script probably never ran.
 
 **It never says a page is broken.** It says what it pressed and what
 happened:
@@ -240,26 +232,9 @@ C006 [FAILED] type into Quantity then press +
     → nothing on the page changed at all
 ```
 
-A verdict makes you change code. A measurement makes you look first, and
-sometimes you find the page was right and the check was aimed at the wrong
-thing. That is the cheaper mistake to make, and it reads the same either way
-round: a person knows where to start, and an agent gets a precise place to
-look instead of a whole file to re-read.
-
-**It serves the folder and never builds it.** The page is served over
-loopback rather than opened off the disk, because a `file://` origin blocks
-every module the page loads. What it will not do is run your build: `npm
-install` executes whatever the dependency tree asks for, as whoever typed the
-command, and this is a tool for checking code nobody has read. Point it at a
-source tree and it says so:
-
-```console
-$ assay ./my-vite-app
-assay: index.html loads /src/main.jsx, which a browser cannot run. This is a source tree, not a built one.
-  Build it first, in your own shell, then check the output:
-    npm install && npm run build && assay my-vite-app/dist
-  assay will not run that for you: installing dependencies executes their setup scripts, and this is a tool for checking code nobody has read.
-```
+A verdict makes you change code. A measurement makes you look first, and gives
+a person or an agent a precise place to start instead of a whole file to
+re-read.
 
 **[Every rule →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.md)**
 
@@ -294,8 +269,10 @@ does nothing.
 - **A game that ends looks like a page that died.** When a program finishes
   and offers no way to start again, it stops responding to anything, and a
   plan derived from the page cannot tell that apart from a page that broke.
-- **Built output, not source trees.** It will not run your build. Point it at
-  a source tree and it says so and names the command.
+- **Built output, not source trees.** It will not run your build, because
+  installing dependencies runs their setup scripts and this is a tool for
+  checking code nobody has read. Point it at a source tree and it says so and
+  names the command.
 - **Single-page programs.** It checks the page you point it at and does not
   crawl. A multi-page site means running it per page, and client-side routing
   is untested.
