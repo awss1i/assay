@@ -20,12 +20,13 @@ tells you what broke.
 
 ## Highlights
 
-- **No tests to write.** The plan comes from the page, so a program written
-  ten seconds ago can be checked ten seconds later.
+- **No tests to write, no baselines to keep.** The plan comes from the page,
+  so a program written ten seconds ago can be checked ten seconds later.
 - **No LLM. Purely mechanical.** No API key, no tokens, no rate limit, nothing
   to bill. It gives the same answer twice.
-- **No baseline images and no recordings.** Nothing to capture first, nothing
-  to keep in step with the design.
+- **Plugs into fifteen coding agents.** A skill for all of them, and a plugin
+  for Claude Code and the DeepSeek Harness that checks the page at the end of
+  every turn that touched one.
 - **It says why.** Not *case 14 failed*, but *the first press did nothing and
   the second did something, so this control is one behind*.
 
