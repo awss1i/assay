@@ -2,6 +2,7 @@
 
 [![python](https://img.shields.io/badge/python-3.10%2B-blue)](https://github.com/awss1i/assay/blob/main/pyproject.toml)
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](https://github.com/awss1i/assay/blob/main/LICENSE)
+[![X](https://img.shields.io/badge/follow-@awss1i-blue?logo=x)](https://x.com/awss1i)
 
 **Find out if a generated web page actually works. No tests written, no LLM.**
 
