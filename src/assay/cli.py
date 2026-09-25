@@ -200,7 +200,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     """Check one folder and say what happened. Non-zero if anything failed."""
     ap = argparse.ArgumentParser(
         prog="assay",
-        description="Find out if a generated web page actually works. "
+        description="Find out if your web page actually works. "
                     "No tests written, no LLM.")
     ap.add_argument("folder",
                     help="the folder holding the program, or the page")
