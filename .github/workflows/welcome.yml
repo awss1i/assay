@@ -1,0 +1,33 @@
+name: welcome
+
+# One comment, on someone's first issue or first pull request, and never
+# again. Like the labeler, it checks out nothing.
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v3
+        with:
+          issue_message: >-
+            Thanks for opening your first issue here. Issues are for bugs and
+            false alarms, and a false alarm needs the page attached. Features
+            and improvements come as pull requests, and questions go in
+            [Discussions](https://github.com/awss1i/assay/discussions).
+            [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
+            has the details.
+          pr_message: >-
+            Thanks for your first pull request here. A change to a rule or to
+            `bench/` needs both benchmarks run, with the numbers before and
+            after in the description.
+            [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
+            says what each kind of change needs.

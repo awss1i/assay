@@ -284,8 +284,10 @@ does nothing.
 
 ## Contributing
 
-Issues and pull requests are welcome. Setup, tests, benchmarks and what a PR
-needs are in **[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)**.
+Bugs and false alarms go in issues, changes come as pull requests, and
+questions go in [Discussions](https://github.com/awss1i/assay/discussions).
+Setup, tests, benchmarks and what each kind of pull request needs are in
+**[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)**.
 
 ## Licence
 

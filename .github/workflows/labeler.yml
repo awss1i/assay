@@ -1,0 +1,17 @@
+name: labeler
+
+# `pull_request_target` so it can label pull requests from forks. It reads
+# only the list of changed files and never checks out the pull request's
+# code, so nothing from a fork runs with this token.
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v7

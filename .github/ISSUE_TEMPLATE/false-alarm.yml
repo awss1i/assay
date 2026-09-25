@@ -1,0 +1,45 @@
+name: False alarm
+description: A page that works, and assay flagged it.
+labels: [false alarm]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A false alarm costs more than anything else assay can do, because it sends someone off to fix code that was right. It has never happened on the benchmarks, so this is the most useful issue there is. **The page is required**: without it a false alarm cannot be reproduced, so it cannot be fixed.
+  - type: textarea
+    id: page
+    attributes:
+      label: The page
+      description: Attach the HTML or a zip of the folder, or link a repository holding it.
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: Exactly what you ran.
+      placeholder: assay ./my-app
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What assay printed
+      description: At least the case it flagged and the reason under it.
+      render: console
+    validations:
+      required: true
+  - type: textarea
+    id: right
+    attributes:
+      label: Why the page is right
+      description: What the flagged control is meant to do, and why what assay saw is correct behaviour.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: assay version
+      description: The output of `assay --version`.
+    validations:
+      required: true

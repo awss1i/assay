@@ -1,0 +1,50 @@
+name: Bug report
+description: assay crashed, hung, miscounted, or skipped a control it should have driven.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issues are for bugs and false alarms. A page assay called clean that turned out to be broken is a miss, not a bug: catching it is a pull request. See [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md).
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: Exactly what you ran.
+      placeholder: assay ./my-app
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What assay printed
+      description: The whole output, or the traceback.
+      render: console
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What went wrong
+      description: What happened, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: page
+    attributes:
+      label: The page
+      description: If the bug depends on the page, attach it. The HTML, a zip of the folder, or a link to a repository.
+  - type: input
+    id: version
+    attributes:
+      label: assay version
+      description: The output of `assay --version`.
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: OS and Python version
+      placeholder: Ubuntu 24.04, Python 3.12
+    validations:
+      required: true

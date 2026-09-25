@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions
+    url: https://github.com/awss1i/assay/discussions/categories/q-a
+    about: Ask in Discussions. Features and improvements come as pull requests, and CONTRIBUTING.md says what each kind needs.
