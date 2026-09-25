@@ -1,7 +1,7 @@
 [project]
 name = "assay-ui"
 version = "0.1.4"
-description = "Find out if a generated web page actually works. No tests written, no LLM."
+description = "Find out if your web page actually works. No tests written, no LLM."
 keywords = ["testing", "llm", "codegen", "playwright", "evaluation", "qa",
             "ai-agents", "browser-testing"]
 authors = [{ name = "awss1i" }]

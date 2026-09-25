@@ -4,7 +4,7 @@
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](https://github.com/awss1i/assay/blob/main/LICENSE)
 [![X](https://img.shields.io/badge/follow-@awss1i-blue?logo=x)](https://x.com/awss1i)
 
-**Find out if a generated web page actually works. No tests written, no LLM.**
+**Find out if your web page actually works. No tests written, no LLM.**
 
 <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay against a
 generated paint program. Twenty-five cases planned from the page itself,
@@ -276,9 +276,8 @@ does nothing.
 - **Single-page programs.** It checks the page you point it at and does not
   crawl. A multi-page site means running it per page, and client-side routing
   is untested.
-- **Generated pages, not the live web.** It is built for programs somebody
-  just generated, not for sites with a login, a cookie banner or live network
-  calls.
+- **Local pages, not the live web.** It checks a page served from a folder on
+  your machine, not sites with a login, a cookie banner or live network calls.
 - **Speed.** Most pages take a few seconds to just under a minute. Across the
   225 benchmark programs the median is 14 seconds and 220 finish inside a
   minute. The slowest recorded took about four minutes.
