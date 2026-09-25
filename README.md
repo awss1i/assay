@@ -4,7 +4,7 @@
 [![licence](https://img.shields.io/badge/licence-MIT-blue)](https://github.com/awss1i/assay/blob/main/LICENSE)
 [![X](https://img.shields.io/badge/follow-@awss1i-blue?logo=x)](https://x.com/awss1i)
 
-**Find out if your web page actually works. No tests written, no LLM.**
+**Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.**
 
 <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay against a
 generated paint program. Twenty-five cases planned from the page itself,

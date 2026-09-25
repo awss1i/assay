@@ -65,7 +65,7 @@ def page(lines: list[str]) -> str:
 </div>
 <div class="side">
   <h1>assay</h1>
-  <p>find out if your web page actually works. no tests written, no LLM.</p>
+  <p>drives your web page in a real browser and tells you what broke. no tests to write, no LLM.</p>
   <code>pip install assay-ui</code>
 </div>
 """
