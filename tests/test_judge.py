@@ -52,7 +52,7 @@ def test_a_page_that_threw_fails_whatever_else_held() -> None:
                 crashes=["TypeError: x is not a function"])
 
     assert r.outcome == FAILED
-    assert "threw and stopped" in r.detail
+    assert "threw an error and stopped" in r.detail
 
 
 def test_a_page_that_only_logged_an_error_is_fine() -> None:
@@ -142,7 +142,7 @@ def test_the_canvas_that_was_acted_on_has_to_answer() -> None:
     r = verdict(aimed, sig([canvas()]), sig([canvas()], text="Row 1 turned on"))
 
     assert r.outcome == FAILED
-    assert "canvas you acted on is unchanged" in r.detail
+    assert "canvas this check clicked did not change" in r.detail
 
 
 def test_a_canvas_nobody_paints_into_is_a_dead_canvas() -> None:
@@ -157,7 +157,7 @@ def test_a_canvas_nobody_paints_into_is_a_dead_canvas() -> None:
                 sig([canvas(painted=0)], text="Score 1"))
 
     assert r.outcome == FAILED
-    assert "nothing drawn" in r.detail
+    assert "still show nothing" in r.detail
 
 
 def test_wanted_text_that_is_absent_fails() -> None:
@@ -227,3 +227,37 @@ def test_a_canvas_that_could_not_be_read_is_not_an_empty_one() -> None:
     finding about the harness dressed as one about the program."""
     assert unpainted(sig([[-1, -1, -1, -1, -1, -1, -1]])) == 0
     assert unpainted(sig([canvas(painted=0)])) == 1
+
+
+# -- naming a finding ------------------------------------------------------
+
+
+def test_every_failure_names_the_rule_it_broke() -> None:
+    """A verdict holds on to the rule, never to the prose around it.
+
+    The detail is written for a person and gets reworded; a benchmark verdict
+    that matched on it would go stale the first time a sentence improved.
+    """
+    threw = verdict(case(quiet=True), sig(), sig(),
+                    crashes=["TypeError: x is not a function"])
+    still = verdict(case(changes=True), sig(), sig())
+
+    assert threw.rules == ["threw"]
+    assert still.rules == ["no-change"]
+    assert verdict(case(quiet=True), sig(), sig()).rules == []
+
+
+def test_a_finding_is_named_without_its_position_in_the_plan() -> None:
+    """Adding one case anywhere renumbers every case after it.
+
+    A verdict holding `C016` then credits whichever case lands there. The
+    rule and what the case did are the same wherever it lands.
+    """
+    one = Case(id="C016", what="press Remove, with two saved",
+               acts=[{"click": "#go"}], expect={"changes": True})
+    two = Case(id="C021", what="press Remove, with two saved",
+               acts=[{"click": "#go"}], expect={"changes": True})
+
+    first, second = verdict(one, sig(), sig()), verdict(two, sig(), sig())
+
+    assert first.key == second.key == "no-change@press Remove, with two saved"

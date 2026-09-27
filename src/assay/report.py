@@ -75,6 +75,8 @@ h1 { font-size: 1.5rem; margin: 0 0 .3rem; letter-spacing: -.01em; }
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-word;
 }
 .acts { margin: 0 0 1rem; font-size: .85rem; color: var(--dim); }
+.link { margin: -.5rem 0 1rem; font-size: .85rem; color: var(--unknown); }
+.link a { color: inherit; }
 .acts code {
   background: color-mix(in srgb, var(--fg) 7%, transparent);
   padding: .1rem .35rem; border-radius: 4px; margin-right: .3rem;
@@ -119,13 +121,24 @@ def _case_html(result: Any, shots_dir: str) -> str:
         f' alt="the page {html.escape(when)} {html.escape(case.what)}"></figure>'
         for when, name in result.artifacts.items() if name)
 
+    # The case a note points at becomes a link to it, wherever the sentence
+    # names it.
+    notes = "".join(
+        '<p class="link">↳ ' + html.escape(one.why).replace(
+            html.escape(one.to),
+            f'<a href="#{html.escape(one.to)}">{html.escape(one.to)}</a>', 1)
+        + "</p>"
+        for one in getattr(result, "links", []))
+
     return (
-        f'<details class="case"{" open" if result.failed else ""}>'
+        f'<details class="case" id="{html.escape(case.id)}"'
+        f'{" open" if result.failed else ""}>'
         f'<summary><span class="tag {kind}">{word}</span>'
         f'<span class="id">{html.escape(case.id)}</span>'
         f'<span class="what">{html.escape(case.what)}</span></summary>'
         f'<div class="body">'
         + (f'<p class="why">{html.escape(result.detail)}</p>' if result.detail else "")
+        + notes
         + (f'<p class="acts">{acts}</p>' if acts else
            '<p class="acts">the page was opened and nothing else done</p>')
         + (f'<p class="measured">{html.escape(result.evidence)}</p>'
@@ -168,7 +181,8 @@ def write(run: Any, where: str | Path, folder: str = "",
         f"{cases}"
         f'<section class="surface"><h2>What the program offers</h2>'
         f"<pre>{html.escape(run.surface.render())}</pre></section>"
-        f'<footer>Measured by <a href="https://github.com/">assay</a>. '
+        f'<footer>Measured by <a href="https://github.com/awss1i/assay">assay'
+        f'</a>. '
         f"Screenshots are the pages as the browser actually rendered them."
         f"</footer></main></body></html>",
         encoding="utf-8")

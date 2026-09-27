@@ -165,3 +165,49 @@ def test_a_missing_page_is_named_rather_than_a_folder_under_it(
     assert code == 2
     assert said.err.strip().endswith("nope.html does not exist")
     assert "nope.html/index.html" not in said.err
+
+
+def test_the_json_carries_what_the_page_logged_as_information() -> None:
+    """Console errors and failed requests are in the record, never a verdict.
+
+    They were collected on every page and then dropped, and they are often
+    the first thing worth reading when something did fail.
+    """
+    import json
+    from types import SimpleNamespace
+
+    from assay.cli import as_json
+
+    run = SimpleNamespace(plan=[], results={}, works=True, surface=None,
+                          console_errors=["Uncaught TypeError: x"],
+                          failed_requests=["app.js -> HTTP 404"])
+
+    said = json.loads(as_json(run, "todo.html"))
+
+    assert said["entry"] == "todo.html"
+    assert said["console_errors"] == ["Uncaught TypeError: x"]
+    assert said["failed_requests"] == ["app.js -> HTTP 404"]
+    assert said["works"] is True
+
+
+def test_a_repeat_names_the_first_of_its_group_by_its_words() -> None:
+    """`--one-line` prints no case ids, so a link cannot say `C003`."""
+    from types import SimpleNamespace
+
+    from assay.cli import one_line
+    from assay.links import Link
+    from assay.qa import FAILED
+    from assay.surface import Case
+
+    first = SimpleNamespace(case=Case(id="C003", what="click blue twice"),
+                            outcome=FAILED, detail="it stayed lit", links=[])
+    again = SimpleNamespace(case=Case(id="C005", what="click green twice"),
+                            outcome=FAILED, detail="it stayed lit",
+                            links=[Link("same", "C003", "same finding as C003")])
+    run = SimpleNamespace(plan=[first.case, again.case],
+                          results={"C003": first, "C005": again})
+
+    said = one_line(run, Path("tags"), "index.html").splitlines()
+
+    assert said[1] == "  - click blue twice: it stayed lit"
+    assert said[2] == "  - click green twice (same finding as: click blue twice)"

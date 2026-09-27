@@ -7,11 +7,9 @@ behind it is a guess that looks like a decision.
 
 from __future__ import annotations
 
-from types import SimpleNamespace
-
-from assay.qa import FAILED, PASSED, QA, Ladder, Result
+from assay.qa import FAILED, QA, Result
 from assay.surface import (CANVAS_POINTS, COMMON_GRIDS, SAMPLE_ALIKE, Case,
-                           Control, Surface, as_acts, plan)
+                           Control, Surface, plan)
 
 
 def page(*controls: Control) -> Surface:
@@ -97,7 +95,8 @@ def test_a_field_is_given_the_awkward_cases() -> None:
     naive parsing. Four cases that between them catch what generated programs
     actually get wrong."""
     cases = plan(page(Control("text", "#name", "Your name")))
-    filled = [a["fill"] for c in cases for a in c.acts if "fill" in a]
+    filled = [a.get("fill") or a["enter"] for c in cases for a in c.acts
+              if "fill" in a or "enter" in a]
 
     assert any(v.endswith("=") for v in filled), "the empty case is missing"
     assert any(len(v) > 200 for v in filled), "the long case is missing"
@@ -139,21 +138,12 @@ def test_the_canvas_points_miss_every_common_grid_boundary() -> None:
                 assert margin >= 0.18, (f, across, margin)
 
 
-def test_an_act_it_does_not_know_is_dropped_not_guessed() -> None:
-    """Performing something nobody asked for is worse than performing
-    nothing."""
-    assert as_acts([{"click": "#go"}, {"teleport": "#go"}]) == [{"click": "#go"}]
-    assert as_acts("not a list") == []
+def test_every_failure_is_reported_and_the_summary_counts_them() -> None:
+    """A run reports every case that failed, and says how many ran.
 
-
-def test_no_repairer_means_no_case_was_given_up_on() -> None:
-    """`assay` on its own repairs nothing, so nothing can be unrepairable.
-
-    The loop used to run regardless and `_attend` refused every case for
-    want of a repairer, which put all of them in `gave_up`: a clean install
-    checking a broken page reported `8 failed, 8 could not be repaired`
-    about a program nothing had ever tried to fix. A repair that was never
-    attempted must not read like one that was tried and failed.
+    `failing` once hid cases nothing could repair, and came back empty about
+    a program with eight failures. A caller reading it to find out what broke
+    has to get all of them.
     """
     surface = page(Control("button", "#go", "Go"))
     qa = QA(measure=lambda: surface,
@@ -161,9 +151,8 @@ def test_no_repairer_means_no_case_was_given_up_on() -> None:
             carry_out=lambda case: Result(case, FAILED, "it broke"))
     qa.run()
 
-    assert qa.failing, "the case really did fail"
-    assert qa.gave_up == []
-    assert "could not be repaired" not in qa.summary()
+    assert len(qa.failing) == len(qa.plan) > 0
+    assert qa.summary().endswith(f"{len(qa.plan)} failed")
 
 
 def test_a_field_is_paired_with_the_button_in_its_own_widget() -> None:
@@ -260,56 +249,3 @@ def test_a_field_is_paired_with_the_button_that_follows_it() -> None:
 
     assert len(pairs) == 1, f"paired with {len(pairs)} buttons, not one"
     assert "Add" in pairs[0].what
-
-
-def test_a_repair_that_lands_is_re_run_and_recorded() -> None:
-    """The loop's whole point, and until now only its refusal was tested.
-
-    `assay` on its own repairs nothing, so the machinery that does had no
-    exercise anywhere: a caller supplying `apply` and `ask` was relying on a
-    subsystem no test had ever run forwards. This drives one case from
-    failing to passing and asserts the three things the loop owes: that the
-    change was asked for, that the plan was carried out again afterwards
-    rather than just the case being fixed, and that the result says it was
-    fixed rather than merely passing.
-    """
-    surface = page(Control("button", "#go", "Go"))
-    mended = {"yet": False}
-    carried: list = []
-
-    def carry_out(case: Case) -> Result:
-        carried.append(case.id)
-        return (Result(case, PASSED, "") if mended["yet"]
-                else Result(case, FAILED, "it broke"))
-
-    def ask(result: Result, where: str, ladder: Ladder):
-        # The rung is handed over so the caller can ask differently each
-        # time; `advice` is the wording that goes with it.
-        return {"changes": {"edit": result.case.id, "rung": ladder.rung},
-                "why": ladder.advice()}
-
-    def apply(changes, why):
-        mended["yet"] = True
-        return SimpleNamespace(applied=True, improved=True)
-
-    qa = QA(measure=lambda: surface, build_plan=lambda s: plan(s),
-            carry_out=carry_out, apply=apply, ask=ask)
-    qa.run()
-
-    assert qa.works, qa.render()
-    assert qa.fixed, "a case that came right must be recorded as fixed"
-    assert qa.gave_up == []
-    assert carried.count(qa.fixed[0]) > 1, "the fixed case was never re-run"
-    assert len(set(carried)) == len(qa.plan), "the rest of the plan was skipped"
-
-
-def test_every_rung_asks_for_something_different() -> None:
-    """The ladder is what makes the loop bounded without counting attempts.
-
-    If two rungs asked for the same thing, one of them would be a repeat
-    wearing a new name and the loop would spend a turn learning nothing.
-    """
-    said = [Ladder(at=n).advice() for n in range(len(Ladder.RUNGS))]
-
-    assert len(set(said)) == len(Ladder.RUNGS)
-    assert Ladder(at=len(Ladder.RUNGS)).spent

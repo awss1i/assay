@@ -163,7 +163,7 @@ def test_a_page_that_answers_nothing_is_broken(tmp_path: Path) -> None:
     run = check(folder)
 
     assert not run.works, run.render()
-    assert "responds to anything" in run.render()
+    assert "after any control was used" in run.render()
 
 
 def test_the_page_verdict_stands_down_when_it_could_not_reach_everything(
@@ -188,7 +188,7 @@ def test_the_page_verdict_stands_down_when_it_could_not_reach_everything(
 
     run = check(folder)
 
-    assert "responds to anything" not in run.render(), run.render()
+    assert "after any control was used" not in run.render(), run.render()
 
 
 def test_a_page_that_offers_nothing_is_still_judged(tmp_path: Path) -> None:
@@ -440,7 +440,7 @@ def test_a_canvas_cleared_to_a_colour_and_never_drawn_into_is_caught(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert "ever drawn into this canvas" in run.render(), run.render()
+    assert "ever appeared on this canvas" in run.render(), run.render()
 
 
 def test_a_stroke_on_a_transparent_canvas_is_a_picture(
@@ -550,7 +550,7 @@ def test_a_page_that_renders_nothing_is_not_a_page_that_passes(
     run = check(folder)
 
     assert not run.works
-    assert "rendered nothing" in run.failing[0].detail
+    assert "shows nothing at all" in run.failing[0].detail
 
 
 def test_a_grid_of_coloured_divs_is_not_a_blank_page(tmp_path: Path) -> None:
@@ -602,7 +602,7 @@ def test_a_page_that_blinds_the_driver_is_not_a_page_that_failed(
 
     assert not run.works is False or True          # not a verdict either way
     assert run.unchecked, "nothing was recorded as unmeasurable"
-    assert "nothing could be read" in run.unchecked[0].detail
+    assert "could not read this page" in run.unchecked[0].detail
     assert not [r for r in run.results.values() if r.failed], \
         "an unreadable page was reported as a failure"
 
@@ -894,7 +894,7 @@ def test_a_surface_that_takes_one_stroke_must_take_the_next(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert "forgotten how to draw" in run.render()
+    assert "stopped accepting drawing" in run.render()
 
 
 def test_a_canvas_nobody_draws_on_is_asked_nothing(tmp_path: Path) -> None:
@@ -948,7 +948,7 @@ def test_a_control_that_answers_only_its_second_press_is_one_behind(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert "one behind" in run.render()
+    assert "one press late" in run.render()
 
 
 def test_a_control_that_answers_both_presses_is_left_alone(
@@ -1206,7 +1206,7 @@ def test_two_choices_carrying_one_value_are_caught(tmp_path: Path) -> None:
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("can never be the answer" in r.detail
+    assert any("cannot tell which of them was picked" in r.detail
                for r in run.failing), run.render()
 
 
@@ -1246,7 +1246,7 @@ def test_a_label_pointing_at_nothing_is_caught(tmp_path: Path) -> None:
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("not on the page" in r.detail
+    assert any("nothing on the page has that id" in r.detail
                for r in run.failing), run.render()
 
 
@@ -1319,7 +1319,7 @@ def test_a_square_one_behind_its_own_clicks_is_caught(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("one behind" in r.detail for r in run.failing), run.render()
+    assert any("one press late" in r.detail for r in run.failing), run.render()
 
 
 def test_a_square_that_answers_elsewhere_every_time_is_left_alone(
@@ -1377,7 +1377,7 @@ def test_a_control_that_never_answers_while_its_opposite_always_does(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("never changed it once" in r.detail
+    assert any("never did, even right after" in r.detail
                for r in run.failing), run.render()
 
 
@@ -1428,7 +1428,7 @@ def test_a_toggle_that_goes_back_while_the_page_does_not(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("still done" in r.detail for r in run.failing), run.render()
+    assert any("still in effect" in r.detail for r in run.failing), run.render()
 
 
 def test_a_toggle_that_puts_the_page_back_too_is_left_alone(
@@ -1483,7 +1483,7 @@ def test_a_number_counting_the_list_that_disagrees_with_it(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("counting it" in r.detail for r in run.failing), run.render()
+    assert any("counts the list" in r.detail for r in run.failing), run.render()
 
 
 def test_a_number_that_counts_the_list_correctly_is_left_alone(
@@ -1540,7 +1540,7 @@ def test_something_typed_in_and_accepted_that_never_appears(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("does not carry it" in r.detail
+    assert any("does not show it" in r.detail
                for r in run.failing), run.render()
 
 
@@ -1642,7 +1642,7 @@ def test_a_row_that_goes_is_the_one_you_pressed(tmp_path: Path) -> None:
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("not the one you pressed" in r.detail
+    assert any("not the one it belongs to" in r.detail
                for r in run.failing), run.render()
 
 
@@ -1746,7 +1746,7 @@ def test_a_total_that_follows_the_list_up_and_not_down(
     run = check(folder)
 
     assert not run.works, run.render()
-    assert any("stopped following it" in r.detail
+    assert any("stops following the list" in r.detail
                for r in run.failing), run.render()
 
 
@@ -1804,3 +1804,722 @@ def test_a_converter_filling_the_other_box_is_left_alone(
     run = check(folder)
 
     assert run.works, run.render()
+
+
+# -- controls that are changed, not clicked --------------------------------
+
+
+CONVERTER = """
+    const show = () => {
+      const f = document.getElementById('from');
+      const t = document.getElementById('to');
+      document.getElementById('out').textContent = '1 '
+          + f.selectedOptions[0].text + ' = ' + (f.value / t.value) + ' '
+          + t.selectedOptions[0].text;
+    };
+    document.getElementById('from').addEventListener('change', show);
+    document.getElementById('to').addEventListener('change', show);
+"""
+
+
+def test_a_page_made_of_selects_is_changed_rather_than_clicked(
+        tmp_path: Path) -> None:
+    """Clicking a select opens it and chooses nothing.
+
+    A converter whose only controls were two selects was clicked twice, its
+    `change` handlers never ran, and the page-wide rule called it a page
+    where nothing responds. It worked perfectly.
+    """
+    folder = build(
+        tmp_path,
+        '<select id="from"><option value="1">metres</option>'
+        '<option value="1000">kilometres</option></select>'
+        '<select id="to"><option value="1">metres</option>'
+        '<option value="1000">kilometres</option></select>'
+        '<p id="out">1 metres = 1 metres</p>', CONVERTER)
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+def test_a_select_whose_change_throws_is_caught(tmp_path: Path) -> None:
+    """The twin: once a select is really changed, its handler is exercised."""
+    folder = build(
+        tmp_path,
+        '<select id="size"><option>Small</option><option>Large</option>'
+        '</select><p id="out">Small</p>',
+        "document.getElementById('size').addEventListener('change', () => {\n"
+        "  document.getElementById('nope').textContent = 'x';\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("threw" in r.detail for r in run.failing), run.render()
+
+
+def test_a_box_that_answers_on_change_is_given_its_change(
+        tmp_path: Path) -> None:
+    """`change` is sent when a box is left, and typing alone never leaves it.
+
+    A recipe scaler that recalculates on `change` measured as a page where
+    typing a serving count does nothing, because nothing it planted in its
+    handler ever ran.
+    """
+    folder = build(
+        tmp_path,
+        '<input id="n" type="number" value="2"><p id="out">4 eggs</p>',
+        "document.getElementById('n').addEventListener('change', (e) => {\n"
+        "  document.getElementById('nope').textContent = e.target.value;\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("threw" in r.detail for r in run.failing), run.render()
+
+
+def test_a_box_that_recalculates_on_change_is_left_alone(
+        tmp_path: Path) -> None:
+    """The twin, wired to something that is there."""
+    folder = build(
+        tmp_path,
+        '<input id="n" type="number" value="2"><p id="out">4 eggs</p>',
+        "document.getElementById('n').addEventListener('change', (e) => {\n"
+        "  document.getElementById('out').textContent =\n"
+        "    (Number(e.target.value) * 2 || 0) + ' eggs';\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+def test_a_date_box_is_given_a_date(tmp_path: Path) -> None:
+    """Words typed into a date box are refused before the page sees them."""
+    folder = build(
+        tmp_path, '<input id="d" type="date"><p id="out">no date</p>',
+        "document.getElementById('d').addEventListener('change', (e) => {\n"
+        "  if (e.target.value) document.getElementById('nope').remove();\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("threw" in r.detail for r in run.failing), run.render()
+    assert any("2026-03-14" in str(c.acts) for c in run.plan), run.render()
+
+
+def test_a_date_box_that_shows_its_date_its_own_way_is_left_alone(
+        tmp_path: Path) -> None:
+    """A list is free to spell a date differently from the box it came from.
+
+    `2026-03-14` in the box is `14 March` in the row, and looking for the
+    box's own spelling in the row would call a correct list broken.
+    """
+    folder = build(
+        tmp_path,
+        '<input id="name" placeholder="Event"><input id="when" type="date">'
+        '<button id="add">Add</button><ul id="list"></ul>',
+        "const months = ['January', 'February', 'March', 'April', 'May',\n"
+        "  'June', 'July', 'August', 'September', 'October', 'November',\n"
+        "  'December'];\n"
+        "document.getElementById('add').addEventListener('click', () => {\n"
+        "  const name = document.getElementById('name').value.trim();\n"
+        "  const when = document.getElementById('when').value;\n"
+        "  if (!name || !when) return;\n"
+        "  const [y, m, d] = when.split('-').map(Number);\n"
+        "  const li = document.createElement('li');\n"
+        "  li.className = 'event';\n"
+        "  li.textContent = name + ' on ' + d + ' ' + months[m - 1];\n"
+        "  document.getElementById('list').appendChild(li);\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+def test_a_colour_box_is_given_a_colour(tmp_path: Path) -> None:
+    """A colour picker was counted as surface and never once changed."""
+    folder = build(
+        tmp_path, '<input id="c" type="color" value="#000000">',
+        "document.getElementById('c').addEventListener('input', () => {\n"
+        "  document.getElementById('nope').remove();\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("threw" in r.detail for r in run.failing), run.render()
+
+
+def test_a_colour_box_that_recolours_the_page_is_left_alone(
+        tmp_path: Path) -> None:
+    folder = build(
+        tmp_path, '<input id="c" type="color" value="#000000"><p>hello</p>',
+        "document.getElementById('c').addEventListener('input', (e) => {\n"
+        "  document.body.style.color = e.target.value;\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+def test_a_file_box_is_given_a_file(tmp_path: Path) -> None:
+    folder = build(
+        tmp_path, '<input id="f" type="file" accept="image/*">',
+        "document.getElementById('f').addEventListener('change', (e) => {\n"
+        "  if (e.target.files.length) document.getElementById('nope').remove();\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("threw" in r.detail for r in run.failing), run.render()
+
+
+def test_a_file_box_that_names_its_file_is_left_alone(tmp_path: Path) -> None:
+    folder = build(
+        tmp_path, '<input id="f" type="file"><p id="out">no file</p>',
+        "document.getElementById('f').addEventListener('change', (e) => {\n"
+        "  document.getElementById('out').textContent =\n"
+        "    e.target.files[0] ? e.target.files[0].name : 'no file';\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+# -- presses that answer in their own way ----------------------------------
+
+
+def test_a_folder_that_tidies_its_children_on_closing_is_left_alone(
+        tmp_path: Path) -> None:
+    """A tree that collapses the folders inside a folder when it closes.
+
+    Reopened, the inner folders stay closed and the row count says so. That
+    is the page choosing a tidy state, not a toggle whose effect stuck: the
+    second press redrew the children and the count, which a filter that
+    stayed on never does.
+    """
+    folder = build(
+        tmp_path,
+        '<p>Visible rows: <span id="count">5</span></p>'
+        '<ul id="tree">'
+        '<li class="folder open"><span class="name" style="cursor:pointer">'
+        'Folder A</span><ul>'
+        '<li class="folder open"><span class="name" style="cursor:pointer">'
+        'Folder A1</span><ul><li>a1.txt</li><li>a2.txt</li></ul></li>'
+        '</ul></li>'
+        '<li class="folder"><span class="name" style="cursor:pointer">'
+        'Folder B</span><ul hidden><li>b1.txt</li></ul></li>'
+        '</ul>',
+        "const count = () => {\n"
+        "  document.getElementById('count').textContent = [...document\n"
+        "    .querySelectorAll('#tree li')].filter(li => li.offsetParent)\n"
+        "    .length;\n"
+        "};\n"
+        "document.querySelectorAll('.name').forEach((name) => {\n"
+        "  name.addEventListener('click', () => {\n"
+        "    const li = name.parentElement;\n"
+        "    const open = li.classList.toggle('open');\n"
+        "    li.querySelector('ul').hidden = !open;\n"
+        "    if (!open) li.querySelectorAll('li.folder').forEach((f) => {\n"
+        "      f.classList.remove('open');\n"
+        "      f.querySelector('ul').hidden = true;\n"
+        "    });\n"
+        "    count();\n"
+        "  });\n"
+        "});\n"
+        "count();\n")
+
+    run = check(folder)
+
+    assert not any("still in effect" in r.detail for r in run.failing), \
+        run.render()
+
+
+def test_undo_is_not_blamed_for_a_stroke_that_never_drew(
+        tmp_path: Path) -> None:
+    """A painter that can only draw in its top-left corner, with a correct Undo.
+
+    Its undo stack takes a step on every mousedown, so a second stroke that
+    lands outside the corner leaves an empty step behind, and the first Undo
+    press spends itself on that. Undo is right; the canvas is what is broken,
+    and the second-stroke case already says so.
+    """
+    folder = build(tmp_path,
+                   '<canvas id="c" width="200" height="200"></canvas>'
+                   '<button id="u">Undo</button>',
+                   "const el = document.getElementById('c');\n"
+                   "const ctx = el.getContext('2d');\n"
+                   "const past = [];\n"
+                   "let down = false;\n"
+                   "const dot = (e) => {\n"
+                   "  const r = el.getBoundingClientRect();\n"
+                   "  const x = e.clientX - r.left, y = e.clientY - r.top;\n"
+                   "  if (x < 60 && y < 60) ctx.fillRect(x, y, 6, 6);\n"
+                   "};\n"
+                   "el.addEventListener('mousedown', (e) => {\n"
+                   "  past.push(ctx.getImageData(0, 0, 200, 200));\n"
+                   "  down = true; dot(e);\n"
+                   "});\n"
+                   "el.addEventListener('mousemove', (e) => { if (down) dot(e); });\n"
+                   "window.addEventListener('mouseup', () => { down = false; });\n"
+                   "document.getElementById('u').addEventListener('click', () => {\n"
+                   "  if (past.length) ctx.putImageData(past.pop(), 0, 0);\n"
+                   "});\n")
+
+    run = check(folder)
+
+    assert "one press late" not in run.render(), run.render()
+    assert "stopped accepting drawing" in run.render(), run.render()
+
+
+def test_a_page_that_threw_is_reported_even_where_the_stroke_guard_stands_down(
+        tmp_path: Path) -> None:
+    """The guard stands down one question, not the page's crash.
+
+    A painter that dies on load draws no second stroke, so the case pressing
+    Undo after two strokes has no second step to ask about. It still ran on
+    a page that threw, and that is still said.
+    """
+    folder = build(tmp_path,
+                   '<canvas id="c" width="200" height="200"></canvas>'
+                   '<button id="u">Undo</button>',
+                   "document.getElementById('u').addEventListener('click',\n"
+                   "  () => {});\n"
+                   "history.push(1);\n")
+
+    run = check(folder)
+
+    guarded = [r for r in run.failing if "twice, then press" in r.case.what]
+    assert guarded and all("threw" in r.detail for r in guarded), run.render()
+
+
+# -- a list holding the wrong figure ---------------------------------------
+
+
+def _expense_table(tmp_path: Path, shown: str) -> Path:
+    """An expense tracker in a plain table: a row per expense, a Delete on each."""
+    return build(
+        tmp_path,
+        '<div class="entry"><input id="what" placeholder="Description">'
+        '<input id="amount" type="number" placeholder="Amount">'
+        '<button id="add">Add</button></div>'
+        '<table><tbody id="rows"></tbody></table>',
+        "let total = 0;\n"
+        "document.getElementById('add').addEventListener('click', () => {\n"
+        "  const what = document.getElementById('what').value.trim();\n"
+        "  const amount = Number(document.getElementById('amount').value);\n"
+        "  if (!what || !amount) return;\n"
+        "  total += amount;\n"
+        "  const tr = document.createElement('tr');\n"
+        f"  const figure = {shown};\n"
+        "  tr.innerHTML = '<td></td><td></td><td><button>Delete</button></td>';\n"
+        "  tr.children[0].textContent = what;\n"
+        "  tr.children[1].textContent = figure;\n"
+        "  tr.querySelector('button').addEventListener('click', () => {\n"
+        "    total -= amount; tr.remove();\n"
+        "  });\n"
+        "  document.getElementById('rows').appendChild(tr);\n"
+        "});\n")
+
+
+def test_a_row_holding_the_running_total_instead_of_its_amount(
+        tmp_path: Path) -> None:
+    """With one row the running total is the amount, so it takes two to see."""
+    run = check(_expense_table(tmp_path, "total"))
+
+    assert any("new row in the list does not show it" in r.detail
+               for r in run.failing), run.render()
+
+
+def test_a_row_holding_its_own_amount_is_left_alone(tmp_path: Path) -> None:
+    run = check(_expense_table(tmp_path, "amount.toFixed(2)"))
+
+    assert run.works, run.render()
+
+
+def test_a_second_entry_the_page_refuses_is_not_a_lost_one(
+        tmp_path: Path) -> None:
+    """A list that takes one entry and refuses more has lost nothing."""
+    folder = build(
+        tmp_path,
+        '<div class="entry"><input id="what" placeholder="Description">'
+        '<button id="add">Add</button></div><ul id="list"></ul>',
+        "document.getElementById('add').addEventListener('click', () => {\n"
+        "  const list = document.getElementById('list');\n"
+        "  const what = document.getElementById('what').value.trim();\n"
+        "  if (!what || list.children.length) return;\n"
+        "  const li = document.createElement('li');\n"
+        "  li.innerHTML = '<span></span> <button>Remove</button>';\n"
+        "  li.querySelector('span').textContent = what;\n"
+        "  li.querySelector('button').addEventListener('click',\n"
+        "    () => li.remove());\n"
+        "  list.appendChild(li);\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert not any("does not show it" in r.detail for r in run.failing), \
+        run.render()
+
+
+# -- controls a label stands in for ----------------------------------------
+
+
+STARS = ('<div class="entry"><div class="stars">'
+         + "".join(f'<input type="radio" name="rating" id="s{n}" value="{n}"'
+                   f' style="display:none"><label for="s{n}" '
+                   f'style="cursor:pointer;font-size:24px">&#9733;</label>'
+                   for n in range(5, 0, -1))
+         + '</div><textarea id="comment" placeholder="Comment"></textarea>'
+         '<button id="send">Submit</button></div><ul id="past"></ul>')
+
+
+def test_a_star_rating_is_rated_and_sent(tmp_path: Path) -> None:
+    """Stars are labels over radios the page hid.
+
+    The radios are never on screen, so a plan built from what renders had
+    nothing to click, and a Submit that needs a star was only ever pressed
+    without one, and correctly refused.
+    """
+    folder = build(
+        tmp_path, STARS,
+        "document.getElementById('send').addEventListener('click', () => {\n"
+        "  const star = document.querySelector('input[name=rating]:checked');\n"
+        "  if (!star) { alert('Pick a star first.'); return; }\n"
+        "  const li = document.createElement('li');\n"
+        "  li.innerHTML = '<span></span> <button>Remove</button>';\n"
+        "  li.querySelector('span').textContent = star.value + ' stars: '\n"
+        "    + document.getElementById('comment').value;\n"
+        "  li.querySelector('button').addEventListener('click',\n"
+        "    () => li.remove());\n"
+        "  document.getElementById('past').appendChild(li);\n"
+        "  document.getElementById('comment').value = '';\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+    assert any("pick" in act for c in run.plan for act in c.acts), run.render()
+    assert any(c.origin == "seeded" for c in run.plan), run.render()
+
+
+def test_a_star_whose_handler_throws_is_caught(tmp_path: Path) -> None:
+    folder = build(
+        tmp_path, STARS,
+        "document.querySelectorAll('input[name=rating]').forEach((r) => {\n"
+        "  r.addEventListener('change', () => {\n"
+        "    document.getElementById('nope').textContent = r.value;\n"
+        "  });\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("threw" in r.detail for r in run.failing), run.render()
+
+
+# -- what a page saved -----------------------------------------------------
+
+
+def _saved_list(tmp_path: Path, reads: str) -> Path:
+    """A list that saves its rows to localStorage and reads them back on load."""
+    return build(
+        tmp_path,
+        '<div class="entry"><input id="what" placeholder="Title">'
+        '<button id="add">Add</button></div><ul id="list"></ul>',
+        "const list = document.getElementById('list');\n"
+        "let rows = [];\n"
+        "const draw = () => {\n"
+        "  list.innerHTML = '';\n"
+        "  rows.forEach((text, at) => {\n"
+        "    const li = document.createElement('li');\n"
+        "    li.innerHTML = '<span></span> <button>Remove</button>';\n"
+        "    li.querySelector('span').textContent = text;\n"
+        "    li.querySelector('button').addEventListener('click', () => {\n"
+        "      rows.splice(at, 1); save(); draw();\n"
+        "    });\n"
+        "    list.appendChild(li);\n"
+        "  });\n"
+        "};\n"
+        "const save = () => localStorage.setItem('rows', JSON.stringify(rows));\n"
+        f"rows = JSON.parse(localStorage.getItem('{reads}') || '[]');\n"
+        "draw();\n"
+        "document.getElementById('add').addEventListener('click', () => {\n"
+        "  const what = document.getElementById('what').value.trim();\n"
+        "  if (!what) return;\n"
+        "  rows.push(what); save(); draw();\n"
+        "});\n")
+
+
+def test_a_list_that_saves_and_cannot_read_it_back_is_caught(
+        tmp_path: Path) -> None:
+    """Saved under one name and read back under another.
+
+    Every count is right while the page is open. The page wrote its rows
+    into its own storage, which is its promise that they will be there next
+    time, and a reload is the only way to hold it to it.
+    """
+    run = check(_saved_list(tmp_path, "row"))
+
+    assert any("gone after reloading" in r.detail for r in run.failing), \
+        run.render()
+
+
+def test_a_list_that_reads_back_what_it_saved_is_left_alone(
+        tmp_path: Path) -> None:
+    run = check(_saved_list(tmp_path, "rows"))
+
+    assert run.works, run.render()
+    assert any("reload" in act for c in run.plan for act in c.acts), \
+        run.render()
+
+
+# -- what a control says it shows ------------------------------------------
+
+
+def _tabs(tmp_path: Path, hides: str) -> Path:
+    """Three tabs whose markup names the panel each one shows."""
+    tabs = "".join(
+        f'<button role="tab" id="t{n}" aria-controls="p{n}" '
+        f'aria-selected="{"true" if n == 0 else "false"}">Tab {n}</button>'
+        for n in range(3))
+    panels = "".join(
+        f'<div role="tabpanel" id="p{n}"{"" if n == 0 else " hidden"}>'
+        f'Panel {n} text</div>' for n in range(3))
+    return build(
+        tmp_path, f'<div role="tablist">{tabs}</div>{panels}',
+        "document.querySelectorAll('[role=tab]').forEach((tab, at) => {\n"
+        "  tab.addEventListener('click', () => {\n"
+        "    document.querySelectorAll('[role=tab]').forEach((t, i) => {\n"
+        "      t.setAttribute('aria-selected', String(i === at));\n"
+        f"      document.getElementById('p' + i).hidden = {hides};\n"
+        "    });\n"
+        "  });\n"
+        "});\n")
+
+
+def test_a_selected_tab_whose_panel_is_not_shown_is_caught(
+        tmp_path: Path) -> None:
+    """The tab says it shows a panel, and the browser renders none of it.
+
+    Every press changes the page, because the old panel goes, so nothing
+    else here can see that the new one never arrives.
+    """
+    run = check(_tabs(tmp_path, "true"))
+
+    assert any("panel is not shown" in r.detail for r in run.failing), \
+        run.render()
+
+
+def test_tabs_that_show_what_they_select_are_left_alone(
+        tmp_path: Path) -> None:
+    run = check(_tabs(tmp_path, "i !== at"))
+
+    assert run.works, run.render()
+
+
+def test_an_open_accordion_with_an_empty_region_is_left_alone(
+        tmp_path: Path) -> None:
+    """An empty region is still on screen: it has a box, just no height."""
+    folder = build(
+        tmp_path,
+        '<button id="h" aria-expanded="false" aria-controls="r">More</button>'
+        '<div id="r" hidden></div>',
+        "document.getElementById('h').addEventListener('click', (e) => {\n"
+        "  const open = e.target.getAttribute('aria-expanded') !== 'true';\n"
+        "  e.target.setAttribute('aria-expanded', String(open));\n"
+        "  document.getElementById('r').hidden = !open;\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+# -- findings that are one finding -----------------------------------------
+
+
+def test_a_tag_bar_left_lit_is_one_finding_on_every_tag(
+        tmp_path: Path) -> None:
+    """Each tag that stays lit is reported, and all but the first point at it."""
+    tags = "".join(
+        f'<span class="tag" id="t{n}" style="cursor:pointer;padding:4px;'
+        f'border:1px solid #333">tag{n}</span>' for n in range(4))
+    rows = "".join(f'<li class="row">item {n}</li>' for n in range(6))
+    folder = build(
+        tmp_path, f'<div>{tags}</div><ul>{rows}</ul>', """
+        document.querySelectorAll('.tag').forEach((el) => {
+          el.addEventListener('click', () => {
+            const on = el.classList.toggle('lit');
+            if (on) {
+              document.querySelectorAll('.row').forEach((r, i) => {
+                r.style.display = i % 2 ? 'none' : '';
+              });
+            }
+          });
+        });
+    """)
+
+    run = check(folder)
+
+    lit = [r for r in run.failing if "still in effect" in r.detail]
+    assert len(lit) >= 2, run.render()
+    assert lit[0].links == [], run.render()
+    assert all(r.links and r.links[0].to == lit[0].case.id
+               for r in lit[1:]), run.render()
+    assert "repeat an earlier finding" in run.summary()
+
+
+def test_two_different_faults_are_not_joined(tmp_path: Path) -> None:
+    """A label pointing at nothing and a value worked out from nothing."""
+    folder = build(
+        tmp_path,
+        '<label for="missing">Name</label><input id="n">'
+        '<button id="go">Go</button><p id="out">0</p>',
+        "document.getElementById('go').addEventListener('click', () => {\n"
+        "  document.getElementById('out').textContent = Number('x') + 1;\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert len(run.failing) >= 2, run.render()
+    assert not any(r.links for r in run.failing), run.render()
+
+
+def test_a_dead_page_is_told_it_threw_while_loading(tmp_path: Path) -> None:
+    """Nothing responds, and the reason is on record: it threw before any act."""
+    folder = build(
+        tmp_path,
+        '<button id="a">Add</button><button id="b">Clear</button>'
+        '<p id="out">nothing</p>',
+        "const later = undefinedThing.value;\n"
+        "document.getElementById('a').addEventListener('click', () => {\n"
+        "  document.getElementById('out').textContent = 'added';\n"
+        "});\n")
+
+    run = check(folder)
+
+    dead = [r for r in run.failing if r.case.id == "C000"]
+    assert dead, run.render()
+    assert [one.kind for one in dead[0].links] == ["load"], run.render()
+    assert "threw an error while loading" in run.render()
+
+
+# -- forms that refuse, and keys that type ---------------------------------
+
+
+def test_a_form_that_refuses_with_an_alert_has_answered(
+        tmp_path: Path) -> None:
+    """An alert saying the input is wrong is the page responding.
+
+    It leaves nothing in the document, so a check that reads only the
+    document saw a press that did nothing, and a playlist refusing a length
+    that is not mm:ss was reported as one where nothing changed.
+    """
+    folder = build(
+        tmp_path,
+        '<div class="entry"><input id="code" placeholder="Code">'
+        '<button id="send">Send</button></div><ul id="out"></ul>',
+        "document.getElementById('send').addEventListener('click', () => {\n"
+        "  const code = document.getElementById('code').value;\n"
+        "  if (!/^[A-Z]{3}[0-9]{3}$/.test(code)) {\n"
+        "    alert('Code must be three letters and three digits.');\n"
+        "    return;\n"
+        "  }\n"
+        "  document.getElementById('out').insertAdjacentHTML('beforeend',\n"
+        "    '<li>' + code + '</li>');\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert not any("nothing on the page changed" in r.detail
+                   for r in run.failing), run.render()
+
+
+def test_a_phone_box_is_given_a_phone_number(tmp_path: Path) -> None:
+    """A contact form refusing a phone number with no digits is right to."""
+    folder = build(
+        tmp_path,
+        '<div class="entry"><input id="name" placeholder="Name">'
+        '<input id="phone" placeholder="Phone">'
+        '<button id="add">Add Contact</button></div><ul id="list"></ul>',
+        "document.getElementById('add').addEventListener('click', () => {\n"
+        "  const name = document.getElementById('name').value.trim();\n"
+        "  const phone = document.getElementById('phone').value.trim();\n"
+        "  if (!name || !/[0-9]/.test(phone)) return;\n"
+        "  const li = document.createElement('li');\n"
+        "  li.textContent = name + ' ' + phone;\n"
+        "  document.getElementById('list').appendChild(li);\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+def test_keys_that_type_onto_a_board_are_not_one_behind(
+        tmp_path: Path) -> None:
+    """An on-screen key never changes itself; each press types a letter."""
+    keys = "".join(f'<div class="key" style="cursor:pointer;display:inline-block;'
+                   f'width:30px;height:30px">{k}</div>' for k in "ABCDEFGH")
+    folder = build(
+        tmp_path, f'<p id="board"></p><div id="keyboard">{keys}</div>',
+        "document.querySelectorAll('.key').forEach((key) => {\n"
+        "  key.addEventListener('click', () => {\n"
+        "    document.getElementById('board').textContent += key.textContent;\n"
+        "  });\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert not any("one press late" in r.detail for r in run.failing), \
+        run.render()
+
+
+def test_a_form_with_a_required_dropdown_is_sent_with_a_choice(
+        tmp_path: Path) -> None:
+    """A required dropdown left on its placeholder stops the form, rightly."""
+    folder = build(
+        tmp_path,
+        '<form id="f"><input id="name" placeholder="Name" required>'
+        '<select id="group" required><option value="">Choose...</option>'
+        '<option>Family</option><option>Work</option></select>'
+        '<button type="submit">Add</button></form><ul id="list"></ul>',
+        "document.getElementById('f').addEventListener('submit', (e) => {\n"
+        "  e.preventDefault();\n"
+        "  const li = document.createElement('li');\n"
+        "  li.textContent = document.getElementById('name').value + ' ('\n"
+        "    + document.getElementById('group').value + ')';\n"
+        "  document.getElementById('list').appendChild(li);\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert run.works, run.render()
+
+
+def test_a_board_that_asks_for_a_title_and_adds_nothing_is_caught(
+        tmp_path: Path) -> None:
+    """A prompt is the page asking, not answering.
+
+    Three columns whose Add asks for a card title through prompt() and then
+    adds nothing: the question was answered, and nothing followed.
+    """
+    columns = "".join(
+        f'<div class="col"><h2>{name}</h2><button class="add">+ Add</button>'
+        f'<ul></ul></div>' for name in ("Todo", "Doing", "Done"))
+    folder = build(
+        tmp_path, columns,
+        "document.querySelectorAll('.add').forEach((b) => {\n"
+        "  b.addEventListener('click', () => {\n"
+        "    const title = prompt('Card title?');\n"
+        "    if (!title) return;\n"
+        "  });\n"
+        "});\n")
+
+    run = check(folder)
+
+    assert any("after any control was used" in r.detail for r in run.failing), \
+        run.render()

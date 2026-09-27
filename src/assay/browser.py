@@ -12,7 +12,9 @@ None of them is hypothetical.
 
 from __future__ import annotations
 
+import base64
 import contextlib
+import weakref
 import http.server
 import re
 import socketserver
@@ -49,6 +51,14 @@ class Element:
     #: A handle carrying `draggable="true"`, which moves only through the
     #: HTML5 drag protocol and not through mouse events.
     grabbed: bool = False
+    #: An `<input>`'s own `type`. A date box and a week box take differently
+    #: shaped values, and one is refused in the format of the other.
+    input_type: str = ""
+    #: The `name` a radio shares with the rest of its choices.
+    radio: str = ""
+    #: Where it sits, as tags and classes up to the nearest id. See
+    #: `links.attach`.
+    family: str = ""
     #: The form, or failing that the container, this control sits in. A field
     #: and a button are a pair when they share one.
     pairing: int = 0
@@ -59,6 +69,33 @@ class Element:
     painted: Optional[int] = None
     loaded: Optional[bool] = None
     src: str = ""
+
+
+class Crash(str):
+    """An uncaught exception's message, carrying where it was thrown.
+
+    Two handlers can fail with the same message for different reasons, so
+    the message alone does not say two crashes are one. The frame it came
+    from does.
+    """
+
+    frame: str = ""
+
+
+#: The first frame of a stack that belongs to the page, with the loopback
+#: origin taken off, because the port is different on every run.
+_FRAME = re.compile(r"\bat\b.*?(?:https?://[^/\s]+/)?([^\s()/]+:\d+:\d+)")
+
+
+def crash(error: Any) -> Crash:
+    """What a `pageerror` said, and where it was thrown."""
+    said = Crash(str(error)[:200])
+    for line in str(getattr(error, "stack", "") or "").splitlines()[1:]:
+        found = _FRAME.search(line)
+        if found:
+            said.frame = found.group(1)
+            break
+    return said
 
 
 # --------------------------------------------------------------------------
@@ -127,6 +164,20 @@ CLICKY = 'div,span,li,td,th,section,p'
 #: all, which is exactly what they did when the sweep only knew `pointer`.
 DRAGGY = ('col-resize', 'row-resize', 'ew-resize', 'ns-resize', 'nwse-resize',
           'nesw-resize', 'move', 'grab', 'grabbing', 'all-scroll')
+
+#: Whether a label stands in for a radio or checkbox the page has hidden.
+#: Shared by the element sweep and by `UNREACHED_JS`, so the plan and the
+#: check that knows the plan is incomplete agree about what was reached.
+STANDS_IN_JS = """(l) => {
+        const c = l.control;
+        if (!c || c.tagName !== 'INPUT'
+            || (c.type !== 'radio' && c.type !== 'checkbox')) return false;
+        const cs = getComputedStyle(c), r = c.getBoundingClientRect();
+        const lr = l.getBoundingClientRect();
+        return (cs.display === 'none' || cs.visibility === 'hidden'
+                || cs.opacity === '0' || r.width < 2 || r.height < 2)
+            && lr.width > 2 && lr.height > 2;
+    }"""
 
 #: How a canvas is read, whatever kind it is. Shared by the signature and by
 #: the element sweep so the two cannot disagree about what a canvas holds.
@@ -270,8 +321,15 @@ __CANVAS__    const pending = [];
         if (r.width < 6 || r.height < 6) continue;
         cells.push(el);
     }
+    // **A label is the control when the page hid the box it names.** A
+    // star rating is five labels over five radios set to `display: none`:
+    // the stars are what a person clicks, and the radios are never on screen
+    // to be measured, so the whole widget was invisible to the plan.
+    const standsIn = __PROXY__;
+    const proxies = Array.from(document.querySelectorAll('label'))
+        .filter(l => !picked.has(l) && standsIn(l));
     const out = Array.from(picked).concat(editable).concat(handles)
-        .concat(cells).slice(0, 250).map(el => {
+        .concat(cells).concat(proxies).slice(0, 250).map(el => {
         const r = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
         const o = {
@@ -289,9 +347,15 @@ __CANVAS__    const pending = [];
         } else if (o.tag === 'select') { o.kind = 'select';
         } else if (o.tag === 'textarea') { o.kind = 'text';
         } else if (o.tag === 'input') {
+            // **A date box is not a text box.** It refuses every string
+            // that is not a date in its own format, so typing words into
+            // one does nothing at all, and a countdown whose whole input is
+            // a date was never once given one.
+            const dated = ['date', 'time', 'datetime-local', 'month', 'week'];
             o.kind = (t === 'checkbox' || t === 'radio' || t === 'range'
                       || t === 'number' || t === 'file' || t === 'color')
-                     ? t : 'text';
+                     ? t : dated.includes(t) ? 'date' : 'text';
+            o.type = t;
         } else if (o.tag === 'a' && el.getAttribute('href')) {
             o.kind = 'link';
         } else if (o.tag === 'canvas') { o.kind = 'canvas';
@@ -307,7 +371,8 @@ __CANVAS__    const pending = [];
         } else if (handles.includes(el)) {
             o.kind = 'handle';
             o.grabbed = el.getAttribute('draggable') === 'true';
-        } else if (cells.includes(el)) { o.kind = 'cell'; }
+        } else if (cells.includes(el)) { o.kind = 'cell';
+        } else if (proxies.includes(el)) { o.kind = el.control.type; }
         if (o.kind) {
             // A label's own words are its direct text nodes. Everything
             // nested inside it belongs to something else: the options of a
@@ -331,6 +396,11 @@ __CANVAS__    const pending = [];
                        || el.id || '')
                 .replace(/\\s+/g, ' ').trim().slice(0, 60);
             o.enabled = !el.disabled && !el.hasAttribute('aria-disabled');
+            // Which set of choices this belongs to, so a form can be
+            // completed by picking one from each.
+            const box = proxies.includes(el) ? el.control : el;
+            if (box.type === 'radio') o.radio = box.name || '';
+            if (proxies.includes(el)) o.enabled = !box.disabled;
         }
         if (o.tag === 'img') {
             o.loaded = el.complete && el.naturalWidth > 0;
@@ -339,6 +409,20 @@ __CANVAS__    const pending = [];
         if (o.tag === 'canvas') pending.push(
             _pixels(el).then(p => { o.painted = p[0]; }));
         if (o.kind) o.group = groupOf(el);
+        // **Which kind of control this is, by where it sits.** The tag and
+        // classes of it and each wrapper up to the nearest one with an id,
+        // with its own id left out: the chips of one tag bar share this
+        // whatever each is called, and a chip in another bar does not.
+        if (o.kind) {
+            const bits = [];
+            for (let at = el; at && at !== document.body;
+                 at = at.parentElement) {
+                if (at !== el && at.id) { bits.unshift('#' + at.id); break; }
+                const cls = Array.from(at.classList).sort().join('.');
+                bits.unshift(at.tagName.toLowerCase() + (cls ? '.' + cls : ''));
+            }
+            o.family = bits.join(' > ');
+        }
         o.readonly = !!(el.readOnly || el.hasAttribute('readonly'));
         const form = el.closest('form');
         const holder = form || el.parentElement;
@@ -351,7 +435,8 @@ __CANVAS__    const pending = [];
     await Promise.all(pending);
     return out;
 }""".replace("__PICK__", repr(PICK)).replace("__CLICKY__", repr(CLICKY)) \
-     .replace("__DRAGGY__", repr(list(DRAGGY))).replace("__CANVAS__", CANVAS_JS)
+     .replace("__DRAGGY__", repr(list(DRAGGY))).replace("__CANVAS__", CANVAS_JS) \
+     .replace("__PROXY__", STANDS_IN_JS)
 
 #: What the page is showing, in the few numbers that can be compared against
 #: themselves before and after an action. Each term is here because something
@@ -656,13 +741,27 @@ def answer_dialogs(page: Any) -> None:
     The value follows the same reading of the words that a text field gets,
     because `Sample item` is not an answer to *How many?*.
     """
+    heard = _DIALOGS.setdefault(page, [])
+
     def answer(dialog: Any) -> None:
         with contextlib.suppress(Exception):
+            # **An alert is a reply; a prompt or a confirm is a question.**
+            # What a page does with the answer is its response, so only an
+            # alert counts as the page having answered: a board whose Add
+            # asks for a title and then adds nothing has not answered.
+            if dialog.type == "alert":
+                heard.append(str(dialog.message or "")[:120])
             if dialog.type == "prompt":
                 dialog.accept(sample_for(dialog.message))
             else:
                 dialog.accept()
     page.on("dialog", answer)
+
+
+#: Every alert each open page has raised, in order. An alert is the page
+#: answering: one saying *Length must be mm:ss* is a form refusing what it
+#: was given, out loud, and it leaves nothing in the document to measure.
+_DIALOGS: "weakref.WeakKeyDictionary[Any, List[str]]" = weakref.WeakKeyDictionary()
 
 
 def sample_for(words: str) -> str:
@@ -675,6 +774,15 @@ def sample_for(words: str) -> str:
     name = (words or "").lower()
     if "mail" in name:
         return "someone@example.com"
+    # **A box asking for a time or a phone number is not answered by a
+    # sentence either.** A playlist refuses a length that is not mm:ss and a
+    # contact book a phone number with no digits in it, and both are right to.
+    if any(word in name for word in ("phone", "tel", "mobile")):
+        return "555-0100"
+    if "mm:ss" in name or "duration" in name:
+        return "3:30"
+    if "hh:mm" in name:
+        return "09:30"
     # **A box asking for an address is not answered by a sentence.** A
     # bookmark manager validates what it is given with `new URL(...)`,
     # correctly refuses `Sample item`, adds nothing, and was reported for
@@ -825,6 +933,9 @@ UNREACHED_JS = """() => {
             && cs.visibility !== 'hidden' && cs.opacity !== '0'; };
     // Exactly what the plan is built from, asked the same way.
     const reached = new Set(document.querySelectorAll(__PICK__));
+    const standsIn = __PROXY__;
+    for (const l of document.querySelectorAll('label'))
+        if (standsIn(l)) reached.add(l);
     for (const el of document.querySelectorAll(__CLICKY__)) {
         if (reached.has(el)) continue;
         if (getComputedStyle(el).cursor !== 'pointer') continue;
@@ -857,7 +968,8 @@ UNREACHED_JS = """() => {
     }
     return out;
 }""".replace("__PICK__", repr(PICK)).replace("__CLICKY__", repr(CLICKY)) \
-     .replace("__GRABBY__", repr(list(DRAGGY)))
+     .replace("__GRABBY__", repr(list(DRAGGY))) \
+     .replace("__PROXY__", STANDS_IN_JS)
 
 
 def unreached(page: Any) -> Dict[str, int]:
@@ -903,6 +1015,9 @@ def elements(page: Any) -> List[Element]:
             pairing=int(r.get("pairing") or 0),
             readonly=bool(r.get("readonly", False)),
             grabbed=bool(r.get("grabbed", False)),
+            input_type=str(r.get("type") or ""),
+            radio=str(r.get("radio") or ""),
+            family=str(r.get("family") or ""),
             painted=r.get("painted"), loaded=r.get("loaded"),
             src=str(r.get("src") or "")[:200],
         )
@@ -956,9 +1071,9 @@ FACTS_JS = r"""() => {
         const seen = {};
         for (const el of groups[name]) {
             if (seen[el.value]) {
-                wiring.push('two choices named "' + name + '" both carry the '
-                    + 'value "' + el.value + '", so one of them can never be '
-                    + 'the answer');
+                wiring.push('two radio buttons in the "' + name + '" group '
+                    + 'both have the value "' + el.value + '", so the form '
+                    + 'cannot tell which of them was picked');
                 break;
             }
             seen[el.value] = 1;
@@ -969,17 +1084,43 @@ FACTS_JS = r"""() => {
         const at = lab.getAttribute('for');
         const words = (lab.innerText || '').trim().slice(0, 24);
         if (!document.getElementById(at)) {
-            wiring.push('a label reading "' + words + '" points at "' + at
-                + '", which is not on the page');
+            wiring.push('the label "' + words + '" is linked to "' + at
+                + '", but nothing on the page has that id');
         } else if (pointed[at]) {
-            wiring.push('two labels both point at "' + at + '", so whatever'
-                + ' the other control was called cannot be reached by its'
-                + ' words');
+            wiring.push('two labels are both linked to "' + at + '", so '
+                + 'one of them was meant for another control, which is left '
+                + 'without a label');
         }
         pointed[at] = 1;
     }
 
-    return {computed: computed, wiring: wiring};
+    // **A control marked as showing something, and that something not on
+    // screen.** A tab carrying aria-selected="true" names the panel it
+    // shows in aria-controls, and an accordion header carrying
+    // aria-expanded="true" names the region it opened. When the page's own
+    // markup says a panel is showing and the browser renders nothing of it,
+    // the page contradicts itself. A panel that is merely empty still has a
+    // box, so only one the browser does not render at all counts.
+    const aria = [];
+    const rendered = (el) => el.getClientRects().length > 0
+        && getComputedStyle(el).visibility !== 'hidden';
+    for (const el of document.querySelectorAll(
+             '[aria-controls][aria-selected=true], '
+             + '[aria-controls][aria-expanded=true]')) {
+        if (!rendered(el)) continue;
+        const says = el.getAttribute('aria-selected') === 'true'
+            ? 'selected' : 'expanded';
+        for (const id of (el.getAttribute('aria-controls') || '').split(/\s+/)) {
+            const target = id && document.getElementById(id);
+            if (target && !rendered(target)) {
+                aria.push('"' + (el.innerText || '').trim().slice(0, 24)
+                    + '" is marked ' + says + ' and controls the panel "' + id
+                    + '", but that panel is not shown');
+            }
+        }
+    }
+
+    return {computed: computed, wiring: wiring, aria: aria};
 }"""
 
 
@@ -1173,6 +1314,29 @@ SHOWS_JS = r"""(needles) => {
 }"""
 
 
+#: Everything the page has put in its own storage, as one string.
+_STORED_JS = """() => {
+    const dump = (s) => {
+        try { return JSON.stringify(Object.assign({}, s)); }
+        catch (e) { return ''; }
+    };
+    return dump(window.localStorage) + ' ' + dump(window.sessionStorage);
+}"""
+
+
+def saved(page: Any, typed: Sequence[str]) -> List[str]:
+    """Which of these the page both stored and is showing right now."""
+    if not typed:
+        return []
+    try:
+        stored = str(page.evaluate(_STORED_JS) or "")
+    except Exception:
+        return []
+    kept = [one for one in typed if one in stored]
+    shown = set(kept) - set(missing_from(page, kept))
+    return [one for one in kept if one in shown]
+
+
 def missing_from(page: Any, needles: Sequence[str]) -> List[str]:
     """Which of these the page is not showing anywhere."""
     if not needles:
@@ -1194,11 +1358,23 @@ def facts(page: Any) -> Dict[str, Any]:
 
 
 def signature(page: Any) -> Dict[str, Any]:
-    """What the page is showing, for comparing against itself."""
+    """What the page is showing, for comparing against itself.
+
+    It includes how many dialogs the page has raised and what the last one
+    said. **A page that refuses bad input with an `alert` has answered**, and
+    measured only by its document it looked like a page that ignored the
+    press: a playlist refusing a length that is not mm:ss was reported as
+    one where nothing changed.
+    """
     try:
-        return page.evaluate(SIGNATURE_JS)
+        got = page.evaluate(SIGNATURE_JS)
     except Exception:
         return {}
+    if isinstance(got, dict):
+        heard = _DIALOGS.get(page) or []
+        got["dialogs"] = len(heard)
+        got["dialog"] = heard[-1] if heard else ""
+    return got
 
 
 # --------------------------------------------------------------------------
@@ -1294,6 +1470,70 @@ def _slide(page: Any, selector: str, timeout: float) -> None:
     page.fill(selector, reach, timeout=timeout)
 
 
+#: Which option to pick in a select: the next one along from where it sits,
+#: skipping any the page has disabled, such as a "Choose..." placeholder.
+_OTHER_OPTION_JS = """(sel) => {
+    const el = document.querySelector(sel);
+    if (!el || !el.options || !el.options.length) return null;
+    const at = el.selectedIndex;
+    for (let i = 1; i <= el.options.length; i++) {
+        const k = (at + i + el.options.length) % el.options.length;
+        if (k !== at && !el.options[k].disabled) return k;
+    }
+    return null;
+}"""
+
+
+def _choose(page: Any, selector: str, timeout: float) -> None:
+    """Change what a select holds, the way a person changes it.
+
+    **Clicking a select opens it and chooses nothing**, so its `change`
+    handler never ran and a converter built from two selects was reported
+    as a page where nothing responds. Picking an option is what fires it.
+    """
+    at = page.evaluate(_OTHER_OPTION_JS, selector)
+    if at is None:
+        raise ValueError(f"nothing else to choose at {selector}")
+    page.select_option(selector, index=at, timeout=timeout)
+
+
+def _recolour(page: Any, selector: str, timeout: float) -> None:
+    """Set a colour box to a colour it is not already showing."""
+    now = page.evaluate("(s) => { const e = document.querySelector(s); "
+                        "return e ? String(e.value).toLowerCase() : null; }",
+                        selector)
+    if now is None:
+        raise ValueError(f"nothing at {selector}")
+    page.fill(selector, "#cc6633" if now == "#3366cc" else "#3366cc",
+              timeout=timeout)
+
+
+#: The smallest PNG there is: one pixel. Enough for a page that previews an
+#: image to have something to show.
+_PNG = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQ"
+    "GAhKmMIQAAAABJRU5ErkJggg==")
+
+
+def _attach(page: Any, selector: str, timeout: float) -> None:
+    """Give a file box a small file of the kind it says it accepts."""
+    accept = (page.get_attribute(selector, "accept", timeout=timeout)
+              or "").lower()
+    if "image" in accept or any(x in accept for x in
+                                (".png", ".jpg", ".jpeg", ".gif", ".webp")):
+        one = {"name": "sample.png", "mimeType": "image/png", "buffer": _PNG}
+    elif "json" in accept:
+        one = {"name": "sample.json", "mimeType": "application/json",
+               "buffer": b'{"name": "Sample item", "value": 5}\n'}
+    elif "csv" in accept:
+        one = {"name": "sample.csv", "mimeType": "text/csv",
+               "buffer": b"name,value\nSample item,5\n"}
+    else:
+        one = {"name": "sample.txt", "mimeType": "text/plain",
+               "buffer": b"Sample item\n"}
+    page.set_input_files(selector, files=[one], timeout=timeout)
+
+
 def perform(page: Any, acts: Sequence[Dict[str, str]],
             timeout: float = 4000) -> Tuple[List[str], List[str]]:
     """Do each act in order. Returns what could not be done, and what was off.
@@ -1308,7 +1548,7 @@ def perform(page: Any, acts: Sequence[Dict[str, str]],
         for verb, raw in step.items():
             arg = _CONTAINS.sub(r":has-text(\1)", str(raw))
             try:
-                if verb in ("click", "dblclick"):
+                if verb in ("click", "dblclick", "pick"):
                     sel, _, spot = arg.partition("@")
                     try:
                         page.click(sel, timeout=timeout, **_where(page, sel, spot))
@@ -1322,9 +1562,23 @@ def perform(page: Any, acts: Sequence[Dict[str, str]],
                         page.click(f"text={sel}", timeout=timeout)
                 elif verb == "press":
                     page.keyboard.press(arg)
-                elif verb == "fill":
+                elif verb in ("fill", "enter"):
                     sel, _, value = arg.partition("=")
                     page.fill(sel.strip(), value.strip(), timeout=timeout)
+                    if verb == "enter":
+                        # **Typed and then left, as a person does.** A page
+                        # that recalculates on `change` hears nothing from
+                        # typing alone, because `change` is sent when the
+                        # box loses focus. Only a case whose last act is the
+                        # typing does this: where a press follows, the press
+                        # moves the focus itself, inside the act measured.
+                        page.eval_on_selector(sel.strip(), "e => e.blur()")
+                elif verb == "choose":
+                    _choose(page, arg, timeout)
+                elif verb == "recolour":
+                    _recolour(page, arg, timeout)
+                elif verb == "attach":
+                    _attach(page, arg, timeout)
                 elif verb == "drag":
                     _drag(page, arg)
                 elif verb == "slide":
@@ -1339,13 +1593,17 @@ def perform(page: Any, acts: Sequence[Dict[str, str]],
                     src, _, dst = arg.partition(">>")
                     page.drag_and_drop(src.strip(), dst.strip(),
                                        timeout=timeout)
+                elif verb == "reload":
+                    page.reload(wait_until="load", timeout=30000)
+                    settle(page, ceiling_ms=5000)
                 elif verb == "wait":
                     page.wait_for_timeout(min(int(float(arg) * 1000), 10000))
                 else:
                     continue
             except Exception as exc:
                 target = str(raw).split("@")[0]
-                if verb in ("click", "dblclick") and _disabled(page, target):
+                if verb in ("click", "dblclick", "pick") \
+                        and _disabled(page, target):
                     was_off.append(f"{verb} {raw}")
                 else:
                     could_not.append(
@@ -1398,6 +1656,8 @@ def changed(was: Dict[str, Any], now: Dict[str, Any]) -> str:
         bits.append("what is in the fields changed")
     if was.get("styles") != now.get("styles"):
         bits.append("something on the page was restyled or recoloured")
+    if int(now.get("dialogs") or 0) > int(was.get("dialogs") or 0):
+        bits.append(f"the page showed an alert: {now.get('dialog')!r}")
     return "; ".join(bits)
 
 
@@ -1527,6 +1787,49 @@ def itself(page: Any, selector: str) -> Optional[str]:
     try:
         got = page.evaluate(ITSELF_JS, selector)
         return None if got is None else str(got)
+    except Exception:
+        return None
+
+
+#: The page with one control taken out of it: every element outside it, its
+#: markup, its styling and its own words, with the control's own subtree and
+#: the class and style of the three wrappers `ITSELF_JS` already reads left
+#: out. What a press did *elsewhere*, in one number.
+OUTSIDE_JS = """(sel) => {
+    const el = document.querySelector(sel);
+    if (!el || !document.body) return null;
+    const near = new Set();
+    for (let up = el.parentElement, n = 0; up && n < 3;
+         up = up.parentElement, n++) near.add(up);
+    let h = 0;
+    const eat = (s) => {
+        for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    };
+    for (const node of document.body.querySelectorAll('*')) {
+        if (el.contains(node)) continue;
+        eat('<' + node.tagName);
+        if (!near.has(node)) {
+            eat((typeof node.className === 'string' ? node.className : '')
+                + '|' + (node.getAttribute('style') || '')
+                + '|' + (node.hidden ? 'hidden' : ''));
+            if (/^(INPUT|TEXTAREA|SELECT)$/.test(node.tagName))
+                eat('=' + String(node.type === 'checkbox' || node.type === 'radio'
+                                 ? node.checked : node.value));
+        }
+        for (const t of node.childNodes)
+            if (t.nodeType === 3) eat(t.textContent);
+    }
+    return h;
+}"""
+
+
+def outside(page: Any, selector: str) -> Optional[int]:
+    """The page apart from this control, or None if it could not be read."""
+    if not selector:
+        return None
+    try:
+        got = page.evaluate(OUTSIDE_JS, selector)
+        return got if isinstance(got, int) else None
     except Exception:
         return None
 

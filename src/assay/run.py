@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from assay import browser
+from assay import browser, links
 from assay.qa import FAILED, PASSED, UNKNOWN, QA, Result
 from assay.surface import Case, Surface, from_page, plan
 
@@ -140,7 +140,7 @@ class Browser:
         console: List[str] = []
         failed: List[str] = []
         browser.answer_dialogs(page)
-        page.on("pageerror", lambda e: crashes.append(str(e)[:200]))
+        page.on("pageerror", lambda e: crashes.append(browser.crash(e)))
         page.on("console", lambda m: console.append(m.text[:200])
                 if m.type == "error" else None)
         page.on("requestfailed",
@@ -224,6 +224,8 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
           answered_once: Optional[bool] = None,
           itself: Tuple[Optional[str], ...] = (None, None, None),
           page_back: Optional[bool] = None,
+          elsewhere: Optional[bool] = None,
+          lost: Sequence[str] = (),
           rows: Tuple[Any, Any] = (None, None)) -> Result:
     """Whether one case came out right, and the numbers either way.
 
@@ -232,6 +234,11 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     """
     quiet = bool(case.expect.get("quiet"))
     bad: List[str] = []
+    rules: List[str] = []
+
+    def flag(rule: str, said: str) -> None:
+        rules.append(rule)
+        bad.append(said)
 
     # **Nothing could be read off this page, so nothing is settled.** A page
     # that replaces a global the driver evaluates through (`function eval()`
@@ -241,10 +248,10 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # not run reading like one that failed is the fault this tool is for.
     if unmeasurable:
         return Result(case=case, outcome=UNKNOWN,
-                      detail="nothing could be read off this page. It "
-                             "replaces something the driver measures through "
-                             "(a page-level `eval` or `Function` does this), "
-                             "so this says nothing about the program",
+                      detail="assay could not read this page, because the "
+                             "page replaces a built-in function that assay "
+                             "relies on (such as `eval` or `Function`). This "
+                             "says nothing about whether the page works",
                       evidence="")
 
     # **A page that rendered nothing is not a page that works.** It is the one
@@ -265,28 +272,38 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # nothing threw. Clicking a blank canvas once and it staying blank is
     # the coverage case doing exactly what it says.
     if blank and (nothing_to_try or (case.acts and not quiet)):
-        bad.append("the page rendered nothing at all: no text, no image and "
-                   "nothing drawn, so there is no program here to test")
+        flag("blank", "the page shows nothing at all (no text, no images and "
+                      "nothing drawn), so there is nothing to test")
 
     # **A page that threw is not the program the case is about.** Everything
     # after an uncaught exception did not happen.
     if crashes:
-        bad.append(f"the page threw and stopped running: {crashes[0]}")
+        flag("threw", f"the page threw an error and stopped running: "
+                      f"{crashes[0]}")
 
     # An act the page refused fails a case only when nothing could be done.
     # A canvas behind a "press Space to start" overlay cannot be clicked, and
     # that is the program working, and a `quiet` case never fails on one at
     # all, because `quiet` asserts only that nothing threw.
     if could_not and not quiet and len(could_not) >= len(case.acts or [None]):
-        bad.append("could not " + "; nor ".join(could_not[:3]))
+        flag("could-not", "could not " + "; nor ".join(could_not[:3]))
 
     if case.expect.get("painted") and browser.unpainted(after):
-        bad.append(f"{browser.unpainted(after)} canvas(es) still have nothing "
-                   f"drawn in them after all that")
+        flag("unpainted", f"{browser.unpainted(after)} canvas(es) still show "
+                          f"nothing after every step of this check")
+
+    # **Saved, and gone after a reload.** The page wrote these into its own
+    # storage and was showing them, so it has said they are kept.
+    if lost:
+        flag("forgot-on-reload",
+             f"{' and '.join(repr(one) for one in lost[:2])} "
+             f"{'was' if len(lost) == 1 else 'were'} saved in browser storage "
+             f"by the page, but {'is' if len(lost) == 1 else 'are'} gone after "
+             f"reloading it")
 
     want = str(case.expect.get("want") or "")
     if want and want.lower() not in (text or "").lower():
-        bad.append(f"the page does not contain {want!r}")
+        flag("missing-text", f"the page does not contain {want!r}")
 
     acted = bool(case.acts)
     shifted = browser.moved(before, after)
@@ -318,17 +335,20 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
             and not own_rule and not stirred
             and browser.aimed_at_canvas(case.acts)
             and browser.canvas_still(before, after)):
-        bad.append("the canvas you acted on is unchanged, so whatever else "
-                   "moved, the thing the act was aimed at did not respond")
+        flag("canvas-unchanged",
+             "the canvas this check clicked did not change, even if other "
+             "parts of the page did")
     elif (acted and shifted is False and not quiet
           and not case.expect.get("unchanged") and not own_rule
           and not was_off and not stirred
           and not (self_stopped and not asked)):
-        bad.append(
-            f"the page says to press {promised} and pressing it changes "
-            f"nothing" if asked else "nothing on the page changed at all")
+        flag("told-to-press" if asked else "no-change",
+             f"the page says to press {promised}, but pressing {promised} "
+             f"changes nothing" if asked
+             else "nothing on the page changed at all")
     elif case.expect.get("unchanged") and shifted is True:
-        bad.append("the page changed when it was supposed to stay as it was")
+        flag("changed-when-still",
+             "the page changed when it was supposed to stay as it was")
 
     # **One row fewer, and the one you pressed is still there.** A bookmark
     # manager splicing at the wrong index removes the row beneath the button
@@ -346,8 +366,8 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     if (was_row and now_row and was_row.get("text") and told_apart
             and int(now_row.get("many") or 0) < int(was_row.get("many") or 0)
             and was_row["text"] in (now_row.get("all") or [])):
-        bad.append(f"a row went and it was not the one you pressed: "
-                   f"{was_row['text'][:60]!r} is still here")
+        flag("wrong-row", f"this removed a row, but not the one it belongs "
+                          f"to: {was_row['text'][:60]!r} is still there")
 
 
     # **A surface that took the first stroke has to take the second.** The
@@ -377,10 +397,15 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
         # disagreement between the two, not the silence of either.
         was, now, back = (list(itself) + [None, None, None])[:3]
         if case.expect.get("itself") and was is not None and now is not None:
-            if was == now and shifted is True:
-                bad.append("the square you clicked answered the second press "
-                           "and not the first, from the same state, so it is "
-                           "one behind")
+            # **The square has to answer the second press, not only the
+            # page.** A key on an on-screen keyboard never changes itself:
+            # each press types a letter on the board. Reading the page
+            # moving as the square answering called every key one behind.
+            if was == now and back is not None and back != now \
+                    and shifted is True:
+                flag("one-behind-cell",
+                     "clicking this twice: the first click did not change it "
+                     "and the second did, so it reacts one press late")
             # **It went back and the page did not.** A tag that switches
             # itself off is saying the filter it switched on is off again,
             # and a list still filtered contradicts it. Both halves are the
@@ -390,24 +415,38 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
             # It has to have changed in the first place. A button that never
             # alters itself is the ordinary case, and pressing one twice is
             # allowed to leave the page twice as far along.
-            elif (was != now and back == was and page_back is True):
-                bad.append("this went back to how it started and the page "
-                           "did not, so whatever the first press did is "
-                           "still done")
+            #
+            # **And the second press has to have done nothing but put the
+            # control back.** A tree folder that collapses the folders inside
+            # it when it closes reopens with them still closed, which is the
+            # page choosing a tidy state, and it says so by redrawing its
+            # children and its row count on the second press. A tag whose
+            # list stays filtered does nothing on the second press except
+            # unlight itself. `elsewhere` is that second press, measured
+            # outside the control and the wrappers around it.
+            elif (was != now and back == was and page_back is True
+                  and elsewhere is False):
+                flag("went-back",
+                     "clicking this twice switched it back off, but the rest "
+                     "of the page did not change back, so what the first "
+                     "click did is still in effect")
         elif answered_once is False and shifted is True:
-            bad.append("the first press did nothing and the second did "
-                       "something, from the same state, so this control is "
-                       "one behind")
+            flag("one-behind",
+                 "pressing this twice from the same starting point: the first "
+                 "press changed nothing and the second did, so it reacts one "
+                 "press late")
         return Result(case=case, outcome=FAILED if bad else PASSED,
-                      detail="; ".join(bad)[:400],
+                      detail="; ".join(bad)[:400], rules=rules,
                       evidence=(f"the first press: "
                                 f"{'changed the page' if answered_once else 'did nothing'}"
                                 f"; the second: {browser.changed(before, after)}")[:400])
 
     if case.expect.get("again") and answered_setup:
         if shifted is False:
-            bad.append("the first stroke drew and the second did nothing. "
-                       "this surface has forgotten how to draw")
+            flag("second-stroke",
+                 "the first line drawn on this canvas appeared, but a second "
+                 "line drawn elsewhere did not, so the canvas stopped "
+                 "accepting drawing")
 
     # **A control the program switched off is the program answering.**
     # `was_off` is an act the driver could not perform because the page had
@@ -430,7 +469,8 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
             "could not " + could_not[0] + ", and the rest of the case went ahead")
 
     return Result(case=case, outcome=FAILED if bad else PASSED,
-                  detail="; ".join(bad)[:400], evidence=observed[:400])
+                  detail="; ".join(bad)[:400], evidence=observed[:400],
+                  rules=rules)
 
 
 def _text(page: Any) -> str:
@@ -500,7 +540,10 @@ def _seeding(cases: Sequence[Case]) -> List[Dict[str, str]]:
 #: not the same row twice.
 _SECOND = {"Sample item": "Another item",
            "someone@example.com": "nobody@example.com",
-           "https://example.com/page": "https://example.com/other"}
+           "https://example.com/page": "https://example.com/other",
+           "2026-03-14": "2026-03-21", "09:30": "10:45",
+           "2026-03-14T09:30": "2026-03-21T10:45", "2026-03": "2026-04",
+           "2026-W11": "2026-W12", "555-0100": "555-0199", "3:30": "4:15"}
 
 
 def _twice(seed: Sequence[Dict[str, str]]) -> List[Dict[str, str]]:
@@ -585,14 +628,32 @@ def check(folder: str | Path, entry: str = "index.html",
                             title=(page.title() or ""), rest=engine.rest)
         cases = plan(opened.surface, criteria)
         seed = _seeding(cases)
+        #: Every control the page offered, as loaded and as it grew, by
+        #: selector. What the links are allowed to call one kind of thing.
+        offered = {c.selector: c for c in opened.surface.controls}
         if seed:
             with contextlib.suppress(Exception):
                 with engine.open() as (page, *_):
                     browser.perform(page, _twice(seed))
                     page.wait_for_timeout(300)
                     grown = from_page(_Shot(browser.elements(page)))
+                    kept = browser.saved(page, _plainly(_twice(seed)))
+                for c in grown.controls:
+                    offered.setdefault(c.selector, c)
                 cases += _once_there_is_data(opened.surface, grown, seed,
                                              criteria)
+                if kept:
+                    # **A page that saves what it was given has said it
+                    # will be there next time.** Writing the entries into
+                    # its own storage is the page's promise, and a reload
+                    # is the only way to hold it to it. Asked only of what
+                    # was both saved and showing before the reload.
+                    cases.append(Case(
+                        id="", what="save two, reload, and they are still "
+                                    "there",
+                        acts=_twice(seed) + [{"reload": "page"}],
+                        expect={"survives": kept, "quiet": True},
+                        origin="seeded"))
         for n, case in enumerate(cases, 1):
             case.id = f"C{n:03d}"
         # Nothing to press, type into or draw on. A page like that has only
@@ -636,9 +697,19 @@ def check(folder: str | Path, entry: str = "index.html",
         #: which of its classes are a *list* is only knowable once the page
         #: has been seen at more than one size.
         entries: List[Tuple[str, List[str], Dict[str, Any]]] = []
+        #: What every tab logged as an error and every request that failed,
+        #: kept as information. A page may log an error and work, so none of
+        #: it decides anything.
+        heard: List[Tuple[List[str], List[str]]] = [
+            (opened.console, opened.failed_requests)]
+        #: Each case's crashes, and how many had already happened when the
+        #: page finished loading and before any act.
+        crashed: Dict[str, Tuple[List[str], int]] = {}
 
         def carry_out(case: Case) -> Result:
             with engine.open() as (page, crashes, console, failed):
+                heard.append((console, failed))
+                crashed[case.id] = (crashes, len(crashes))
                 before = browser.signature(page)
                 shot_before = _shoot(page, shots, f"{case.id}-before")
                 # **A case asserts about its last act, not about its own
@@ -658,7 +729,9 @@ def check(folder: str | Path, entry: str = "index.html",
                 # named for, so the first stroke's marks belong in the
                 # *before* picture or the case is satisfied by them.
                 fills_first = (len(case.acts) > 1
-                               and (all("fill" in a for a in case.acts[:-1])
+                               and (all("fill" in a or "pick" in a
+                                        or "choose" in a
+                                        for a in case.acts[:-1])
                                     or case.expect.get("again")))
                 # The second-stroke case is one stroke of setup and every
                 # trial after it, not everything-but-the-last: the trials are
@@ -706,7 +779,43 @@ def check(folder: str | Path, entry: str = "index.html",
                 # answering only the second press is what has to be visible,
                 # and a before-and-after across both cannot see it.
                 if case.expect.get("same_each"):
-                    could_not, was_off = browser.perform(page, case.acts[:-2])
+                    setup_acts = case.acts[:-2]
+                    if (len(setup_acts) == 2
+                            and all("drag" in a for a in setup_acts)):
+                        # **Two strokes, and the second has to have drawn.**
+                        # The question is whether a control takes back one
+                        # step per press, and it rests on there being two
+                        # steps. A painter that can only draw in one corner
+                        # leaves the second stroke without a mark, and its
+                        # correct Undo then spends its first press on that
+                        # empty step and looked one behind. A drawing
+                        # surface that ignored the stroke is the second-
+                        # stroke case's business, not this one's.
+                        cn, wo = browser.perform(page, setup_acts[:1])
+                        one_stroke = browser.signature(page)
+                        cn2, wo2 = browser.perform(page, setup_acts[1:])
+                        could_not, was_off = cn + cn2, wo + wo2
+                        two_strokes = browser.signature(page)
+                        if browser.canvas_still(one_stroke, two_strokes):
+                            if browser.moved(before, one_stroke):
+                                answered.add(case.id)
+                            drew.append(_drew(one_stroke))
+                            # Judged for everything but the one question it
+                            # cannot ask: a page that threw is still a page
+                            # that threw.
+                            result = judge(
+                                case, one_stroke, two_strokes, crashes,
+                                could_not, was_off, _text(page),
+                                unmeasurable=opened.unmeasurable)
+                            result.evidence = ("the second line drew "
+                                               "nothing, so there was no "
+                                               "second step to undo")
+                            result.artifacts = _kept(
+                                shots, shot_before,
+                                _shoot(page, shots, f"{case.id}-after"))
+                            return result
+                    else:
+                        could_not, was_off = browser.perform(page, setup_acts)
                     first_from = browser.signature(page)
                     # **Both rules about a square compare the page either
                     # side of a press, and a page that moves on its own
@@ -731,9 +840,13 @@ def check(folder: str | Path, entry: str = "index.html",
                     after_one = browser.signature(page)
                     itself_two = (browser.itself(page, case.control)
                                   if watched else None)
+                    outside_two = (browser.outside(page, case.control)
+                                   if watched else None)
                     more2, off2 = browser.perform(page, case.acts[-1:])
                     itself_three = (browser.itself(page, case.control)
                                     if watched else None)
+                    outside_three = (browser.outside(page, case.control)
+                                     if watched else None)
                     could_not = list(could_not) + list(more) + list(more2)
                     was_off = list(was_off) + list(off_more) + list(off2)
                     answered_once = browser.moved(first_from, after_one)
@@ -760,6 +873,9 @@ def check(folder: str | Path, entry: str = "index.html",
                         page_back=(browser.moved(first_from,
                                                  browser.signature(page))
                                    if not ticks else None),
+                        elsewhere=(outside_two != outside_three
+                                   if not ticks and outside_two is not None
+                                   and outside_three is not None else None),
                         unmeasurable=opened.unmeasurable)
                     result.artifacts = _kept(
                         shots, shot_before,
@@ -816,6 +932,21 @@ def check(folder: str | Path, entry: str = "index.html",
                             if case.control and case.origin == "seeded":
                                 row_before = browser.row_of(page,
                                                             case.control)
+                            # **The list with two rows in it, before the
+                            # case's own press.** One row cannot show a row
+                            # holding the wrong figure when that figure is a
+                            # running total: with one row the total is the
+                            # amount. Each submission is asked about on its
+                            # own, so a second one the page refused is not
+                            # read as the first one's words going missing.
+                            if case.origin == "seeded" and was_counted:
+                                for half in (case.acts[:len(seed)],
+                                             case.acts[len(seed):
+                                                       2 * len(seed)]):
+                                    typed = _plainly(half)
+                                    if typed:
+                                        entries.append((case.id, typed,
+                                                        was_counted))
                         cn, wo = browser.perform(page, [step])
                         could_not_more += list(cn)
                         was_off_more += list(wo)
@@ -864,6 +995,8 @@ def check(folder: str | Path, entry: str = "index.html",
                     after = browser.signature(page)
                 itself_after = (browser.itself(page, case.control)
                                 if case.expect.get("itself") else None)
+                lost = (browser.missing_from(page, case.expect["survives"])
+                        if case.expect.get("survives") else [])
                 shot_after = _shoot(page, shots, f"{case.id}-after")
                 text = _text(page)
                 # Read now, not at load: a canvas is meant to be empty until
@@ -899,13 +1032,18 @@ def check(folder: str | Path, entry: str = "index.html",
                                itself=(itself_before, itself_after),
                                rows=(row_before, row_after),
                                unmeasurable=opened.unmeasurable,
-                               nothing_to_try=nothing_to_try)
+                               nothing_to_try=nothing_to_try, lost=lost)
                 result.artifacts = _kept(shots, shot_before, shot_after)
                 return result
 
         run = QA(measure=lambda: opened.surface, build_plan=lambda _: cases,
                  carry_out=carry_out)
         run.run()
+        run.console_errors = list(dict.fromkeys(
+            line for console, _ in heard for line in console))
+        run.failed_requests = list(dict.fromkeys(
+            line for _, failed in heard for line in failed
+            if "favicon.ico" not in line))
         _unfillable_boxes(run, engine)
         _page_says(run, noticed)
         _opposites_disagree(run, opened.surface, worked)
@@ -923,7 +1061,37 @@ def check(folder: str | Path, entry: str = "index.html",
         if opened.rest is None or opened.rest.quiet:
             _nothing_responds(run, answered, engine, opened.unreached)
         _nothing_drawn(run, any(drew), opened)
+    for case_id, (crashes, at_load) in crashed.items():
+        result = run.results.get(case_id)
+        if result is not None and crashes:
+            result.crash_message = str(crashes[0])
+            result.crash_frame = getattr(crashes[0], "frame", "")
+            result.crash_at_load = at_load > 0
+    links.attach([run.results[c.id] for c in run.plan if c.id in run.results],
+                 offered)
     return run
+
+
+def _finding(run: QA, what: str, rule: str, detail: str, *,
+             subject: str = "", evidence: str = "",
+             page_wide: bool = False) -> None:
+    """Record something the whole run established, under an id of its own.
+
+    These are not acts anybody could repeat, so they are numbered apart from
+    the plan: `F` for a fact the page showed while it was used, and `C000`
+    for the one verdict about the page as a whole. The id is the first one
+    free, so two findings can never land on the same slot and overwrite
+    each other.
+    """
+    at = "C000" if page_wide and "C000" not in run.results else ""
+    n = 1
+    while not at:
+        at = f"F{n:03d}" if f"F{n:03d}" not in run.results else ""
+        n += 1
+    case = Case(id=at, what=what, acts=[], expect={})
+    run.plan.append(case)
+    run.results[at] = Result(case=case, outcome=FAILED, detail=detail,
+                             evidence=evidence, rules=[rule], subject=subject)
 
 
 #: A value a field could hold and arithmetic could use.
@@ -943,7 +1111,7 @@ def _typed_junk(case: Case) -> bool:
     holding nothing rather than holding rubbish.
     """
     for act in case.acts:
-        value = str(act.get("fill", ""))
+        value = str(act.get("fill") or act.get("enter") or "")
         if "=" not in value:
             continue
         said = value.partition("=")[2].strip()
@@ -968,6 +1136,8 @@ def _noted(seen: Dict[str, Any], case: Case,
     # Markup is markup whatever was typed at it.
     for why in seen.get("wiring") or []:
         noticed.setdefault(f"wiring:{why}", (case.id, why))
+    for why in seen.get("aria") or []:
+        noticed.setdefault(f"aria:{why}", (case.id, why))
 
 
 #: Words that mean the opposite of each other, as a page labels its
@@ -991,13 +1161,19 @@ _WORDS = re.compile(r"[a-z]+")
 #: escape a quotation, and neither is a fault.
 _PLAIN = re.compile(r"^[\w .@:/-]{2,40}$")
 
+#: A date or a time as a box holds it. **A page is free to show one however
+#: it likes**: `2026-03-14` in the box is `14 March` in the row, and looking
+#: for the box's own spelling in the row would call a correct list broken.
+_DATED = re.compile(r"^\d{4}-\d{2}(-\d{2})?(T\d{2}:\d{2})?$|^\d{2}:\d{2}$"
+                    r"|^\d{4}-W\d{2}$")
+
 
 def _plainly(acts: Sequence[Dict[str, str]]) -> List[str]:
     """The values this case typed that a page could be expected to echo."""
     out = []
     for act in acts:
         said = str(act.get("fill", "")).partition("=")[2].strip()
-        if said and _PLAIN.match(said):
+        if said and _PLAIN.match(said) and not _DATED.match(said):
             out.append(said)
     return out
 
@@ -1032,7 +1208,11 @@ def _never_shown(run: QA, counts: List[Dict[str, Any]],
     as a list is settled by watching it change size.
     """
     lists = _lists_in(counts)
-    if not lists:
+    # **A table's rows carry no class**, so they never show up as a list
+    # above, and an expense table is exactly that shape. Rows whose count
+    # changed across the run are a list by the same test.
+    rows_vary = len({int(seen.get("rows") or 0) for seen in counts}) > 1
+    if not lists and not rows_vary:
         return
     for case_id, typed, seen in entries:
         held = int(seen.get("rows") or 0) + sum(
@@ -1048,17 +1228,12 @@ def _never_shown(run: QA, counts: List[Dict[str, Any]],
             # entirely and not of one field going astray. Left alone until
             # there is a program that proves it a fault.
             continue
-        n = sum(1 for c in run.plan if c.id.startswith("F")) + 1
-        case = Case(id=f"F{n:03d}",
-                    what="what goes into the list comes out in the list",
-                    acts=[], expect={})
-        run.plan.append(case)
-        run.results[case.id] = Result(
-            case=case, outcome=FAILED,
-            detail=f"{', '.join(repr(one) for one in gone[:2])} was typed in "
-                   f"and accepted, and the row it made does not carry it; "
-                   f"first seen at {case_id}",
-            evidence=shown[:300])
+        _finding(run, "values typed into a list show up in the new row",
+                 "never-shown",
+                 f"{', '.join(repr(one) for one in gone[:2])} was typed in "
+                 f"and accepted, but the new row in the list does not show "
+                 f"it; first seen at {case_id}",
+                 evidence=shown[:300])
         return
 
 
@@ -1106,18 +1281,12 @@ def _opposites_disagree(run: QA, surface: Optional[Surface],
                 continue
             if not _reverses(a.label, b.label):
                 continue
-            n = sum(1 for c in run.plan if c.id.startswith("F")) + 1
-            case = Case(id=f"F{n:03d}",
-                        what=f"{b.label} answers as well as {a.label}",
-                        acts=[], expect={})
-            run.plan.append(case)
-            run.results[case.id] = Result(
-                case=case, outcome=FAILED,
-                detail=f"{a.label} changed the page every time it was "
-                       f"pressed and {b.label} never changed it once, "
-                       f"including straight after {a.label}. A page offering "
-                       f"both is saying one reverses the other",
-                evidence="")
+            _finding(run, f"{b.label} works as well as {a.label}",
+                     "opposites",
+                     f"{a.label} changed the page every time it was pressed, "
+                     f"but {b.label} never did, even right after {a.label}. "
+                     f"As a pair, {b.label} should reverse what {a.label} "
+                     f"does")
             return
 
 
@@ -1160,11 +1329,7 @@ def _counts_wrong(run: QA, counts: List[Dict[str, Any]]) -> None:
     # screen at once misses the commonest shape there is: a page that goes
     # from holding nothing to holding one thing has shown you a list, and a
     # run that never fills it twice never learns that.
-    every = {name for seen in counts
-             for name in (seen.get("classes") or {})}
-    lists = {name for name in every
-             if len({int((seen.get("classes") or {}).get(name) or 0)
-                     for seen in counts}) > 1}
+    lists = _lists_in(counts)
     sized = [(_how_many(seen, lists),
               {str(n.get("at")): int(n.get("is"))
                for n in seen.get("numbers") or []
@@ -1183,25 +1348,14 @@ def _counts_wrong(run: QA, counts: List[Dict[str, Any]]) -> None:
         empty = [said for size, said in pairs if size == 0]
         if off == 0 or not empty or empty[0] == 0:
             continue
-        n = sum(1 for c in run.plan if c.id.startswith("F")) + 1
-        case = Case(id=f"F{n:03d}",
-                    what="a number counting the list agrees with the list",
-                    acts=[], expect={})
-        run.plan.append(case)
-        run.results[case.id] = Result(
-            case=case, outcome=FAILED,
-            detail=f"a number on this page moves by one every time the list "
-                   f"does, so it is counting it, and it reads {empty[0]} "
-                   f"when the list is empty. It is {off:+d} out at every "
-                   f"size seen",
-            evidence="; ".join(f"{size} shown, it says {said}"
-                               for size, said in sorted(pairs))[:300])
+        _finding(run, "the count of items matches the list",
+                 "count-off",
+                 f"a number on this page goes up and down by one with the "
+                 f"list, so it counts the list, but it shows {empty[0]} when "
+                 f"the list is empty. It is {off:+d} off at every size",
+                 evidence="; ".join(f"{size} shown, it says {said}"
+                                    for size, said in sorted(pairs))[:300])
         return
-
-
-def _held(seen: Dict[str, Any], lists: Sequence[str]) -> int:
-    """How many things were on show in one reading."""
-    return _how_many(seen, lists)
 
 
 def _said(seen: Dict[str, Any]) -> Dict[str, str]:
@@ -1238,7 +1392,7 @@ def _follows_one_way(run: QA, counts: List[Dict[str, Any]],
     up: Dict[str, List[bool]] = {}
     down: Dict[str, List[bool]] = {}
     for was, now in swings:
-        change = _held(now, lists) - _held(was, lists)
+        change = _how_many(now, lists) - _how_many(was, lists)
         if change == 0:
             continue
         said_was, said_now = _said(was), _said(now)
@@ -1249,18 +1403,12 @@ def _follows_one_way(run: QA, counts: List[Dict[str, Any]],
         shrank = down.get(at) or []
         if not grew or not shrank or not all(grew) or any(shrank):
             continue
-        n = sum(1 for c in run.plan if c.id.startswith("F")) + 1
-        case = Case(id=f"F{n:03d}",
-                    what="a number following the list follows it both ways",
-                    acts=[], expect={})
-        run.plan.append(case)
-        run.results[case.id] = Result(
-            case=case, outcome=FAILED,
-            detail=f"a number on this page moved every one of the "
-                   f"{len(grew)} time(s) the list grew and none of the "
-                   f"{len(shrank)} time(s) it shrank, so it is about the "
-                   f"list and it has stopped following it",
-            evidence="")
+        _finding(run, "a total that follows the list also goes down",
+                 "one-way",
+                 f"a number on this page changed every time the list grew "
+                 f"({len(grew)} times) but never when it shrank "
+                 f"({len(shrank)} times), so it stops following the list "
+                 f"when items are removed")
         return
 
 
@@ -1283,24 +1431,22 @@ def _page_says(run: QA, noticed: Dict[str, Tuple[str, str]]) -> None:
     act somebody could repeat, they are things that were true while the page
     was being used.
     """
-    n = sum(1 for c in run.plan if c.id.startswith("F"))
     for key, (case_id, detail) in noticed.items():
         kind, _, what = key.partition(":")
-        n += 1
         if kind == "computed":
-            said = (f"showing `{what}` where a value belongs: \"{detail}\". "
-                    f"Nothing types that on purpose, so something was read "
-                    f"before it was set or worked out from what was not a "
-                    f"number")
-            asked = "nothing on the page is a value it worked out by mistake"
+            said = (f"the page shows `{what}` where a value should be: "
+                    f"\"{detail}\". This usually means a value was used "
+                    f"before it was set, or calculated from something that "
+                    f"is not a number")
+            asked = "no NaN, undefined or [object Object] on the page"
+        elif kind == "aria":
+            said = detail
+            asked = "the panel a selected tab or open section controls is shown"
         else:
             said = detail
-            asked = "every control is wired to something that is there"
-        case = Case(id=f"F{n:03d}", what=asked, acts=[], expect={})
-        run.plan.append(case)
-        run.results[case.id] = Result(
-            case=case, outcome=FAILED,
-            detail=f"{said}; first seen at {case_id}", evidence="")
+            asked = "labels and radio buttons are linked correctly"
+        _finding(run, asked, kind, f"{said}; first seen at {case_id}",
+                 subject=f"{asked}: {what}")
 
 
 def _unfillable_boxes(run: QA, engine: Browser) -> None:
@@ -1321,18 +1467,20 @@ def _unfillable_boxes(run: QA, engine: Browser) -> None:
     with contextlib.suppress(Exception):
         with engine.open() as (page, *_):
             bad = browser.unfillable(page)
-    for n, box in enumerate(bad, 1):
-        case = Case(id=f"F{n:03d}",
-                    what=f"the {box['name']} box accepts the example it shows",
-                    acts=[], expect={})
-        run.plan.append(case)
-        run.results[case.id] = Result(
-            case=case, outcome=FAILED,
-            detail=f"this box shows \"{box['example']}\" as its own example "
-                   f"and its own pattern {box['pattern']} rejects it, so "
-                   f"nothing anybody types can satisfy it and a form it is "
-                   f"required on cannot be completed",
-            evidence="")
+    for box in bad:
+        _finding(run, f"the {box['name']} box accepts its own placeholder "
+                      f"example",
+                 "unfillable",
+                 f"the placeholder shows \"{box['example']}\" as an example, "
+                 f"but the pattern on this field, {box['pattern']}, rejects "
+                 f"it, so nothing typed can pass and a form that requires it "
+                 f"cannot be completed")
+
+
+def _worth_pressing(where: Surface) -> List[Any]:
+    """What the page-wide guard presses: the first few things to click."""
+    return [c for c in where.operable
+            if c.kind in ("button", "link", "cell") and c.enabled][:6]
 
 
 def _waited_out(engine: Browser, surface: Surface) -> bool:
@@ -1350,11 +1498,7 @@ def _waited_out(engine: Browser, surface: Surface) -> bool:
     because a program is allowed to load differently every time. It costs
     page loads only on a program about to be called broken outright.
     """
-    def worth_pressing(where: Surface) -> List[Any]:
-        return [c for c in where.operable
-                if c.kind in ("button", "link", "cell") and c.enabled][:6]
-
-    if not worth_pressing(surface):
+    if not _worth_pressing(surface):
         return False
     # **Patience against a program that behaves differently each time means
     # looking more than once.** The one here rejects its own load thirty per
@@ -1372,10 +1516,6 @@ def _waited_out(engine: Browser, surface: Surface) -> bool:
 
 def _one_look(engine: Browser) -> bool:
     """Open it, press what it offers, and wait properly. Did anything move?"""
-    def worth_pressing(where: Surface) -> List[Any]:
-        return [c for c in where.operable
-                if c.kind in ("button", "link", "cell") and c.enabled][:6]
-
     with contextlib.suppress(Exception):
         with engine.open() as (page, *_):
             before = browser.signature(page)
@@ -1387,7 +1527,7 @@ def _one_look(engine: Browser) -> bool:
             # a page that no longer exists presses nothing, nothing moves,
             # and the guard then waves through the very verdict it exists to
             # stop. Measured at roughly one run in five.
-            pressable = worth_pressing(
+            pressable = _worth_pressing(
                 from_page(_Shot(browser.elements(page))))
             # **Nothing to press is not evidence of death.** The page this
             # was reopened for offered a Retry because its load had failed;
@@ -1454,16 +1594,11 @@ def _nothing_drawn(run: QA, drew: bool, opened: Opened) -> None:
              if r.case.acts and r.outcome != UNKNOWN]
     if len(acted) < 2 or any(r.failed for r in run.results.values()):
         return
-    case = Case(id="C000", what="something is drawn into the canvas",
-                acts=[], expect={})
-    run.plan.append(case)
-    run.results[case.id] = Result(
-        case=case, outcome=FAILED,
-        detail=f"nothing was ever drawn into this canvas. {len(acted)} "
-               f"case(s) drove the page and it held one flat colour "
-               f"throughout, so whatever this program renders is not "
-               f"reaching the screen",
-        evidence="")
+    _finding(run, "something appears on the canvas", "nothing-drawn",
+             f"nothing ever appeared on this canvas: {len(acted)} checks used "
+             f"the page and the canvas stayed one flat colour, so whatever "
+             f"the program draws is not reaching the screen",
+             page_wide=True)
 
 
 def _nothing_responds(run: QA, answered: set, engine: Browser,
@@ -1515,12 +1650,10 @@ def _nothing_responds(run: QA, answered: set, engine: Browser,
         return
     if run.surface is not None and _waited_out(engine, run.surface):
         return
-    case = Case(id="C000", what="the page answers something it offers",
-                acts=[], expect={})
-    run.plan.append(case)
-    run.results[case.id] = Result(
-        case=case, outcome=FAILED,
-        detail=f"nothing on this page responds to anything. {len(acted)} "
-               f"case(s) pressed what it offers and not one of them changed "
-               f"it, so whatever is drawn here is not wired to a program",
-        evidence="")
+    _finding(run, "something on the page responds when used",
+             "nothing-responds",
+             f"nothing on the page changed after any control was used: "
+             f"{len(acted)} checks used what the page offers and none of them "
+             f"changed it, so the controls do not seem to be connected to "
+             f"any code",
+             page_wide=True)

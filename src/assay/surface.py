@@ -1,38 +1,15 @@
-"""What the artefact offers, and the plan for exercising all of it.
+"""What a page offers, and the plan for exercising all of it.
 
-**The check stage read source code instead of using the program.** Measured
-across every build on disk: **219 of 258 acceptance criteria were never carried
-out (85%), and one build spent 38 steps of which fifteen were refusals,
-four were reads and **none** was a verify. Five of the investigator's seven
-verbs inspect code, a coding model's gradient is to read code, and the loop let
-it. Scavenging is unbounded (643 static errors across the builds) and
-uncorrelated with whether the program works: `r4a_clicker` reports every task
-failed and works perfectly.
+A person testing a program they have never seen presses every button, types
+into every field, tries the empty case and the silly case, and only reads the
+source once using it has shown them something wrong. The plan here is that,
+derived from what the browser rendered rather than from the markup or from a
+description of the program.
 
-A person testing a program does the opposite. They press every button, type
-into every field, try the empty case and the silly case, and only read source
-once using it has shown them something wrong.
-
-Two documents, two jobs, and the factory only ever had the first:
-
-===================  ==========================  ==========================
-                     acceptance criteria         the test plan
-===================  ==========================  ==========================
-says                 what the program **owes**   how to exercise what it has
-written              before any code, from spec  after the build, from this
-size                 five to seven               dozens
-===================  ==========================  ==========================
-
-The criteria being written before the skeleton is right and stays: an agent
-that has read the code writes claims the code already satisfies. That is an
-argument about a contract. It is not an argument against coverage: a
-live paint tool shipped with Clear, Hide Grid, Undo, Redo and Download, and
-**four of its five controls had no criterion and were never pressed once**.
-
-Everything here is derived from what was measured. Nothing asks a model what
-the program contains, for the reason the probe planner and the cross-evaluator
-were both deleted: an agent describing work it has not seen is guessing, and
-its guess is indistinguishable from a finding.
+Nothing here asks a model what the program contains: a reader describing
+work it has not run is guessing, and its guess is indistinguishable from a
+finding. What a program *owes* is a different document, its acceptance
+criteria, and those can be handed in as cases of their own.
 """
 
 from __future__ import annotations
@@ -45,8 +22,18 @@ from assay import browser
 #: Kinds of control a plan knows how to exercise. A tag is not enough:
 #: ``<input>`` is a textbox, a checkbox, a slider or a button depending on one
 #: attribute, and a plan that treats them alike types into a checkbox.
-OPERABLE = ("button", "link", "text", "number", "checkbox", "radio", "range",
-            "select", "canvas", "color", "handle")
+OPERABLE = ("button", "link", "text", "number", "date", "checkbox", "radio",
+            "range", "select", "canvas", "color", "file", "handle")
+
+#: What a box of each of these types accepts, whatever it is labelled.
+TYPED = {"email": "someone@example.com", "tel": "555-0100",
+         "url": "https://example.com/page"}
+
+#: A value each date-shaped box accepts, in the format its own `type` asks
+#: for. Anything else is refused by the browser and never reaches the page.
+DATES = {"date": "2026-03-14", "time": "09:30",
+         "datetime-local": "2026-03-14T09:30", "month": "2026-03",
+         "week": "2026-W11"}
 
 #: Values worth putting into a text field. Not a fuzz list. Four cases that
 #: between them catch the faults generated programs actually have: nothing at
@@ -67,6 +54,12 @@ def _typed_for(field: "Control") -> str:
     """
     if field.kind == "number":
         return "25"
+    if field.kind == "date":
+        return DATES.get(field.input_type, DATES["date"])
+    # **The box's own type says what it takes before its label does.** An
+    # email box refuses a sentence at the browser, whatever it is called.
+    if field.input_type in TYPED:
+        return TYPED[field.input_type]
     answer = browser.sample_for(field.label or field.selector)
     # A box is allowed several values where a `prompt` takes one: a chart
     # wants a series, and a dialog asking *how many* wants a number.
@@ -100,6 +93,12 @@ class Control:
     pairing: int = 0
     #: Whether the page refuses typing into it, which makes it an output.
     readonly: bool = False
+    #: An `<input>`'s own `type`. See `Element.input_type`.
+    input_type: str = ""
+    #: The `name` a radio shares with the rest of its choices.
+    radio: str = ""
+    #: Where it sits. See `Element.family`.
+    family: str = ""
 
     @property
     def name(self) -> str:
@@ -112,19 +111,18 @@ class Case:
     """One test: what to do, and what has to be true afterwards.
 
     ``expect`` is deliberately thin. The machine can say *something must
-    change, this text must appear, nothing may throw. It cannot say
+    change*, *this text must appear*, *nothing may throw*. It cannot say
     whether the thing that changed was the right thing. That half stays with
-    the criteria and with the investigator reading the numbers, which is the
-    same split `screen.quality` already makes.
+    the criteria and with whoever reads the measurements.
     """
 
     id: str
     what: str
     acts: List[Dict[str, str]] = field(default_factory=list)
     expect: Dict[str, Any] = field(default_factory=dict)
-    #: ``derived`` comes from the measured surface. ``criterion`` is a
-    #: contract rather than coverage. ``model`` is a case only judgement
-    #: finds, asked for by name.
+    #: ``derived`` comes from the measured surface, ``seeded`` from the
+    #: surface the page grows once it holds something, and ``criterion`` is
+    #: a contract handed in rather than coverage.
     origin: str = "derived"
     #: Which control it exercises, when it exercises one. Blank for a case
     #: about the artefact as a whole.
@@ -188,7 +186,10 @@ def from_page(shot) -> Surface:
                 enabled=e.enabled, width=e.width, height=e.height,
                 group=getattr(e, "group", 0),
                 pairing=getattr(e, "pairing", 0),
-                readonly=bool(getattr(e, "readonly", False)))
+                readonly=bool(getattr(e, "readonly", False)),
+                input_type=str(getattr(e, "input_type", "") or ""),
+                radio=str(getattr(e, "radio", "") or ""),
+                family=str(getattr(e, "family", "") or ""))
         for e in getattr(shot, "elements", ())
         if getattr(e, "kind", "") and e.visible]
     return Surface(kind="page", controls=controls)
@@ -299,17 +300,15 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
     is broken whatever else passes.
 
     Nothing here is a judgement. Each case says *do this, then something must
-    have changed, which is the half a machine can settle. Whether what
-    changed was the **right** thing is what the criteria are for, and what the
-    investigator reads the numbers for.
+    have changed*, which is the half a machine can settle. Whether what
+    changed was the **right** thing is what the criteria are for, and what a
+    person reads the measurements for.
     """
     # The criteria are not derived and do not belong here. What a program
     # owes is a judgement, and the acts that settle it have to be written by
-    # something that has read both the criterion and the surface. See
-    # `Pipeline._criteria_cases`, which asks for all of them in one turn and
-    # hands them back as cases like any other. Passing them through here with
-    # no acts made them run as an empty browser probe against a command-line
-    # program, and every one came back *"the visible text is unchanged"*.
+    # whoever wrote the criterion, as cases carrying their own acts. Passed
+    # through with no acts, one runs as an empty probe and every one comes
+    # back *"the visible text is unchanged"*.
     cases: List[Case] = [c for c in criteria if isinstance(c, Case)]
     n = 0
 
@@ -344,7 +343,7 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
             # button that throws, or that cannot be pressed at all, and both
             # of those this still catches. The measurement is recorded either
             # way, so *"press Red → nothing changed"* is in front of the
-            # investigator as a fact without being a verdict.
+            # reader as a fact without being a verdict.
             add(f"press {c.name}", [{"click": c.selector}], {"quiet": True},
                 c.selector)
             # Twice, because state machines break on the second press.
@@ -354,7 +353,7 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
             add(f"press {c.name} twice",
                 [{"click": c.selector}, {"click": c.selector}], {"quiet": True},
                 c.selector)
-        elif c.kind in ("text", "number") and not c.readonly:
+        elif c.kind in ("text", "number", "date") and not c.readonly:
             # **A field is probed with values it can hold.** A number box
             # refuses letters at the browser level, so a case that types
             # `Sample item` into one performs no act at all, and a
@@ -363,13 +362,13 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
             # skipped for that reason and the third was left in, which is
             # the same bug with a shorter list.
             for label, value in TEXT_PROBES:
-                if c.kind == "number":
+                if c.kind in ("number", "date"):
                     if label in ("long", "awkward"):
                         continue
                     value = value and _typed_for(c)
-                add(f"put {label} {'number' if c.kind == 'number' else 'text'} "
-                    f"in {c.name}",
-                    [{"fill": f"{c.selector}={value}"}], {"quiet": True},
+                noun = {"number": "number", "date": "date"}.get(c.kind, "text")
+                add(f"put {label} {noun} in {c.name}",
+                    [{"enter": f"{c.selector}={value}"}], {"quiet": True},
                     c.selector)
         elif c.kind == "handle":
             # **A handle is dragged, and pressing it proves nothing.** A
@@ -423,7 +422,13 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
             add(f"tick {c.name}", [{"click": c.selector}], {"quiet": True},
                 c.selector)
         elif c.kind == "select":
-            add(f"choose something in {c.name}", [{"click": c.selector}],
+            add(f"choose something in {c.name}", [{"choose": c.selector}],
+                {"quiet": True}, c.selector)
+        elif c.kind == "color":
+            add(f"choose a colour in {c.name}", [{"recolour": c.selector}],
+                {"quiet": True}, c.selector)
+        elif c.kind == "file":
+            add(f"attach a file to {c.name}", [{"attach": c.selector}],
                 {"quiet": True}, c.selector)
 
     # **A grid is pressed at a few places, never at all of them.** Cells are
@@ -554,7 +559,7 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
     # failed on exactly that: the case typed into the display and pressed
     # Copy.
     fields = [c for c in surface.operable
-              if c.kind in ("text", "number") and not c.readonly]
+              if c.kind in ("text", "number", "date") and not c.readonly]
     buttons = [c for c in surface.operable if c.kind == "button"]
     if fields and buttons:
         order = {c.selector: i for i, c in enumerate(surface.controls)}
@@ -615,8 +620,27 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
                 fills = [{"fill": f"{other.selector}={_typed_for(other)}"}
                          for other in fields
                          if other.group == field.group or other is field]
+                # **And make every choice the form asks for.** A rating is
+                # refused without a star, correctly, and a case that typed
+                # the comment and pressed Submit was asking the page to
+                # accept half a form. One choice from each set of radios in
+                # the same widget, the first one, as a person would pick
+                # something before sending.
+                sets: Dict[str, Control] = {}
+                for choice in surface.operable:
+                    if (choice.kind == "radio" and choice.radio
+                            and choice.group == field.group):
+                        sets.setdefault(choice.radio, choice)
+                picks = [{"pick": c.selector} for c in sets.values()]
+                # A dropdown in the same form is a choice it asks for too: a
+                # contact book whose group is required refuses to send
+                # without one, correctly.
+                picks += [{"choose": c.selector} for c in surface.operable
+                          if c.kind == "select" and c.group
+                          and c.group == field.group]
                 add(f"type into {field.name} then press {b.name}",
-                    fills + [{"click": b.selector}], expect, b.selector)
+                    picks + fills + [{"click": b.selector}], expect,
+                    b.selector)
 
     # Two buttons in each order. Undo before Clear and Clear before Undo
     # are different programs, and a generated one routinely gets one of them
@@ -628,31 +652,3 @@ def plan(surface: Surface, criteria: Sequence[Any] = ()) -> List[Case]:
             add(f"press {a.name}, then {b.name}",
                 [{"click": a.selector}, {"click": b.selector}], {"quiet": True})
     return cases
-
-
-#: What a case may ask for, and it is exactly what `browser.perform` can do.
-#: An act naming anything else is dropped rather than performed, so a verb
-#: listed here that the driver cannot carry out is worse than a missing one:
-#: the case runs, asserts against a page nothing was done to, and reports on
-#: it. `run` was here for command-line programs and outlived them.
-ACT_VERBS = ("click", "dblclick", "press", "fill", "wait", "drag")
-
-
-def as_acts(raw: Any) -> List[Dict[str, str]]:
-    """A reply's `acts` as pairs the runner understands.
-
-    Tolerant about shape and strict about verbs: an act that is not one of
-    these is dropped rather than guessed at, because performing something
-    nobody asked for is worse than performing nothing.
-    """
-    out: List[Dict[str, str]] = []
-    for step in raw if isinstance(raw, list) else []:
-        if isinstance(step, str):
-            verb, _, arg = step.partition(" ")
-            step = {verb.strip(): arg.strip()}
-        if not isinstance(step, dict):
-            continue
-        for verb, arg in step.items():
-            if str(verb) in ACT_VERBS and str(arg).strip():
-                out.append({str(verb): str(arg).strip()})
-    return out

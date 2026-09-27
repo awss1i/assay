@@ -167,17 +167,39 @@ def one_line(run: object, root: Path, entry: str) -> str:
     if not bad:
         return f"{head}, nothing flagged."
     out = [f"{head}, {len(bad)} flagged:"]
-    out += [f"  - {r.case.what}: {r.detail}" if r.detail
-            else f"  - {r.case.what}" for r in bad]
+    # No case ids here, so a link names the other item by its words.
+    words = {r.case.id: r.case.what for r in results.values()}
+    for r in bad:
+        notes = getattr(r, "links", [])
+        same = [one for one in notes if one.kind == "same"]
+        if same:
+            out.append(f"  - {r.case.what} (same finding as: "
+                       f"{words.get(same[0].to, same[0].to)})")
+            continue
+        said = f"  - {r.case.what}: {r.detail}" if r.detail \
+            else f"  - {r.case.what}"
+        for one in notes:
+            if one.kind == "load":
+                said += " (the page threw an error while loading, before " \
+                        "anything was pressed)"
+        out.append(said)
     return "\n".join(out)
 
 
-def as_json(run: object) -> str:
-    """The whole run, for something that is not a person."""
+def as_json(run: object, entry: str = "") -> str:
+    """The whole run, for something that is not a person.
+
+    The console errors and failed requests are information, never verdicts:
+    a page is free to log an error and work, and a missing icon is not a
+    broken program. They are here because they are often the first thing
+    worth reading when something did fail.
+    """
     from assay.qa import PASSED
 
     results = getattr(run, "results", {})
     return json.dumps({
+        "version": __version__,
+        "entry": entry,
         "planned": len(getattr(run, "plan", [])),
         "passed": sum(1 for r in results.values() if r.outcome == PASSED),
         "failed": sum(1 for r in results.values() if r.failed),
@@ -190,9 +212,18 @@ def as_json(run: object) -> str:
         "cases": [
             {"id": r.case.id, "what": r.case.what, "outcome": r.outcome,
              "detail": r.detail, "measured": r.evidence,
-             "acts": r.case.acts}
+             "acts": r.case.acts, "rules": list(getattr(r, "rules", [])),
+             "key": r.key if r.failed else "",
+             "links": [{"kind": one.kind, "to": one.to, "why": one.why}
+                       for one in getattr(r, "links", [])]}
             for r in results.values()
         ],
+        "links": [{"from": r.case.id, "kind": one.kind, "to": one.to,
+                   "why": one.why}
+                  for r in results.values()
+                  for one in getattr(r, "links", [])],
+        "console_errors": list(getattr(run, "console_errors", [])),
+        "failed_requests": list(getattr(run, "failed_requests", [])),
     }, indent=2)
 
 
@@ -255,12 +286,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     shots = None
     if args.report:
-        shots = Path(args.report).expanduser().parent / "shots"
+        # Named after the report, so two reports written into one folder
+        # keep their own pictures instead of overwriting each other's.
+        page = Path(args.report).expanduser()
+        shots = page.with_name(f"{page.stem}-shots")
 
     run = check(root, entry, shots=shots)
 
     if args.json:
-        print(as_json(run))
+        print(as_json(run, entry))
     elif args.one_line:
         print(one_line(run, root, entry))
     else:
@@ -269,7 +303,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.report:
         from assay import report
 
-        where = report.write(run, args.report, folder=root.name)
+        where = report.write(run, args.report, folder=root.name,
+                             shots_dir=shots.name)
         print(f"\nreport: {where}", file=sys.stderr)
 
     return 0 if run.works else 1
