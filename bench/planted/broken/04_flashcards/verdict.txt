@@ -1,7 +1,14 @@
-# One line per planted bug, in the order bugs.md numbers them.
+# One line per finding. Every planted bug gets a `found` or a `missed`, in
+# the order bugs.md numbers them, and every flag assay raised on this program
+# gets a line saying what it is.
 #
-#   <n> found <case-id> <optional note>
-#   <n> missed <optional note>
+#   <n> found <key> | <note>     this flag is planted bug n showing itself
+#   <n> missed <note>            planted bug n was not flagged
+#   other <key> | <note>         this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it. It
+# names the finding rather than its position in the plan, so it stays true
+# when the plan changes. A bug may be found by more than one key.
 #
 # A bug is *found* when at least one failing case is caused by it. That is a
 # judgement: assay reports an act and a measurement, and whether that
@@ -9,6 +16,6 @@
 
 1 missed front and back both carry text; that they match is a value judgement
 2 missed no expectation of how many cards there are
-3 found F001 Previous never answers while Next always does
+3 found opposites@Previous works as well as Next | Previous never answers while Next always does
 4 missed pressing Shuffle asserts nothing, and it changes nothing to notice
 5 missed a button only has to survive being pressed

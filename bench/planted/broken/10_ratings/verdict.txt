@@ -1,7 +1,14 @@
-# One line per planted bug, in the order bugs.md numbers them.
+# One line per finding. Every planted bug gets a `found` or a `missed`, in
+# the order bugs.md numbers them, and every flag assay raised on this program
+# gets a line saying what it is.
 #
-#   <n> found <case-id> <optional note>
-#   <n> missed <optional note>
+#   <n> found <key> | <note>     this flag is planted bug n showing itself
+#   <n> missed <note>            planted bug n was not flagged
+#   other <key> | <note>         this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it. It
+# names the finding rather than its position in the plan, so it stays true
+# when the plan changes. A bug may be found by more than one key.
 #
 # A bug is *found* when at least one failing case is caused by it. That is a
 # judgement: assay reports an act and a measurement, and whether that
@@ -11,4 +18,4 @@
 2 missed no rating is ever submitted, so there is no average to read
 3 missed no rating is ever submitted, so no entry is drawn
 4 missed no Submit ever succeeds, so the box is never refilled
-5 found F001 two labels pointing at star4
+5 found wiring@labels and radio buttons are linked correctly: two labels are both linked to "star4", so one of them was meant for another control, which is left without a label | two labels pointing at star4

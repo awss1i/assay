@@ -11,33 +11,46 @@ number comes from `truth.txt`, where a person opened each one and drove it,
 and never from assay, because a leaderboard scored by the tool it is promoting
 is not evidence of anything.
 
-**How well assay judged them.** Its agreement with that hand truth, and the
-two ways of disagreeing counted separately, because they do not cost the
-same. Calling a working program broken sends whoever is holding it to edit
-code that was right; calling a broken one working is a bug that got through.
+**How well assay judged them.** Whether it found each broken program's actual
+defect, and how often it flagged a program that works, counted separately,
+because they do not cost the same. Calling a working program broken sends
+whoever is holding it to edit code that was right; calling a broken one
+working is a bug that got through.
 
-A cell is `programs/<harness>/<model>/`, holding its own programs and its own
-`truth.txt`. Cells are found by walking the tree rather than listed in a
-manifest, so adding a harness or a model is a new folder and nothing else. A
-list that must be edited in step with a directory is a list that ends up
-disagreeing with it.
+**Found means the defect, not any flag.** A broken program flagged for
+something other than what is wrong with it has not had its defect found, and
+counting it as found is how a headline overstates itself. Which finding is the
+defect is a judgement, so it is written by hand in each cell's
+`verdicts.txt`, and every flag on a broken program has to be judged there
+before anything is written.
 
-Every number this project publishes is written here. None is typed by hand
-anywhere, because the one that was went stale within a day.
+A cell is `programs/<harness>/<model>/`, holding its own programs, its own
+`truth.txt` and its own `verdicts.txt`. Cells are found by walking the tree
+rather than listed in a manifest, so adding a harness or a model is a new
+folder and nothing else.
+
+Every number this project publishes about this set is written here, and only
+by a complete run: a partial one (`--cell`, `--limit`) writes nothing.
 """
 
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from assay import check  # noqa: E402
+import linkkey  # noqa: E402
+from machine import machine, timing  # noqa: E402
+
+TRUTHS = ("works", "broken")
 
 
 @dataclass
@@ -49,30 +62,44 @@ class Judged:
     why: str
     said: str = ""
     cases: int = 0
-    failed: int = 0
     seconds: float = 0.0
     detail: str = ""
+    error: str = ""
+    #: Every failing case in this run, as `key -> case id`.
+    failing: Dict[str, str] = field(default_factory=dict)
+    #: From `verdicts.txt`: `found` or `missed` for a broken program.
+    status: str = ""
+    #: The finding(s) the verdict says are the defect showing itself.
+    defect: List[Tuple[str, str]] = field(default_factory=list)
+    #: Flags the verdict says are something other than the defect.
+    other: List[Tuple[str, str]] = field(default_factory=list)
+    note: str = ""
+    #: The links the run drew between its findings.
+    links: set = field(default_factory=set)
 
     @property
     def objective(self) -> str:
         return self.name.split("_", 1)[1] if "_" in self.name else self.name
 
     @property
-    def agrees(self) -> bool:
-        """Whether assay's finding matches the hand verdict.
+    def found(self) -> bool:
+        """Whether the defect itself was flagged in this run."""
+        return (self.truth == "broken" and self.status == "found"
+                and any(key in self.failing for key, _ in self.defect))
 
-        The two columns deliberately do not use the same word, because the
-        two claims are not the same size. A person drove the program and
-        read its source, and says it **works** or is **broken**. assay drove
-        it once and either found something or did not, which is **flagged**
-        or **clean**, and neither is a verdict on the program.
+    @property
+    def stale(self) -> List[str]:
+        """Keys the verdict names that did not fail in this run."""
+        return [k for k, _ in self.defect + self.other
+                if k not in self.failing]
 
-        It matters beyond tidiness: `flagged` is the word that makes the
-        output safe to hand to a model. Told a page is broken, an agent goes
-        and edits it; told what was pressed and what did not move, it goes
-        and looks.
-        """
-        return (self.said == "flagged") == (self.truth == "broken")
+    @property
+    def unjudged(self) -> List[str]:
+        """Failing keys on a broken program that nobody has judged."""
+        if self.truth != "broken":
+            return []
+        named = {k for k, _ in self.defect + self.other}
+        return [k for k in self.failing if k not in named]
 
 
 @dataclass
@@ -89,23 +116,31 @@ class Cell:
         return f"{self.harness} / {self.model}"
 
     @property
+    def scored(self) -> List[Judged]:
+        return [r for r in self.rows if r.said]
+
+    @property
     def works(self) -> List[Judged]:
-        return [r for r in self.rows if r.truth == "works"]
+        return [r for r in self.scored if r.truth == "works"]
+
+    @property
+    def broken(self) -> List[Judged]:
+        return [r for r in self.scored if r.truth == "broken"]
 
     @property
     def cried_wolf(self) -> List[Judged]:
-        """Working programs assay called broken. The expensive mistake."""
-        return [r for r in self.works if r.said and not r.agrees]
+        """Working programs assay flagged. The expensive mistake."""
+        return [r for r in self.works if r.said == "flagged"]
 
     @property
     def missed(self) -> List[Judged]:
-        """Broken programs assay called working."""
-        return [r for r in self.rows
-                if r.truth == "broken" and r.said and not r.agrees]
+        """Broken programs whose defect was not flagged."""
+        return [r for r in self.broken if not r.found]
 
     @property
-    def scored(self) -> List[Judged]:
-        return [r for r in self.rows if r.said]
+    def other_flags(self) -> List[Tuple[Judged, str, str]]:
+        """Flags on broken programs that are not the defect."""
+        return [(r, k, why) for r in self.broken for k, why in r.other]
 
 
 def read_truth(cell: Path) -> Dict[str, tuple]:
@@ -114,12 +149,59 @@ def read_truth(cell: Path) -> Dict[str, tuple]:
     if not path.is_file():
         return {}
     out = {}
-    for line in path.read_text().splitlines():
+    for at, line in enumerate(path.read_text().splitlines(), 1):
         line = line.strip()
         if not line or line.startswith("#"):
             continue
         name, truth, why = (line.split(None, 2) + ["", ""])[:3]
+        if truth not in TRUTHS:
+            raise ValueError(f"{path}:{at}: {truth!r} is not one of {TRUTHS}")
         out[name] = (truth, why.strip())
+    return out
+
+
+_VERDICT = re.compile(r"^(?P<name>\S+)\s+(?P<said>found|missed|other)\s*"
+                      r"(?P<rest>.*)$")
+
+
+def read_verdicts(cell: Path) -> Dict[str, dict]:
+    """Which finding is each broken program's defect, judged by hand.
+
+    One line per finding, strictly read:
+
+        <program> found <key> | <note>    this flag is the defect
+        <program> missed <note>           the defect was not flagged
+        <program> other <key> | <note>    this flag is something else
+    """
+    path = cell / "verdicts.txt"
+    out: Dict[str, dict] = {}
+    if not path.is_file():
+        return out
+    for at, raw in enumerate(path.read_text().splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        got = _VERDICT.match(line)
+        if not got:
+            raise ValueError(f"{path}:{at}: cannot read {line!r}")
+        one = out.setdefault(got["name"], {"status": "", "defect": [],
+                                           "other": [], "note": ""})
+        rest = got["rest"].strip()
+        if got["said"] == "missed":
+            if one["status"] == "found":
+                raise ValueError(f"{path}:{at}: found and missed")
+            one["status"], one["note"] = "missed", rest
+            continue
+        key, bar, note = rest.partition(" | ")
+        if not bar or "@" not in key:
+            raise ValueError(f"{path}:{at}: expected '<key> | <note>'")
+        if got["said"] == "found":
+            if one["status"] == "missed":
+                raise ValueError(f"{path}:{at}: found and missed")
+            one["status"] = "found"
+            one["defect"].append((key.strip(), note.strip()))
+        else:
+            one["other"].append((key.strip(), note.strip()))
     return out
 
 
@@ -139,19 +221,23 @@ def run_cell(cell: Cell, entry: str = "index.html",
 
     `limit` takes the first few instead of all of them. That exists for the
     smoke run in CI: it proves this script still executes against the current
-    assay, which the test suite does not. The tests can all pass while this
-    file is broken, and the first person to find out would be a stranger
-    trying to reproduce a published number.
+    assay, which the test suite does not.
     """
-    verdicts = read_truth(cell.folder)
+    truths = read_truth(cell.folder)
+    verdicts = read_verdicts(cell.folder)
     programs = sorted(p for p in cell.folder.iterdir()
                       if p.is_dir() and (p / entry).is_file())
     if limit:
         programs = programs[:limit]
 
     for program in programs:
-        truth, why = verdicts.get(program.name, ("", ""))
+        truth, why = truths.get(program.name, ("", ""))
         row = Judged(name=program.name, truth=truth, why=why)
+        verdict = verdicts.get(program.name, {})
+        row.status = verdict.get("status", "")
+        row.defect = list(verdict.get("defect", []))
+        row.other = list(verdict.get("other", []))
+        row.note = verdict.get("note", "")
         cell.rows.append(row)
         if not truth:
             print(f"  {program.name:<16} no hand verdict yet, not scored")
@@ -160,239 +246,236 @@ def run_cell(cell: Cell, entry: str = "index.html",
         began = time.time()
         try:
             run = check(program, entry)
-        except Exception as exc:                       # never lose the sweep
-            row.detail = f"assay raised: {str(exc)[:70]}"
-            print(f"  {program.name:<16} ERROR {row.detail}")
+        except Exception as exc:
+            row.error = f"assay raised: {str(exc)[:70]}"
+            print(f"  {program.name:<16} ERROR {row.error}")
             continue
 
+        row.seconds = time.time() - began
         row.said = "clean" if run.works else "flagged"
         row.cases = len(run.plan)
-        row.failed = len(run.failing)
-        row.seconds = time.time() - began
+        row.failing = {r.key: r.case.id for r in run.failing}
+        row.links = linkkey.drawn(list(run.results.values()))
         if run.failing:
             row.detail = _trimmed(run.failing[0].detail)
+        mark = ("found" if row.found else "missed") \
+            if truth == "broken" else ("ok" if row.said == "clean" else "XX")
         print(f"  {program.name:<16} {truth:<7} {row.said:<7} "
-              f"{row.cases:>3} cases {row.failed:>3} failed "
-              f"{row.seconds:>6.1f}s  {'ok' if row.agrees else 'XX'}")
+              f"{row.cases:>3} cases {len(row.failing):>3} failed "
+              f"{row.seconds:>6.1f}s  {mark}")
+        for key in row.stale:
+            print(f"    !! the verdict names {key!r}, which did not fail")
+        for key in row.unjudged:
+            print(f"    ?? {row.failing[key]} {key!r} failed and no verdict "
+                  f"line says what it is")
+        if truth == "broken" and not row.status:
+            print("    ?? broken, and verdicts.txt says nothing about it")
 
 
 def _trimmed(text: str, most: int = 150) -> str:
-    """What assay said, short enough for a table cell and cut on a word.
-
-    Mid-word truncation in a published table reads as carelessness about
-    everything else on the page, which is the one impression this document
-    cannot afford.
-    """
+    """What assay said, short enough for a table cell and cut on a word."""
     text = " ".join(text.split())
     if len(text) <= most:
         return text
     return text[:text.rfind(" ", 0, most)].rstrip(",;:") + "..."
 
 
-def write_cell_results(suite: Path, cell: Cell) -> None:
+def _assay_said(r: Judged) -> str:
+    """One table cell: what assay made of this program."""
+    if not r.said:
+        return "-"
+    if r.truth == "works":
+        return "clean" if r.said == "clean" else "**flagged**"
+    if r.found:
+        return "found"
+    return "flagged, not the bug" if r.failing else "**missed**"
+
+
+def write_cell_results(cell: Cell) -> None:
     """The cell's own record, beside its own programs."""
-    scored = cell.scored
     out = [f"# {cell.label}",
            "",
            f"{len(cell.rows)} programs, from the objectives in "
            f"`../../../objectives.txt`.",
            "",
-           "`truth` is what a person established by opening the program and "
-           "driving it. `assay` is what the tool said on its own. They are "
-           "separate columns because the whole point is to compare them.",
+           "`truth` is what a person found by opening and using each "
+           "program. `assay` is what the tool reported; for a broken "
+           "program, whether it flagged the actual bug, as judged by hand in "
+           "[`verdicts.txt`](verdicts.txt).",
            "",
-           "| # | objective | truth | assay | agree | why the truth is what it is |",
+           "| # | objective | truth | assay | seconds | notes |",
            "|---|---|---|---|---|---|"]
     for r in cell.rows:
         number, _, _ = r.name.partition("_")
         out.append(f"| {number} | {r.objective} | {r.truth or '-'} | "
-                   f"{r.said or '-'} | {'' if not r.said else ('ok' if r.agrees else '**XX**')} "
-                   f"| {r.why} |")
+                   f"{_assay_said(r)} | "
+                   f"{f'{r.seconds:.0f}' if r.said else '-'} | {r.why} |")
 
-    judged = [r for r in cell.rows if r.truth]
-    if judged:
-        out += ["",
-                f"**What this pairing produced:** {len(cell.works)} of "
-                f"{len(cell.rows)} programs work. Hand-established.",
-                ""]
-    else:
-        out += ["",
-                f"**Not yet judged.** These {len(cell.rows)} programs have "
-                f"been generated but nobody has opened them yet, so there is "
-                f"no truth to score against. A zero here would say they are "
-                f"all broken, which is a different thing from not knowing.",
-                ""]
-    if scored:
-        defects = len(cell.rows) - len(cell.works)
-        out += ["**What assay found here:**",
-                "",
-                f"- {defects - len(cell.missed)} of the {defects} defects"
-                + (f", missing {', '.join(r.name for r in cell.missed)}"
-                   if cell.missed else ""),
-                f"- {len(cell.cried_wolf)} false alarms across the "
-                f"{len(cell.works)} working programs"
-                + (f": {', '.join(r.name for r in cell.cried_wolf)}"
-                   if cell.cried_wolf else "")]
+    out += ["",
+            f"**Programs that work:** {len(cell.works)} of "
+            f"{len(cell.scored)}, checked by hand.",
+            "",
+            "**What assay found:**",
+            "",
+            f"- the actual bug in {len(cell.broken) - len(cell.missed)} of "
+            f"the {len(cell.broken)} broken programs"
+            + (f", missing {', '.join(r.name for r in cell.missed)}"
+               if cell.missed else ""),
+            f"- {len(cell.cried_wolf)} false alarms across the "
+            f"{len(cell.works)} working programs"
+            + (f": {', '.join(r.name for r in cell.cried_wolf)}"
+               if cell.cried_wolf else ""),
+            f"- {len(cell.other_flags)} flags on broken programs that are "
+            f"not their bug"]
     (cell.folder / "results.md").write_text("\n".join(out) + "\n")
 
 
-def write_suite_readme(suite: Path, cells: List[Cell]) -> None:
+def _in_words(n: int) -> str:
+    return {1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+            6: "Six"}.get(n, str(n))
+
+
+def write_suite_readme(suite: Path, cells: List[Cell],
+                       measured_on: str) -> None:
     """The record, aggregated from the cells and never hand-edited.
 
     **It leads with what assay found, not with how often it agreed.**
     Agreement is the flattering number and it is close to meaningless on a
     corpus like this one: most pages work, so a tool that printed `clean`
     for everything and never opened a browser would agree with the answer
-    key nine times out of ten. The two numbers that actually describe a
-    checker are how much of what is there it finds, and how often it is
-    right when it speaks, and neither can be had that way.
-
-    The false alarms are named, one row each. A tool that lists its own by
-    name is making a claim somebody can check, which is the only kind worth
-    printing. Where each program came from still matters and is still
-    recorded, because the strongest objection to any of this is that one
-    corpus came from one place: three independent sources, one of them a
-    bare API call with no agent at all, is the answer to that. It is a
-    sentence, not a table.
+    key nine times out of ten.
     """
     objectives = [line.split("|", 1)[0]
                   for line in (suite / "objectives.txt").read_text().splitlines()
                   if line.strip()]
     every = [r for c in cells for r in c.scored]
-    wolf = [r for c in cells for r in c.cried_wolf]
-    miss = [r for c in cells for r in c.missed]
-    works = sum(1 for r in every if r.truth == "works")
-    judged = [r for c in cells for r in c.rows if r.truth]
-    sources = ", ".join(sorted({c.harness for c in cells}))
+    works = [r for c in cells for r in c.works]
+    broken = [(c, r) for c in cells for r in c.broken]
+    wolf = [(c, r) for c in cells for r in c.cried_wolf]
+    found = [r for _, r in broken if r.found]
+    other = [(c, r, k, why) for c in cells for r, k, why in c.other_flags]
+    flagged = [r for r in every if r.said == "flagged"]
+    right = [r for r in flagged if r.found]
+    harnesses = sorted({c.harness for c in cells})
     models = ", ".join(sorted({c.model for c in cells}))
 
-    out = ["# The benchmark",
+    out = ["# The generated benchmark",
            "",
-           "*Generated by `score.py`. Every number here was produced by "
-           "running it; none is typed by hand.*",
+           "*Written by `score.py`. Every number here comes from running it. "
+           "Which flag is a broken program's actual bug is judged by hand in "
+           "each folder's `verdicts.txt`.*",
            "",
-           f"{len(judged)} programs, written to the {len(objectives)} "
-           f"objectives in [`objectives.txt`](objectives.txt) by {sources} on "
-           f"{models}. **A person opened every one of them and drove it**, "
-           f"and that hand-written answer key is what assay is marked "
-           f"against. It has no part in writing it.",
+           f"{len(every)} programs, written to the {len(objectives)} "
+           f"objectives in [`objectives.txt`](objectives.txt) by "
+           f"{', '.join(harnesses)} on {models}. A person opened and tested "
+           f"every one by hand, and assay is scored against that answer "
+           f"key.",
            "",
-           f"**{len(judged) - works} of the {len(judged)} are broken.** "
-           f"The rest work.",
+           f"**{len(broken)} of the {len(every)} are broken.** The rest work.",
            "",
            "## Contents",
            "",
            "- [What It Found](#what-it-found)",
-           "- [What Is Wrong With the Broken Ones]"
-           "(#what-is-wrong-with-the-broken-ones)",
+           "- [The Broken Programs](#the-broken-programs)",
            "- [Where the Programs Came From]"
            "(#where-the-programs-came-from)",
+           "",
+           "## What It Found",
+           "",
+           f"- **The actual bug in {len(found)} of the {len(broken)} broken "
+           f"programs.** A flag on a broken program only counts if it is "
+           f"that program's bug.",
+           f"- **{len(wolf)} false alarms** on the {len(works)} working "
+           f"programs.",
+           f"- **{len(other)} flags on broken programs that are not their "
+           f"bug.**",
            ""]
-
-    if every:
-        defects = len(every) - works
-        found = defects - len(miss)
-        flags = found + len(wolf)
-        out += ["## What It Found",
-                "",
-                f"- **{found} of the {defects} defects**",
-                f"- **{len(wolf)} false alarms** across the {works} working "
-                f"programs",
-                ""]
-        if flags:
-            out += [f"So when assay reports a problem, it is a real one "
-                    f"**{found} times out of {flags}**.",
-                    ""]
-        out += ["The two are counted apart because they do not cost the "
-                "same. A miss leaves you where you started, which for a "
-                "check costing nothing and usually taking under a minute is a "
-                "fair price. "
-                "A false alarm sends whoever is holding the program off to "
-                "edit code that was right, which is the expensive one.",
-                "",
-                ("When it flags a working page, it " if wolf else
-                 "It has never yet flagged a working page. If it does, it ")
-                + "will not tell you the page is broken: it hands over what "
-                "it did and what happened, and lets you look. If an agent is "
-                "reading the output, same story.",
-                "",
-                f"There is no single accuracy figure here because it would "
-                f"be meaningless: {works} of these {len(judged)} programs "
-                f"work, so printing `clean` for everything and never opening "
-                f"a browser scores "
-                f"{round(100 * works / len(judged))}%.",
-                ""]
+    if flagged:
+        out += [f"Of the {len(flagged)} programs assay flagged, "
+                f"**{len(right)}** were flagged for their actual bug.", ""]
+    out += [f"Per program, {timing([r.seconds for r in every])}. Measured on "
+            f"{measured_on}.",
+            "",
+            "Misses and false alarms are counted separately because a false "
+            "alarm costs more: it sends someone to change code that was "
+            "right.",
+            "",
+            f"There is no single accuracy percentage, because it would be "
+            f"misleading: {len(works)} of these {len(every)} programs work, "
+            f"so a tool that called everything clean without opening a "
+            f"browser would score {round(100 * len(works) / max(len(every), 1))}%.",
+            ""]
 
     if wolf:
-        out += ["## The false alarms, by name",
-                "",
-                "Every working program assay flagged, and what it said about "
-                "it. Listed for the same reason the defects are: a number "
-                "nobody can check is not evidence.",
+        out += ["## False Alarms",
                 "",
                 "| program | what assay said | why it is wrong |",
                 "|---|---|---|"]
-        for c in cells:
-            for r in c.cried_wolf:
-                out.append(f"| [`{c.harness}/{r.name}`]"
-                           f"(programs/{c.harness}/{c.model}/{r.name}/"
-                           f"index.html) | {r.detail} | {r.why} |")
+        out += [f"| [`{c.harness}/{r.name}`](programs/{c.harness}/{c.model}/"
+                f"{r.name}/index.html) | {r.detail} | {r.why} |"
+                for c, r in wolf]
         out.append("")
 
-    broken = [(c, r) for c in cells for r in c.rows if r.truth == "broken"]
-    if broken:
-        out += ["## What Is Wrong With the Broken Ones",
+    if other:
+        out += ["## Flags That Are Not the Bug",
                 "",
-                "Every program here is in this repository, so any row can "
-                "be opened and disagreed with.",
+                "Flags on broken programs that were judged by hand to be "
+                "something other than the program's bug.",
                 "",
-                "| program | what is wrong | assay saw it |",
+                "| program | finding | what it is |",
                 "|---|---|---|"]
-        for c, r in broken:
-            out.append(f"| [`{c.harness}/{r.name}`]"
-                       f"(programs/{c.harness}/{c.model}/{r.name}/index.html) "
-                       f"| {r.why} | {'yes' if r.said == 'flagged' else '**no**'} |")
+        out += [f"| `{c.harness}/{r.name}` | `{k}` | {why} |"
+                for c, r, k, why in other]
+        out.append("")
+
+    if broken:
+        out += ["## The Broken Programs",
+                "",
+                "Every program is in this repository, so you can open any of "
+                "them and check.",
+                "",
+                "| program | what is wrong | assay |",
+                "|---|---|---|"]
+        out += [f"| [`{c.harness}/{r.name}`](programs/{c.harness}/{c.model}/"
+                f"{r.name}/index.html) | {r.why} | {_assay_said(r)} |"
+                for c, r in broken]
         out.append("")
 
     out += ["## Where the Programs Came From",
             "",
-            "Three sources, kept apart so the corpus does not come from one "
-            "place. They turn out to be barely distinguishable: a full agent "
-            "loop, a different agent loop and a single unaided API call land "
-            "within a program or two of each other, which is a finding about "
-            "harnesses rather than about assay.",
+            f"{_in_words(len(harnesses))} sources, so the programs don't all "
+            f"come from one tool.",
             ""]
     for c in cells:
-        judged_here = [r for r in c.rows if r.truth]
-        made = (f"{len(c.works)} of {len(c.rows)} work" if judged_here
-                else f"{len(c.rows)} not yet judged")
         out.append(f"- [`{c.harness}` on `{c.model}`]"
-                   f"(programs/{c.harness}/{c.model}/results.md): {made}")
+                   f"(programs/{c.harness}/{c.model}/results.md): "
+                   f"{len(c.works)} of {len(c.scored)} work")
 
     out += ["", "---", "",
-            "Reproduce all of this with `python bench/score.py`. It needs no "
-            "key and no network: the programs are checked in, assay runs them "
-            "in a browser and the verdicts come out the same.", ""]
+            "Reproduce this with `python bench/score.py`. It needs no API "
+            "key or network: the programs are in the repository and assay "
+            "runs them in a local browser.", ""]
     (suite / "README.md").write_text("\n".join(out) + "\n")
 
 
-#: Where the top-level README keeps its generated numbers. A score typed by
-#: hand goes stale the first time the corpus grows, and the one that was typed
-#: by hand went stale within a day.
+#: Where the top-level README keeps its generated numbers, one block each.
 #:
 #: The sentence goes on its own line between the markers, with blank lines
 #: either side. Written hard against an inline HTML comment, GitHub stops
 #: reading the rest of the line as markdown and the `**` shows up as two
 #: asterisks.
 HEADLINE = {
-    "score2": ("**Across {total} pages checked by hand, assay found {found} "
-               "of the {broken} real defects and raised {wolf} false "
-               "alarms.** When it reports a problem it is a real one {found} "
-               "times out of {flags}."),
+    "score2": ("**Out of {total} pages checked by hand, assay found the "
+               "real bug in {found} of the {broken} broken ones and raised "
+               "{wolf} false alarms on the {works} that work.** Of the "
+               "{flagged} pages it flagged, {right} were flagged for their "
+               "actual bug."),
+    "timing": ("Across the {total} benchmark pages, {timing}. Measured on "
+               "{machine}."),
 }
 
 
-def _write_headline(readme: Path, **counts: int) -> None:
+def _write_headline(readme: Path, **counts: object) -> None:
     """Fill each marked block in the README with the run that just happened."""
     if not readme.is_file():
         return
@@ -412,46 +495,87 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("suite", type=Path, nargs="?", default=Path(__file__).parent,
                     help="the benchmark folder (default: the one beside this script)")
-    ap.add_argument("--cell", help="score only this harness/model")
+    ap.add_argument("--cell", help="score only this harness/model; writes "
+                                   "nothing")
     ap.add_argument("--entry", default="index.html")
     ap.add_argument("--limit", type=int, default=0, metavar="N",
                     help="only the first N programs of each cell, for a "
-                         "smoke run that proves this script still works")
+                         "smoke run that proves this script still works; "
+                         "writes nothing")
     args = ap.parse_args(argv)
 
-    cells = find_cells(args.suite)
-    if args.cell:
-        cells = [c for c in cells if f"{c.harness}/{c.model}" == args.cell]
-        if not cells:
-            print(f"no such cell: {args.cell}", file=sys.stderr)
-            return 2
+    try:
+        cells = find_cells(args.suite)
+        if args.cell:
+            cells = [c for c in cells if f"{c.harness}/{c.model}" == args.cell]
+            if not cells:
+                print(f"no such cell: {args.cell}", file=sys.stderr)
+                return 2
+        began = time.time()
+        for cell in cells:
+            print(f"\n== {cell.label}")
+            run_cell(cell, args.entry, args.limit)
+    except ValueError as exc:
+        print(f"\n{exc}", file=sys.stderr)
+        return 1
 
-    for cell in cells:
-        print(f"\n== {cell.label}")
-        run_cell(cell, args.entry, args.limit)
-        if not args.limit:
-            write_cell_results(args.suite, cell)
+    every = [r for c in cells for r in c.scored]
+    works = sum(len(c.works) for c in cells)
+    broken = sum(len(c.broken) for c in cells)
+    found = broken - sum(len(c.missed) for c in cells)
+    wolf = sum(len(c.cried_wolf) for c in cells)
+    flagged = [r for r in every if r.said == "flagged"]
+    print(f"\nassay found {found} of {broken} defects; {wolf} false alarms "
+          f"across {works} working programs; "
+          f"{sum(len(c.other_flags) for c in cells)} flag(s) on broken "
+          f"programs that are not the defect; "
+          f"{time.time() - began:.0f}s in all")
+
+    marks = linkkey.Marks()
+    key = linkkey.read()
+    for c in cells:
+        for r in c.scored:
+            marks.mark(f"{c.harness}/{r.name}", r.links, key)
+    print(f"links: {marks.sentence()}")
+    for program, one in marks.wrong:
+        print(f"  !! wrong link on {program}: {one}", file=sys.stderr)
+    for program in marks.unjudged:
+        row = next(r for c in cells for r in c.scored
+                   if f"{c.harness}/{r.name}" == program)
+        print(f"  ?? {program} drew links nobody has judged: "
+              f"{sorted(row.links)}", file=sys.stderr)
+
+    errors = [r for c in cells for r in c.rows if r.error]
+    stale = sum(len(r.stale) for c in cells for r in c.rows)
+    unjudged = sum(len(r.unjudged) for c in cells for r in c.rows) + sum(
+        1 for c in cells for r in c.broken if not r.status)
+    if errors or stale or unjudged or marks.wrong or marks.unjudged:
+        print(f"{len(errors)} program(s) could not be checked, {stale} "
+              f"verdict line(s) name a finding that did not fail, "
+              f"{unjudged} flag(s) or broken program(s) have no verdict, and "
+              f"{len(marks.wrong)} wrong and {len(marks.unjudged)} unjudged "
+              f"program(s) of links. Nothing is written until all are zero.",
+              file=sys.stderr)
+        return 1
 
     # A partial run must not overwrite the record of a full one. The files in
     # the tree say "this is what happened"; three programs out of 75 is not
     # what happened, and CI writing that over it would be a lie told by a
     # green tick.
-    every = [r for c in cells for r in c.scored]
-    wolf = sum(len(c.cried_wolf) for c in cells)
-    agreed = sum(1 for r in every if r.agrees)
-    works = sum(1 for r in every if r.truth == "works")
-    defects = len(every) - works
-    found = defects - sum(len(c.missed) for c in cells)
-    if not args.limit:
-        write_suite_readme(args.suite, cells)
-        _write_headline(args.suite.parent / "README.md", total=len(every),
-                        found=found, broken=defects, wolf=wolf,
-                        flags=found + wolf, works=works, agreed=agreed)
-    print(f"\nassay found {found} of {defects} defects; "
-          f"{wolf} false alarms across {works} working programs")
-    if args.limit:
-        print("smoke run, nothing written")
+    if args.limit or args.cell:
+        print("partial run, nothing written")
     else:
+        measured_on = machine()
+        for cell in cells:
+            write_cell_results(cell)
+        write_suite_readme(args.suite, cells, measured_on)
+        _write_headline(args.suite.parent / "README.md", total=len(every),
+                        found=found, broken=broken, wolf=wolf, works=works,
+                        right=sum(1 for r in flagged if r.found),
+                        flagged=len(flagged), machine=measured_on,
+                        timing=timing([r.seconds for r in every]))
+        linkkey.write_block(args.suite.parent / "README.md", "links-generated",
+                            f"On the generated set, {marks.sentence()}.")
         print(f"written: {args.suite / 'README.md'} and each cell's results.md")
     return 0 if wolf == 0 else 1
 

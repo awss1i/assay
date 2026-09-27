@@ -1,0 +1,36 @@
+# Which flag is each broken program's defect, judged by hand.
+#
+#   <program> found <key> | <note>     this flag is the defect showing itself
+#   <program> missed <note>            the defect was not flagged
+#   <program> other <key> | <note>     this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it.
+# Every flag on a broken program gets a line, and the scorer refuses to write
+# anything while one does not.
+
+27_notes2 found threw@open the page and let it settle | throws at load, so nothing on the page runs
+27_notes2 found threw@put empty text in Search notes (by title or body)… | the same load error, in another case
+27_notes2 found threw@put ordinary text in Search notes (by title or body)… | the same load error, in another case
+27_notes2 found threw@put long text in Search notes (by title or body)… | the same load error, in another case
+27_notes2 found threw@put awkward text in Search notes (by title or body)… | the same load error, in another case
+27_notes2 found threw@put empty text in Title | the same load error, in another case
+27_notes2 found threw@put ordinary text in Title | the same load error, in another case
+27_notes2 found threw@put long text in Title | the same load error, in another case
+27_notes2 found threw@put awkward text in Title | the same load error, in another case
+27_notes2 found threw@put empty text in Body… | the same load error, in another case
+27_notes2 found threw@put ordinary text in Body… | the same load error, in another case
+27_notes2 found threw@put long text in Body… | the same load error, in another case
+27_notes2 found threw@put awkward text in Body… | the same load error, in another case
+27_notes2 found threw@tick Pin | the same load error, in another case
+27_notes2 found threw@press Add Note | the same load error, in another case
+27_notes2 found threw@press Add Note twice | the same load error, in another case
+27_notes2 found threw@type into Title then press Add Note | the same load error, in another case
+27_notes2 found threw@type into Body… then press Add Note | the same load error, in another case
+29_kanban2 found nothing-responds@something on the page responds when used | Add does nothing
+36_breakout2 missed the click answers and the ball moves, only the wrong way; judging its direction needs the game's intent
+42_wizard2 found unfillable@the zip box accepts its own placeholder example | the ZIP pattern rejects its own example
+55_tabs found aria@the panel a selected tab or open section controls is shown: "Tab 1" is marked selected and controls the panel "panel-0", but that panel is not shown | the selected tab's panel is display:none after the first switch
+55_tabs found aria@the panel a selected tab or open section controls is shown: "Tab 2" is marked selected and controls the panel "panel-1", but that panel is not shown | the same, on another tab
+55_tabs found aria@the panel a selected tab or open section controls is shown: "Tab 3" is marked selected and controls the panel "panel-2", but that panel is not shown | the same, on another tab
+55_tabs found aria@the panel a selected tab or open section controls is shown: "Tab 4" is marked selected and controls the panel "panel-3", but that panel is not shown | the same, on another tab
+74_cube3d found nothing-drawn@something appears on the canvas | the transform clips every vertex, so the canvas stays blank

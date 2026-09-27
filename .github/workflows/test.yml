@@ -30,7 +30,7 @@ jobs:
     # inside the tool can break it while every test stays green, and the
     # first person to find out would be a stranger who took us up on the
     # invitation to check our numbers. This runs a few programs through the
-    # real scorer. It writes nothing; it only has to still work.
+    # real scorers. They write nothing; they only have to still work.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,3 +40,4 @@ jobs:
       - run: pip install -e "."
       - run: python -m playwright install --with-deps chromium
       - run: python bench/score.py --limit 3
+      - run: python bench/planted/score.py --limit 2

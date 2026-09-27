@@ -6,10 +6,14 @@
 # different is what happens next: `inject.sh` puts known bugs into a copy.
 #
 # Usage: generate.sh <output-dir>       (CEREBRAS_API_KEY must be set)
+#
+# OBJECTIVES names another objectives file, which is how the held-out set is
+# written with this same script.
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 OUT="${1:?usage: generate.sh <output-dir>}"
 DSH="${DSH:-dsh}"
+OBJECTIVES="${OBJECTIVES:-$HERE/objectives.txt}"
 PATCH="${PATCH:-$HERE/cerebras.patch.yml}"
 
 n=0
@@ -30,4 +34,4 @@ no build step. Write the file." >/dev/null 2>&1 )
   else
     rmdir "$dir" 2>/dev/null; echo "  !! $(basename "$dir") nothing at all"
   fi
-done < "$HERE/objectives.txt"
+done < "$OBJECTIVES"

@@ -41,7 +41,7 @@
 33_minesweeper2   works   clicks reveal numbers and flood-fill the empty neighbours, with the mine counter shown
 34_snake2         works   it runs from load, dies at the wall if nobody steers, and Space restarts it with the score and high score updating
 35_tetris2        works   pieces fall on their own, left and right move them, and Pause freezes the board
-36_breakout2      broken  the paddle tracks the mouse, but the ball never launches. The click handler that its own comment says launches it only runs `if (gameOver)`, so a fresh game sits still whatever you press
+36_breakout2      broken  the click launches the ball downward, not up: the launch angle gives a positive dy although its comment says 45 degrees upward, so unless the paddle happens to sit under the ball the first click costs a life; clicked under it, the ball bounces and the game plays (bench/checks/breakout2.py)
 37_draw2          works   strokes draw, Undo removes exactly one at a time, Redo puts it back and Clear empties the canvas
 38_chart2         works   the button switches between line and bar and back, redrawing the same data
 39_signup2        works   Sign Up stays disabled and names the reason for a bad email, a weak password or a mismatch, and enables only when all three are right

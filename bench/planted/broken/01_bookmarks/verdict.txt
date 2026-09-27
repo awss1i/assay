@@ -1,14 +1,21 @@
-# One line per planted bug, in the order bugs.md numbers them.
+# One line per finding. Every planted bug gets a `found` or a `missed`, in
+# the order bugs.md numbers them, and every flag assay raised on this program
+# gets a line saying what it is.
 #
-#   <n> found <case-id> <optional note>
-#   <n> missed <optional note>
+#   <n> found <key> | <note>     this flag is planted bug n showing itself
+#   <n> missed <note>            planted bug n was not flagged
+#   other <key> | <note>         this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it. It
+# names the finding rather than its position in the plan, so it stays true
+# when the plan changes. A bug may be found by more than one key.
 #
 # A bug is *found* when at least one failing case is caused by it. That is a
 # judgement: assay reports an act and a measurement, and whether that
 # measurement is this bug showing itself is what a person has to decide.
 
-1 found C016 Remove takes the row beneath the one pressed
-2 found F002 the row made does not carry the typed URL
-3 missed nothing reloads; the page is checked once, freshly loaded
-4 found F001 a number counting the list reads -1 when empty
+1 found wrong-row@press Remove, with two saved | Remove takes the row beneath the one pressed
+2 found never-shown@values typed into a list show up in the new row | the row made does not carry the typed URL
+3 found forgot-on-reload@save two, reload, and they are still there | saved under one key and read back under another, so a reload loses the list
+4 found count-off@the count of items matches the list | a number counting the list reads -1 when empty
 5 missed a row is added, which is a change

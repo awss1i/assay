@@ -41,13 +41,13 @@
 33_minesweeper2   works   a click reveals its number and flood-fills the empties, right click plants a flag and the mine counter follows
 34_snake2         works   it runs from load, the arrows steer it, walls end the game, eating raises the score and the high score survives a reload
 35_tetris2        works   pieces fall on their own, all three keys act and Pause freezes the board
-36_breakout2      broken  update() only moves the paddle and never the ball, and neither ball nor paddle is drawn: the canvas is a static picture of bricks that answers nothing
+36_breakout2      broken  update() moves the paddle and never the ball: the ball is drawn every frame at its starting spot, the paddle follows the pointer, and whatever is pressed the game cannot be played (bench/checks/breakout2.py)
 37_draw2          broken  it throws "Cannot access 'historyStack' before initialization" on load, so the script never runs and the canvas takes no stroke at all
 38_chart2         works   Add Sample Data draws the bars, the button switches to a line and back, and Clear Data empties it
 39_signup2        works   Sign Up stays disabled and names the reason for a bad email, a weak password or a mismatch, and enables only when all three are right
 40_quiz2          works   Next walks the questions and the end shows a review of each answer against the correct one
 41_search2        works   typing narrows the table to matching rows and clearing restores all twenty-one
-42_wizard2        broken  step two can never be completed: the ZIP field carries pattern="\\d{5}", an escaped backslash, so checkValidity rejects 12345 and only a literal backslash followed by five d's passes
+42_wizard2        broken  every step advances with valid values, but the final Submit tests `!!data.zip` where it means `!data.zip`, so a filled ZIP always answers "Please complete all fields before submitting." and the form can never be sent (bench/checks/wizard2.py)
 43_clock2         works   every clock ticks and the toggle switches all zones between 24 hour and am/pm
 44_calc2          works   7+8=15, 9x3=27, 50/4=12.5, 10-25=-15 and the sign flip is right too
 45_timer2         works   it counts down from what is entered, Pause freezes it, Resume carries on and Reset clears it

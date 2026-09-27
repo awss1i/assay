@@ -1,0 +1,49 @@
+# Which flag is each broken program's defect, judged by hand.
+#
+#   <program> found <key> | <note>     this flag is the defect showing itself
+#   <program> missed <note>            the defect was not flagged
+#   <program> other <key> | <note>     this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it.
+# Every flag on a broken program gets a line, and the scorer refuses to write
+# anything while one does not.
+
+30_paint2 found one-behind@draw on canvas twice, then press ↩️ Undo twice | Undo is one press behind
+36_breakout2 missed the paddle answers the pointer, so the canvas responds; that the ball never moves needs the game's intent
+37_draw2 found threw@choose a colour in Colour | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@open the page and let it settle | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@choose something in Size | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Undo | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Undo twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Redo | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Redo twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Clear | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Clear twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Save | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Save twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@click canvas at point 1 | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@click canvas at point 2 | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@click canvas at point 3 | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@click canvas at point 4 | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@use canvas: click it, drag on it, and press the keys a program like this is driven with | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@draw on canvas, then draw somewhere else on it | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@draw on canvas twice, then press Undo twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@draw on canvas twice, then press Redo twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@draw on canvas twice, then press Clear twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@draw on canvas twice, then press Save twice | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Undo, then Redo | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Undo, then Clear | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Redo, then Undo | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Redo, then Clear | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Clear, then Undo | throws at load: Cannot access 'historyStack' before initialization
+37_draw2 found threw@press Clear, then Redo | throws at load: Cannot access 'historyStack' before initialization
+42_wizard2 missed the plan fills one field at a time and never gets past step one to the Submit that fails
+51_spreadsheet found threw@open the page and let it settle | onFocus is not defined, so it throws at load
+58_reorder found no-change@drag Item 1 onto Item 6 | the drop never fires
+58_reorder found no-change@drag Item 2 onto Item 6 | the drop never fires
+58_reorder found no-change@drag Item 3 onto Item 6 | the drop never fires
+58_reorder found no-change@drag Item 4 onto Item 1 | the drop never fires
+58_reorder found no-change@drag Item 5 onto Item 1 | the drop never fires
+58_reorder found no-change@drag Item 6 onto Item 1 | the drop never fires
+74_cube3d found nothing-drawn@something appears on the canvas | the transform clips every vertex, so the canvas stays blank
+75_matrix missed an element-wise product instead of a matrix product; judging the arithmetic needs the intent

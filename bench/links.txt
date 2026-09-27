@@ -1,0 +1,87 @@
+# Which links between findings each benchmark program should carry.
+#
+#   <program> same <finding key> -> <key of the first of its group>
+#   <program> load <finding key> -> <key of the case that threw on load>
+#   <program> none
+#
+# Written by hand from what each flag is, never from what assay drew.
+# `none` marks a program with several flags that are different problems,
+# where any link at all would be wrong.
+
+# planted: bug 4 of 06_tagfilter shows on every tag
+planted/broken/06_tagfilter same went-back@click green twice -> went-back@click blue twice
+planted/broken/06_tagfilter same went-back@click large twice -> went-back@click blue twice
+planted/broken/06_tagfilter same went-back@click medium twice -> went-back@click blue twice
+planted/broken/06_tagfilter same went-back@click red twice -> went-back@click blue twice
+planted/broken/06_tagfilter same went-back@click round twice -> went-back@click blue twice
+planted/broken/06_tagfilter same went-back@click small twice -> went-back@click blue twice
+planted/broken/06_tagfilter same went-back@click square twice -> went-back@click blue twice
+
+# planted: bug 4 of 07_scheduler shows on every square
+planted/broken/07_scheduler same one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(2) > td:nth-child(6) twice -> one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(1) > td:nth-child(6) twice
+planted/broken/07_scheduler same one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(5) twice -> one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(1) > td:nth-child(6) twice
+planted/broken/07_scheduler same one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(6) twice -> one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(1) > td:nth-child(6) twice
+
+# planted: several flags, each a different planted bug
+planted/broken/01_bookmarks none
+planted/broken/02_poll none
+planted/broken/05_budget none
+
+# generated: every case ran on a page whose one script threw at load
+no-harness/27_notes2 same threw@press Add Note -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@press Add Note twice -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put awkward text in Body… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put awkward text in Search notes (by title or body)… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put awkward text in Title -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put empty text in Body… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put empty text in Search notes (by title or body)… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put empty text in Title -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put long text in Body… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put long text in Search notes (by title or body)… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put long text in Title -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put ordinary text in Body… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put ordinary text in Search notes (by title or body)… -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@put ordinary text in Title -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@tick Pin -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@type into Body… then press Add Note -> threw@open the page and let it settle
+no-harness/27_notes2 same threw@type into Title then press Add Note -> threw@open the page and let it settle
+
+# generated: every tab shows the same hidden-panel defect
+no-harness/55_tabs same aria@the panel a selected tab or open section controls is shown: "Tab 2" is marked selected and controls the panel "panel-1", but that panel is not shown -> aria@the panel a selected tab or open section controls is shown: "Tab 1" is marked selected and controls the panel "panel-0", but that panel is not shown
+no-harness/55_tabs same aria@the panel a selected tab or open section controls is shown: "Tab 3" is marked selected and controls the panel "panel-2", but that panel is not shown -> aria@the panel a selected tab or open section controls is shown: "Tab 1" is marked selected and controls the panel "panel-0", but that panel is not shown
+no-harness/55_tabs same aria@the panel a selected tab or open section controls is shown: "Tab 4" is marked selected and controls the panel "panel-3", but that panel is not shown -> aria@the panel a selected tab or open section controls is shown: "Tab 1" is marked selected and controls the panel "panel-0", but that panel is not shown
+
+# generated: every case ran on a page whose script threw at load
+opencode/37_draw2 same threw@choose a colour in Colour -> threw@open the page and let it settle
+opencode/37_draw2 same threw@choose something in Size -> threw@open the page and let it settle
+opencode/37_draw2 same threw@click canvas at point 1 -> threw@open the page and let it settle
+opencode/37_draw2 same threw@click canvas at point 2 -> threw@open the page and let it settle
+opencode/37_draw2 same threw@click canvas at point 3 -> threw@open the page and let it settle
+opencode/37_draw2 same threw@click canvas at point 4 -> threw@open the page and let it settle
+opencode/37_draw2 same threw@draw on canvas twice, then press Clear twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@draw on canvas twice, then press Redo twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@draw on canvas twice, then press Save twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@draw on canvas twice, then press Undo twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@draw on canvas, then draw somewhere else on it -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Clear -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Clear twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Clear, then Redo -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Clear, then Undo -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Redo -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Redo twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Redo, then Clear -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Redo, then Undo -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Save -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Save twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Undo -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Undo twice -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Undo, then Clear -> threw@open the page and let it settle
+opencode/37_draw2 same threw@press Undo, then Redo -> threw@open the page and let it settle
+opencode/37_draw2 same threw@use canvas: click it, drag on it, and press the keys a program like this is driven with -> threw@open the page and let it settle
+
+# generated: every drag meets the same drop that never fires
+opencode/58_reorder same no-change@drag Item 2 onto Item 6 -> no-change@drag Item 1 onto Item 6
+opencode/58_reorder same no-change@drag Item 3 onto Item 6 -> no-change@drag Item 1 onto Item 6
+opencode/58_reorder same no-change@drag Item 4 onto Item 1 -> no-change@drag Item 1 onto Item 6
+opencode/58_reorder same no-change@drag Item 5 onto Item 1 -> no-change@drag Item 1 onto Item 6
+opencode/58_reorder same no-change@drag Item 6 onto Item 1 -> no-change@drag Item 1 onto Item 6

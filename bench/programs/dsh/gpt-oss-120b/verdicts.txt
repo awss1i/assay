@@ -1,0 +1,16 @@
+# Which flag is each broken program's defect, judged by hand.
+#
+#   <program> found <key> | <note>     this flag is the defect showing itself
+#   <program> missed <note>            the defect was not flagged
+#   <program> other <key> | <note>     this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it.
+# Every flag on a broken program gets a line, and the scorer refuses to write
+# anything while one does not.
+
+30_paint2 found second-stroke@draw on canvas, then draw somewhere else on it | only the top-left quarter draws, so the second stroke lands where nothing can be drawn
+34_snake2 found told-to-press@use game: click it, drag on it, and press the keys a program like this is driven with | the page says Press Space to restart and ignores Space
+37_draw2 found one-behind@draw on canvas twice, then press Undo twice | Undo is one press behind
+52_treeview missed the counter reads double; no rule checks a count against rows that are all still there
+60_splitpane found no-change@drag divider, then drag it again | the divider cannot be caught a second time
+74_cube3d found nothing-drawn@something appears on the canvas | the transform clips every vertex, so the canvas stays blank
