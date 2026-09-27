@@ -6,287 +6,215 @@
 
 **Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.**
 
-<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay against a
-generated paint program. Twenty-five cases planned from the page itself,
-twenty-three passed, and two failed: one because the canvas took the first
-stroke and ignored the second, one because Undo answered the second press and
-not the first.">
+<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a tag
+filter page. 18 checks planned from the page, 10 passed and 8 failed. The
+first failure says a tag went back to how it looked but the list stayed
+filtered, and the other seven say they are the same finding.">
 
-<p align="center"><i>Checking a generated paint web page.</i> <code>pip install assay-ui</code></p>
+<p align="center"><i>Checking a tag filter page with a bug in it.</i> <code>pip install assay-ui</code></p>
 
-Point it at a page. assay opens it in a real browser, measures every control
-it renders, works out a test plan from what it finds, drives all of it, and
-tells you what broke.
+assay opens your page in Chromium, finds every control on it, uses all of
+them, and reports what went wrong.
 
-## Highlights
-
-- **No tests to write, no baselines to keep.** The plan comes from the page,
-  so a program written ten seconds ago can be checked ten seconds later.
-- **No LLM. Purely mechanical.** No API key, no tokens, no rate limit, nothing
-  to bill. It gives the same answer twice.
-- **Plugs into fifteen coding agents.** A skill for all of them, and a plugin
-  for Claude Code and the DeepSeek Harness that checks the page at the end of
-  every turn that touched one.
-- **It says why.** Not *case 14 failed*, but *the first press did nothing and
-  the second did something, so this control is one behind*.
-
-## Contents
-
-- [Install](#install)
-  - [CLI](#cli)
-  - [Skills and Plugins](#skills-and-plugins)
-- [Use](#use)
-  - [CLI](#cli-1)
-  - [Skills](#skills)
-  - [Plugins](#plugins)
-- [Benchmarks](#benchmarks)
-  - [Generated Programs](#generated-programs)
-  - [Planted Bugs](#planted-bugs)
-- [How It Works](#how-it-works)
-- [Why](#why)
-- [Limits Worth Knowing](#limits-worth-knowing)
-- [Contributing](#contributing)
-- [Licence](#licence)
+- **No tests to write.** assay builds its checks from the controls it finds
+  on the page.
+- **No LLM.** There's no API key and no cost, and every run gives the same
+  result.
+- **Works with coding agents.** A skill tells the agent in fifteen harnesses
+  to check each page it writes, and a plugin for Claude Code and the DeepSeek
+  Harness does it automatically after every turn.
+- **Explains each failure in plain words.** For example: *pressing this twice
+  from the same starting point: the first press changed nothing and the
+  second did, so it reacts one press late*.
+- **Groups repeats.** When one bug fails several checks, the later ones say
+  *same finding as C003* instead of repeating the message.
 
 ## Install
 
-### CLI
-
 ```bash
-pip install assay-ui
+pip install assay-ui        # Python 3.10+; or: uv tool install assay-ui, pipx install assay-ui
 ```
 
-Needs Python 3.10 or newer. If `pip` is not found, use
-`python3 -m pip install assay-ui`.
+If `pip` isn't found, use `python3 -m pip install assay-ui`. The first run
+downloads Chromium if needed. For coding agents, install the CLI first, then
+see **[harness setup →](https://github.com/awss1i/assay/blob/main/docs/harnesses.md)**
 
-For an isolated install that brings its own Python:
-
-```bash
-uv tool install assay-ui    # or: pipx install assay-ui
-```
-
-The command is `assay`. The first run fetches a browser if there is not one
-already, so there is no second command to forget.
-
-To hack on it, clone and install it in place:
+To work on assay itself:
 
 ```bash
 git clone https://github.com/awss1i/assay.git && cd assay
 pip install -e ".[dev]"
 ```
 
-### Skills and Plugins
-
-Install steps for fifteen harnesses. All of them want the CLI above first.
-
-**[Install it in your harness →](https://github.com/awss1i/assay/blob/main/docs/harnesses.md)**
-
 ## Use
 
-### CLI
-
 ```console
-assay ./my-app                    # check the page in this folder
-assay ./my-app/todo.html          # check one page by name
+assay ./my-app                    # check index.html in this folder
+assay ./my-app/todo.html          # check a specific page
 assay ./my-app -e app.html        # or name the page inside a folder
 
-assay ./my-app --report out.html  # write an HTML report with screenshots
-assay ./my-app --json             # print the whole run as JSON
-assay ./my-app --one-line         # print one sentence, for a script to relay
+assay ./my-app --report out.html  # also write an HTML report with screenshots
+assay ./my-app --json             # print the full run as JSON
+assay ./my-app --one-line         # short summary, for scripts and agents
 assay ./my-app --surface          # list the controls it found, then stop
 ```
 
-There is a broken drawing program in this repository. Run it yourself:
+This repository includes a drawing program whose Undo is broken:
 
 ```console
 $ assay bench/programs/dsh/gpt-oss-120b/37_draw2
-23 case(s) planned, 23 carried out, 22 passed, 1 failed
+24 case(s) planned, 24 carried out, 23 passed, 1 failed
 
-C013 [ok] use canvas: click it, drag on it, and press the keys a program like this is driven with
-C014 [ok] draw on canvas, then draw somewhere else on it
-C015 [FAILED] draw on canvas twice, then press Undo twice
-    → the first press did nothing and the second did something, from the same state, so this control is one behind
-C016 [ok] draw on canvas twice, then press Redo twice
-C017 [ok] draw on canvas twice, then press Clear twice
+C015 [ok] draw on canvas, then draw somewhere else on it
+C016 [FAILED] draw on canvas twice, then press Undo twice
+    → pressing this twice from the same starting point: the first press changed nothing and the second did, so it reacts one press late
+C017 [ok] draw on canvas twice, then press Redo twice
 ```
 
-Drawing works. Redo works. Clear works. Undo is one press behind, and nothing
-about the source says so.
+Nothing is written to disk unless you ask. The exit code is non-zero if
+anything failed. `--report` shows the page before and after every check:
 
-**Where the results go.** Everything goes to stdout and **nothing is written
-to disk unless you ask**, because a CI check that only cares about the exit
-code should not litter. `--report FILE` writes one self-contained HTML page
-plus a `shots/` folder of screenshots beside it. `--json` prints the whole run
-for piping. The exit code is non-zero if anything failed.
+<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/report.png" alt="One check from an assay report on a
+tag filter: the tag was clicked twice, it went back to how it looked, and the
+list stayed filtered. Shown with the actions, the reason, and screenshots of
+the page before and after: twelve items, then one.">
 
-`--report` gives you every case with the page as the browser drew it, before
-and after:
-
-<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/report.png" alt="One case from an assay report: the
-act that was performed, the reason it failed, and screenshots of the page
-before and after">
-
-**From Python.** The same run, as an object.
+From Python:
 
 ```python
 from assay import check
 
 report = check("./my-app")
-print(report.summary())
 for result in report.failing:
     print(result.case.what, "->", result.detail)
 ```
 
-### Skills
+### With coding agents
 
-*Claude Code, DeepSeek Harness, opencode, Antigravity, Codex App, Codex CLI,
-Cursor, Devin CLI, Factory Droid, Gemini CLI, GitHub Copilot CLI, Grok Build
-CLI, Kimi Code, Pi, Hermes Agent.*
-
-One markdown file. Your agent runs assay when it finishes a page and prints
-what came back:
+The **skill** works in all fifteen supported harnesses: Claude Code, DeepSeek
+Harness, opencode, Antigravity, Codex App, Codex CLI, Cursor, Devin CLI,
+Factory Droid, Gemini CLI, GitHub Copilot CLI, Grok Build CLI, Kimi Code, Pi
+and Hermes Agent. It tells your agent to run assay after finishing a page and
+end its reply with the result:
 
 ```
 assay: checked todo/todo.html, 8 checks, nothing flagged.
 ```
 
-One line, every time, whether or not it found anything. It reports and never
-fixes: the agent hands over what it pressed and what happened, and does not
-edit code on the strength of it.
-
-**[How the skill behaves →](https://github.com/awss1i/assay/blob/main/plugins/assay/README.md#the-skill)**
-
-### Plugins
-
-*Claude Code, DeepSeek Harness.*
-
-The same skill plus a hook, so the check happens at the end of every turn
-that touched a page, whether or not the agent thought to run it.
+The **plugin** (Claude Code and the DeepSeek Harness) adds a hook that runs
+the check automatically at the end of each turn that changed a page. Either
+way, the agent reports what assay found and doesn't change code because of it
+unless you ask.
 
 ```
 /plugin marketplace add awss1i/assay
 /plugin install assay@assay
 ```
 
-**[How the plugin behaves →](https://github.com/awss1i/assay/blob/main/plugins/assay/README.md#the-plugin)**
+**[How the skill and plugin work →](https://github.com/awss1i/assay/blob/main/plugins/assay/README.md)**
 
 ## Benchmarks
 
-A checker nobody has checked is an opinion with a progress bar. Two sets,
-built differently, both checked in.
-
-### Generated Programs
-
-225 programs written to 75 objectives by three harnesses. A person opened
-every one and drove it before assay saw it. 20 are broken.
+**Generated pages:** 225 pages written by AI coding tools, each tested by hand
+first; 20 are broken. A broken page only counts as found when assay flags its
+actual bug.
 
 <!-- score2 -->
 
-**Across 225 pages checked by hand, assay found 15 of the 20 real defects and raised 0 false alarms.** When it reports a problem it is a real one 15 times out of 15.
+**Out of 225 pages checked by hand, assay found the real bug in 15 of the 20 broken ones and raised 0 false alarms on the 205 that work.** Of the 15 pages it flagged, 15 were flagged for their actual bug.
 
 <!-- /score2 -->
 
-**[The benchmark →](https://github.com/awss1i/assay/blob/main/bench/README.md)**
-
-### Planted Bugs
-
-Ten working programs, and a copy of each with five bugs put in by a
-different harness and model. Fifty defects known by construction, and the
-harder set: pages that work and are wrong, not pages that stopped.
+**Planted bugs:** 10 working pages, and a copy of each with 5 bugs added by
+another model. assay's rules were developed against this set, so this number
+is in-sample.
 
 <!-- planted -->
 
-**assay found 10 of the 50 planted bugs and flagged 0 of the 10 working originals.**
+**assay found 12 of the 50 planted bugs and flagged 0 of the 10 working originals.**
 
 <!-- /planted -->
 
-**[The planted set →](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)**
+When assay groups a finding with an earlier one, or notes that the page
+crashed while loading, that link is checked against a hand-written answer key
+of which findings belong together:
 
-Both reproduce with `python bench/score.py` and `python bench/planted/score.py`.
-No key, no network.
+<!-- links-generated -->
+
+On the generated set, assay drew 51 links between findings. 51 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
+
+<!-- /links-generated -->
+
+<!-- links-planted -->
+
+On the planted set, assay drew 10 links between findings. 10 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
+
+<!-- /links-planted -->
+
+Details: **[generated set →](https://github.com/awss1i/assay/blob/main/bench/README.md)**,
+**[planted set →](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)**.
+Reproduce with `python bench/score.py` and `python bench/planted/score.py`.
 
 ## How It Works
 
-**It drives the page the way a person would.** It waits until the page stops
-arriving, finds every control from the rendered page rather than the markup,
-works out a plan from what it finds, and carries all of it out in a fresh tab,
-measuring what changed on screen after every step.
+1. Serves the folder on localhost and opens the page in Chromium.
+2. Waits until the page's controls stop changing.
+3. Lists every control the browser renders, including clickable divs, drag
+   handles and editable regions.
+4. Plans checks from those controls: press every button once and twice,
+   type empty, ordinary, very long and HTML-laden text into fields, change
+   every dropdown, draw on canvases, fill in and submit forms, and more.
+5. Runs each check in a fresh tab and compares the page before and after.
 
-**It is deliberately narrow about what counts as a failure.** A plan derived
-from the page cannot know what a control is *for*, so a button only has to
-survive being pressed. Demanding that every press change something would fail
-a working program for having a Clear button on an empty canvas.
+assay doesn't know what your page is for, so a button that changes nothing
+isn't a failure by itself. Instead it reports places where the page
+contradicts itself. For example:
 
-What it can judge without knowing the design is whether the program
-contradicts itself. A surface that took the first stroke has to take the
-second. A control that does nothing on its first press and something on its
-second, from the same state, is one press behind. A counter reads -1 over an
-empty list, a total follows the list up and not down, `NaN` sits where a value
-belongs. And if nothing responds to anything, the script probably never ran.
-
-**It never says a page is broken.** It says what it pressed and what
-happened:
-
-```
-C006 [FAILED] type into Quantity then press +
-    → nothing on the page changed at all
-```
-
-A verdict makes you change code. A measurement makes you look first, and gives
-a person or an agent a precise place to start instead of a whole file to
-re-read.
+- the page throws an error,
+- Undo does nothing on the first press and works on the second,
+- a count of items shows 1 when the list is empty,
+- a total goes up when an item is added but not down when one is removed,
+- `NaN` appears where a number should be,
+- nothing on the page responds to any control.
 
 **[Every rule →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.md)**
 
 ## Why
 
-A lot of code is written by models now, and *"does this actually run?"* is
-mostly still answered by a person opening it and clicking around.
-
-Every existing tool needs something you do not have for a program that was
-generated ten seconds ago. Playwright and Cypress need tests somebody wrote.
-Visual regression needs a golden image to compare against. Benchmarks like
-SWE-bench use the repository's own suite.
-
-So the thing most people reach for instead is another model: paste the code in
-and ask whether it looks right. **That is a reader guessing about code.** assay
-opens the page and drives it, which is the only way to find out that a button
-does nothing.
+Playwright and Cypress need tests someone wrote. Visual regression needs a
+reference screenshot. Asking a model to review the code means reading it, not
+running it. assay runs it, with nothing prepared in advance.
 
 |  | needs tests written | needs a baseline | runs the program |
 |---|---|---|---|
 | Playwright / Cypress | yes | no | yes, the parts you wrote |
 | Percy / Chromatic | no | **yes** | it screenshots it |
-| ask a model to review it | no | no | **no. It reads the source** |
+| ask a model to review it | no | no | **no, it reads the source** |
 | **assay** | **no** | **no** | **yes, all of it** |
 
-## Limits Worth Knowing
+## Limits
 
-- **Browser programs.** It opens a page. A program with no page is not
-  something it can measure.
-- **Coverage cannot judge intent.** A control that works mechanically and does
-  the wrong thing passes. Criteria are the answer, and you have to write those.
-- **A game that ends looks like a page that died.** When a program finishes
-  and offers no way to start again, it stops responding to anything, and a
-  plan derived from the page cannot tell that apart from a page that broke.
-- **Built output, not source trees.** It will not run your build, because
-  installing dependencies runs their setup scripts and this is a tool for
-  checking code nobody has read. Point it at a source tree and it says so and
-  names the command.
-- **Single-page programs.** It checks the page you point it at and does not
-  crawl. A multi-page site means running it per page, and client-side routing
-  is untested.
-- **Local pages, not the live web.** It checks a page served from a folder on
-  your machine, not sites with a login, a cookie banner or live network calls.
-- **Speed.** Most pages take a few seconds to just under a minute. Across the
-  225 benchmark programs the median is 14 seconds and 220 finish inside a
-  minute. The slowest recorded took about four minutes.
+- **It can't check intent.** A page that runs but does the wrong thing, like
+  a total that adds wrongly, usually passes. To check that, pass acceptance
+  criteria from Python.
+- **Web pages only.** It checks one page at a time, served from a local
+  folder. It doesn't crawl, log in or use live network calls.
+- **Built output only.** It won't run `npm install` or your build. Point it
+  at a source tree and it tells you what to run first.
+- **A finished game can look broken.** A game that has ended with no way to
+  restart stops responding, and that can be reported as nothing responding.
+- **Speed.** Most pages take a few seconds to a minute.
+
+<!-- timing -->
+
+Across the 225 benchmark pages, the median is 14 seconds, 221 of 225 finish inside a minute, and the slowest took 3.9 minutes. Measured on AMD Ryzen 7 255 w/ Radeon 780M Graphics, Linux 7.2.6-200.fc44.x86_64, Python 3.14.7, Chromium 153.0.8010.12, Playwright 1.63.0.
+
+<!-- /timing -->
 
 ## Contributing
 
-Bugs and false alarms go in issues, changes come as pull requests, and
-questions go in [Discussions](https://github.com/awss1i/assay/discussions).
-Setup, tests, benchmarks and what each kind of pull request needs are in
+Report bugs and false alarms as issues, send changes as pull requests, and ask
+questions in [Discussions](https://github.com/awss1i/assay/discussions). See
 **[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)**.
 
 ## Licence

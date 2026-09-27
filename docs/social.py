@@ -1,15 +1,15 @@
 """Draw `social-preview.png` from a real run, for the same reason as `hero.py`.
 
-    python docs/social.py bench/programs/dsh/gpt-oss-120b/30_paint2 \
-                          "assay ./paint" docs/social-preview.png
+    python docs/social.py bench/planted/broken/06_tagfilter \
+                          "assay ./tags" docs/social-preview.png
 
 GitHub wants 1280x640 and every card that shows it scales it down by two
 or three, so the name and the tagline carry the message at that size and
-the terminal carries the shape: green down the left, two red rows where
-the page contradicted itself. The window sits flush to the left, as far
+the terminal carries the shape: green down the left, and red where the
+page contradicted itself. The window sits flush to the left, as far
 from the bottom edge as from the top. Long rows wrap at the window's edge,
 which is what a terminal does with them. The text stops on a whole row, and
-the rows are tight enough that both red ones fit.
+the rows are tight enough that the red ones fit.
 """
 import html, pathlib, re, sys
 sys.path.insert(0, "src")
@@ -30,7 +30,11 @@ def spans(line: str) -> str:
                 f'<b style="color:{BRIGHT}">{esc(line[2:])}</b>')
     if line.startswith("    →"):
         return f'<span style="color:{RED}">{esc(line)}</span>'
-    m = re.match(r"^(C\d+) \[(ok|FAILED|not checked)\] (.*)$", line)
+    if line.startswith("    ↳"):
+        return f'<span style="color:{AMBER}">{esc(line)}</span>'
+    # A finding about the whole run is numbered F001 or C000, and is a
+    # failure like any other.
+    m = re.match(r"^([CF]\d+) \[(ok|FAILED|not checked)\] (.*)$", line)
     if not m:
         return f'<span style="color:{BRIGHT}">{esc(line)}</span>'
     ident, mark, what = m.groups()

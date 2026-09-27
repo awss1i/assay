@@ -6,8 +6,7 @@ on the Security tab. A fix goes out as a new release on PyPI.
 
 ## What Counts
 
-assay opens pages nobody has read, so the lines it draws around your machine
-are the part that matters:
+assay opens pages nobody has reviewed, so these are its security boundaries:
 
 - It serves the folder you point it at, over loopback only (`127.0.0.1`, on a
   random port), and nothing outside that folder.
@@ -15,12 +14,12 @@ are the part that matters:
 - It never runs a build or installs anything.
 - The plugin's hook runs `assay` on the pages a turn changed, and nothing else.
 
-A way around any of those is a vulnerability: the server answering off
-loopback or handing out a file outside the folder, a page reaching past the
-browser through assay, the hook running something other than `assay`, or
-assay running a build.
+Getting around any of these is a vulnerability: the server answering on
+anything but loopback or serving a file outside the folder, a page reaching
+outside the browser through assay, the hook running anything other than
+`assay`, or assay running a build.
 
-A page doing what any page can do inside a browser is not.
+Anything a page can normally do inside a browser is not a vulnerability.
 
 ## Supported Versions
 

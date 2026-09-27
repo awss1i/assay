@@ -1,7 +1,7 @@
 """Draw `run.svg` from a real run, so the picture cannot drift from the tool.
 
-    python docs/hero.py bench/programs/dsh/gpt-oss-120b/30_paint2 \
-                        "assay ./paint" docs/run.svg
+    python docs/hero.py bench/planted/broken/06_tagfilter \
+                        "assay ./tags" docs/run.svg
 
 The one this replaces was drawn by hand, and by the time anybody looked it
 showed colour the command did not print and a program that does not exist. A
@@ -46,7 +46,11 @@ def spans(line: str) -> str:
     esc = lambda s: html.escape(s, quote=False)
     if line.startswith("    →"):
         return f'<tspan fill="{RED}">{esc(line)}</tspan>'
-    m = re.match(r"^(C\d+) \[(ok|FAILED|not checked)\] (.*)$", line)
+    if line.startswith("    ↳"):
+        return f'<tspan fill="{AMBER}">{esc(line)}</tspan>'
+    # A finding about the whole run is numbered F001 or C000, and is a
+    # failure like any other.
+    m = re.match(r"^([CF]\d+) \[(ok|FAILED|not checked)\] (.*)$", line)
     if not m:
         return f'<tspan fill="{BRIGHT}">{esc(line)}</tspan>'
     ident, mark, what = m.groups()

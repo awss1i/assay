@@ -1,7 +1,7 @@
 """Draw `demo.mp4` from a real run, for the same reason as `hero.py`.
 
-    python docs/demo.py bench/programs/dsh/gpt-oss-120b/30_paint2 \
-                        "assay ./paint" docs/demo.mp4
+    python docs/demo.py bench/planted/broken/06_tagfilter \
+                        "assay ./tags" docs/demo.mp4
 
 Needs `ffmpeg` on PATH, or its path in `FFMPEG`.
 
@@ -9,11 +9,10 @@ It is cut for a post on X, where the feed plays video in a player about
 540px wide. A terminal with 110-character rows was unreadable at that size
 whatever the bitrate, so the text is sized to about 65 characters to a row.
 A square frame read as well but took a whole screen of feed. At 16:9 the
-window shows 15 rows, which for the paint run puts the first failure on the
-top row of the finished screen.
+window shows 15 rows.
 
-The run scrolls the way a terminal does and stops on the last row, with
-both red rows on screen. Passing rows are a lighter grey than the other
+The run scrolls the way a terminal does and stops on the last row. Passing
+rows are a lighter grey than the other
 pictures use and the failures are bold, because X re-encodes every upload
 and thin dim text on a dark ground is the first thing it smears. The bitrate
 is fixed at 10 Mbps, above the 5 Mbps X asks for, so the copy it re-encodes
@@ -41,7 +40,11 @@ def spans(line: str) -> str:
                 f'<b style="color:{BRIGHT}">{esc(line[2:])}</b>')
     if line.startswith("    →"):
         return f'<b style="color:{RED}">{esc(line)}</b>'
-    m = re.match(r"^(C\d+) \[(ok|FAILED|not checked)\] (.*)$", line)
+    if line.startswith("    ↳"):
+        return f'<b style="color:{AMBER}">{esc(line)}</b>'
+    # A finding about the whole run is numbered F001 or C000, and is a
+    # failure like any other.
+    m = re.match(r"^([CF]\d+) \[(ok|FAILED|not checked)\] (.*)$", line)
     if not m:
         return f'<span style="color:{BRIGHT}">{esc(line)}</span>'
     ident, mark, what = m.groups()

@@ -1,8 +1,8 @@
 # Installing assay in Your Harness
 
-Install steps for fifteen harnesses. Six take assay through their own install
-command. The other nine take the skill as a file, which works anywhere that
-reads skills.
+Install steps for fifteen harnesses. Six install assay with their own plugin
+command. For the other nine, you copy the skill file into place, which works
+in any harness that reads skills.
 
 ## Contents
 
@@ -17,17 +17,22 @@ reads skills.
 
 ## What You Get
 
-assay comes in two parts: a **skill**, which tells your agent to run `assay`
-when it finishes a page and print what came back, and a **hook**, which does
-it without being asked. The plugin installs are the two together.
+assay comes in two parts:
 
-The hook runs in Claude Code and the DeepSeek Harness, so there the check
-happens at the end of every turn that touched a page. Everywhere else, count
-on the skill: the agent runs the check itself. opencode and the harnesses under
-[Everywhere Else](#everywhere-else-the-skill-on-its-own) take the skill alone,
-and the DeepSeek Harness takes the hook alone, through its Claude Code bridge.
+- a **skill**, which tells your agent to run `assay` after it finishes a page
+  and show you the result, and
+- a **hook**, which runs the check automatically.
 
-All fifteen need `assay` on your `PATH` first. It needs Python 3.10 or newer:
+A plugin install gives you both. The hook works in Claude Code and the
+DeepSeek Harness, where the check runs at the end of every turn that changed a
+page. In the other harnesses the agent runs the check itself, as the skill
+tells it to. opencode and the harnesses under
+[Everywhere Else](#everywhere-else-the-skill-on-its-own) install the skill
+only, and the DeepSeek Harness uses the hook only, through its Claude Code
+bridge.
+
+All fifteen need `assay` on your `PATH` first, which needs Python 3.10 or
+newer:
 
 ```bash
 pip install assay-ui        # or: uv tool install assay-ui, pipx install assay-ui
@@ -102,9 +107,9 @@ copilot plugin install assay@assay
 *Antigravity, Codex App, Codex CLI, Cursor, Gemini CLI, Grok Build CLI, Kimi
 Code, Pi, Hermes Agent.*
 
-Each of these packages plugins its own way, and assay does not ship a plugin
-in their formats, so the skill goes in as a file. It is one markdown file and
-works anywhere that reads skills or instruction files.
+assay doesn't ship a plugin in these harnesses' formats, so you install the
+skill as a file. It's one markdown file and works anywhere that reads skills
+or instruction files.
 
 Copy
 [`plugins/assay/skills/checking-a-page/`](../plugins/assay/skills/checking-a-page)
@@ -112,7 +117,7 @@ into the folder your harness reads skills from, for example a project's
 `.agents/skills/`, which Hermes Agent reads, or paste the file into your
 `AGENTS.md`.
 
-What you lose is the hook: the agent decides when to run the check rather
-than it happening at the end of every turn.
+Without the hook, the agent decides when to run the check, instead of it
+running at the end of every turn.
 
-**[How the skill behaves →](../plugins/assay/README.md#the-skill)**
+**[How the skill works →](../plugins/assay/README.md#the-skill)**
