@@ -18,4 +18,4 @@
 2 missed no expectation of how many cards there are
 3 found opposites@Previous works as well as Next | Previous never answers while Next always does
 4 missed pressing Shuffle asserts nothing, and it changes nothing to notice
-5 missed a button only has to survive being pressed
+5 missed the card is clicked twice: the first click flips it and the second does nothing, which is also how a control that only switches on behaves, so it isn't flagged

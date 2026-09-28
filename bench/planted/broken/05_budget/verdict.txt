@@ -17,5 +17,5 @@
 1 missed only 25 or nothing is typed as an amount, never 0
 2 found never-shown@values typed into a list show up in the new row | the row shows the running total from before it, 0.00, where 25 was typed
 3 found one-way@a total that follows the list also goes down | the total follows the list up and not down
-4 missed typing in a field asserts nothing on its own
+4 missed typing into Budget leaves Remaining unchanged, but Budget has no button after it, and a field on its own is only required not to throw
 5 missed remaining does change, and the sign is a value judgement

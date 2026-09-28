@@ -37,7 +37,7 @@
 37_draw2 found threw@press Redo, then Clear | throws at load: Cannot access 'historyStack' before initialization
 37_draw2 found threw@press Clear, then Undo | throws at load: Cannot access 'historyStack' before initialization
 37_draw2 found threw@press Clear, then Redo | throws at load: Cannot access 'historyStack' before initialization
-42_wizard2 missed the plan fills one field at a time and never gets past step one to the Submit that fails
+42_wizard2 missed Name and Email are typed into one at a time and Next is pressed on its own, which only shows the errors, so no check gets past step one to the Submit that fails
 51_spreadsheet found threw@open the page and let it settle | onFocus is not defined, so it throws at load
 58_reorder found no-change@drag Item 1 onto Item 6 | the drop never fires
 58_reorder found no-change@drag Item 2 onto Item 6 | the drop never fires

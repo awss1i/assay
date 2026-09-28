@@ -17,5 +17,5 @@
 1 missed the total changes, so the page changed
 2 missed an off-by-one in a total is a value judgement
 3 missed nothing says a note should be there when the page loads
-4 missed the total changes, so the page-wide signature moved
+4 missed the total and the low-stock note change, so the page changed; that the Quantity column stays the same is a value judgement
 5 missed the total changes; that it went negative is a value

@@ -14,8 +14,8 @@
 # judgement: assay reports an act and a measurement, and whether that
 # measurement is this bug showing itself is what a person has to decide.
 
-1 missed the page recalculates on change, which typing never fires; only 25 and empty are typed, never 1
-2 missed clearing the field never fires change, so NaN is never written
-3 missed no quantity is ever shown: the page recalculates on change, which typing never fires
-4 missed no quantity is ever shown: the page recalculates on change, which typing never fires
+1 missed only 25 and nothing are typed into Servings, never 1, so the wrong rejection of 1 is never met
+2 missed Servings is a number box, so Chromium turns the NaN written back into an empty field; the field staying empty instead of going back to 4 is a value judgement
+3 missed typing 25 fills in a quantity, so the page changed; showing 25.00 instead of 25 is a value judgement
+4 missed typing 25 fills in one quantity cell, so the page changed; that the other four stay empty is a value judgement
 5 missed no expectation that a table arrives filled

@@ -14,8 +14,8 @@
 # judgement: assay reports an act and a measurement, and whether that
 # measurement is this bug showing itself is what a person has to decide.
 
-1 missed no star is ever picked: the stars are labels over hidden radios, and none reaches the plan
-2 missed no rating is ever submitted, so there is no average to read
-3 missed no rating is ever submitted, so no entry is drawn
-4 missed no Submit ever succeeds, so the box is never refilled
+1 missed the stars are clicked and Submit is pressed, but never in the same check: the comment box and Submit sit in different containers, so assay doesn't treat them as one form
+2 missed no check picks a star and then presses Submit, so no rating is ever recorded and there is no average to read
+3 missed no check picks a star and then presses Submit, so no rating is ever recorded and no entry is drawn
+4 missed no check picks a star and then presses Submit, so no rating is ever recorded and the box is never refilled
 5 found wiring@labels and radio buttons are linked correctly: two labels are both linked to "star4", so one of them was meant for another control, which is left without a label | two labels pointing at star4

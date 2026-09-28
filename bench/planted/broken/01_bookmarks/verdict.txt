@@ -18,4 +18,4 @@
 2 found never-shown@values typed into a list show up in the new row | the row made does not carry the typed URL
 3 found forgot-on-reload@save two, reload, and they are still there | saved under one key and read back under another, so a reload loses the list
 4 found count-off@the count of items matches the list | a number counting the list reads -1 when empty
-5 missed a row is added, which is a change
+5 missed every check that presses Save fills in both fields, so a blank title, or a title with no URL, is never sent
