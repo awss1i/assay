@@ -37,14 +37,17 @@ sys.path.insert(0, str(HERE.parent))
 import linkkey  # noqa: E402
 from machine import machine, timing  # noqa: E402
 
-#: How a set introduces itself, by the marker its headline is written under.
-#: Counts are never typed here; they are filled in from the run.
+#: What a set's block in the front-page README says. Counts are never typed
+#: here; they are filled in from the run.
+RESULTS = ("- **Found:** {caught} of the {planted} added bugs.\n"
+           "- **False alarms:** {noisy} of the {clean} original pages "
+           "flagged.\n"
+           "- **Grouping:** {grouping}.")
+
+#: How a set introduces itself on its own page.
 ABOUT = {
     "planted": {
         "title": "The planted-bug set",
-        "headline": ("**assay found {caught} of the {planted} planted bugs "
-                     "and flagged {noisy} of the {clean} working "
-                     "originals.**"),
         "built": ("One harness and model wrote the programs from "
                   "[`objectives.txt`](objectives.txt). A **different** "
                   "harness and model put the bugs in, from the instruction "
@@ -352,15 +355,12 @@ def about(marker: str) -> Dict[str, str]:
     """How a set introduces itself. Any other set is described plainly."""
     return ABOUT.get(marker, {
         "title": f"The {marker} set",
-        "headline": (f"**On the {marker} set, assay found {{caught}} of the "
-                     f"{{planted}} planted bugs and flagged {{noisy}} of the "
-                     f"{{clean}} working originals.**"),
         "built": ("Built the same way as the planted set, with "
                   "`bench/planted/generate.sh` and `bench/planted/inject.sh`."),
     })
 
 
-def _write_headline(readme: Path, marker: str, **counts: int) -> None:
+def _write_headline(readme: Path, marker: str, **counts: object) -> None:
     """Fill the marked block in the front-page README with this run."""
     if not readme.is_file():
         return
@@ -371,7 +371,7 @@ def _write_headline(readme: Path, marker: str, **counts: int) -> None:
     head, _, rest = text.partition(opened)
     _, _, tail = rest.partition(closed)
     readme.write_text(head + opened + "\n\n"
-                      + about(marker)["headline"].format(**counts)
+                      + RESULTS.format(**counts)
                       + "\n\n" + closed + tail, encoding="utf-8")
 
 
@@ -442,10 +442,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                      excluded)
         _write_headline(REPO / "README.md", args.marker, caught=caught,
                         planted=planted, noisy=noisy, clean=len(clean),
-                        programs=len(broken))
-        linkkey.write_block(REPO / "README.md", f"links-{args.marker}",
-                            f"On the {args.marker} set, "
-                            f"{marks.sentence()}.")
+                        grouping=marks.grouping())
         print(f"written: {root / 'README.md'} and the front-page headline")
     return 1 if noisy else 0
 

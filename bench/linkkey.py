@@ -79,6 +79,12 @@ class Marks:
         self.wrong += [(program, one) for one in sorted(links - want)]
         self.missed += [(program, one) for one in sorted(want - links)]
 
+    def grouping(self) -> str:
+        """The front-page line: how many links the key agrees with."""
+        return (f"{self.right} of the {self.drawn} links assay drew between "
+                f"findings match the hand-written answer key, and "
+                f"{len(self.missed)} that the key expects are missing")
+
     def sentence(self) -> str:
         """What the links came to, in words."""
         return (f"assay drew {self.drawn} links between findings. "

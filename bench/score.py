@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import statistics
 import sys
 import time
 from dataclasses import dataclass, field
@@ -458,20 +459,19 @@ def write_suite_readme(suite: Path, cells: List[Cell],
     (suite / "README.md").write_text("\n".join(out) + "\n")
 
 
-#: Where the top-level README keeps its generated numbers, one block each.
+#: Where the top-level README keeps this set's numbers, one block each.
 #:
-#: The sentence goes on its own line between the markers, with blank lines
-#: either side. Written hard against an inline HTML comment, GitHub stops
-#: reading the rest of the line as markdown and the `**` shows up as two
-#: asterisks.
+#: The text goes between the markers with blank lines either side. Written
+#: hard against an inline HTML comment, GitHub stops reading the rest of the
+#: line as markdown and the `**` shows up as two asterisks.
 HEADLINE = {
-    "score2": ("**Out of {total} pages checked by hand, assay found the "
-               "real bug in {found} of the {broken} broken ones and raised "
-               "{wolf} false alarms on the {works} that work.** Of the "
-               "{flagged} pages it flagged, {right} were flagged for their "
-               "actual bug."),
-    "timing": ("Across the {total} benchmark pages, {timing}. Measured on "
-               "{machine}."),
+    "generated": (
+        "- **Found:** the actual bug on {found} of the {broken} broken "
+        "pages. A flag only counts if it's that page's bug.\n"
+        "- **False alarms:** {wolf} of the {works} working pages flagged.\n"
+        "- **Grouping:** {grouping}.\n"
+        "- **Speed:** a median of {median:.0f} seconds a page, and {fast} of "
+        "the {total} finish inside a minute."),
 }
 
 
@@ -524,7 +524,6 @@ def main(argv: Optional[List[str]] = None) -> int:
     broken = sum(len(c.broken) for c in cells)
     found = broken - sum(len(c.missed) for c in cells)
     wolf = sum(len(c.cried_wolf) for c in cells)
-    flagged = [r for r in every if r.said == "flagged"]
     print(f"\nassay found {found} of {broken} defects; {wolf} false alarms "
           f"across {works} working programs; "
           f"{sum(len(c.other_flags) for c in cells)} flag(s) on broken "
@@ -569,13 +568,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         for cell in cells:
             write_cell_results(cell)
         write_suite_readme(args.suite, cells, measured_on)
+        seconds = [r.seconds for r in every]
         _write_headline(args.suite.parent / "README.md", total=len(every),
                         found=found, broken=broken, wolf=wolf, works=works,
-                        right=sum(1 for r in flagged if r.found),
-                        flagged=len(flagged), machine=measured_on,
-                        timing=timing([r.seconds for r in every]))
-        linkkey.write_block(args.suite.parent / "README.md", "links-generated",
-                            f"On the generated set, {marks.sentence()}.")
+                        grouping=marks.grouping(),
+                        median=statistics.median(seconds),
+                        fast=sum(1 for s in seconds if s < 60))
         print(f"written: {args.suite / 'README.md'} and each cell's results.md")
     return 0 if wolf == 0 else 1
 
