@@ -115,45 +115,60 @@ unless you ask.
 
 ## Benchmarks
 
-**Generated pages:** 225 pages written by AI coding tools, each tested by hand
-first; 20 are broken. A broken page only counts as found when assay flags its
-actual bug.
+assay is scored on two sets of pages. Both are in this repository, every
+number below is written by the scoring script rather than typed by hand, and
+neither script needs an API key or network.
 
-<!-- score2 -->
+### Pages written by AI
 
-**Out of 225 pages checked by hand, assay found the real bug in 15 of the 20 broken ones and raised 0 false alarms on the 205 that work.** Of the 15 pages it flagged, 15 were flagged for their actual bug.
+225 small web apps that an AI model wrote from 75 prompts (a to-do list, a
+paint program, a seat map, and so on), three times each: through two coding
+tools and on its own. A person opened and tried every one first: 20 are
+broken and 205 work.
 
-<!-- /score2 -->
+<!-- generated -->
 
-**Planted bugs:** 10 working pages, and a copy of each with 5 bugs added by
-another model. assay's rules were developed against this set, so this number
-is in-sample.
+- **Found:** the actual bug on 15 of the 20 broken pages. A flag only counts if it's that page's bug.
+- **False alarms:** 0 of the 205 working pages flagged.
+- **Grouping:** 51 of the 51 links assay drew between findings match the hand-written answer key, and 0 that the key expects are missing.
+- **Speed:** a median of 14 seconds a page, and 221 of the 225 finish inside a minute.
+
+<!-- /generated -->
+
+Run it: `python bench/score.py` (about 75 minutes).
+**[Every page and result →](https://github.com/awss1i/assay/blob/main/bench/README.md)**
+
+### Pages with bugs added on purpose
+
+10 working apps, plus a copy of each where a different AI model added 5 bugs
+and wrote down what they were.
 
 <!-- planted -->
 
-**assay found 12 of the 50 planted bugs and flagged 0 of the 10 working originals.**
+- **Found:** 12 of the 50 added bugs.
+- **False alarms:** 0 of the 10 original pages flagged.
+- **Grouping:** 10 of the 10 links assay drew between findings match the hand-written answer key, and 0 that the key expects are missing.
 
 <!-- /planted -->
 
-When assay groups a finding with an earlier one, or notes that the page
-crashed while loading, that link is checked against a hand-written answer key
-of which findings belong together:
+About half the bugs it misses make a page show a wrong value, like a total
+that's off by one or a swatch that doesn't match its sliders. assay can't
+judge a value without knowing what the page is for, which is what acceptance
+criteria are for. Most of the rest only show up with an input or a step it
+didn't try.
 
-<!-- links-generated -->
+Run it: `python bench/planted/score.py` (about 8 minutes).
+**[Every bug and result →](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)**
 
-On the generated set, assay drew 51 links between findings. 51 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
+### How grouping is checked
 
-<!-- /links-generated -->
-
-<!-- links-planted -->
-
-On the planted set, assay drew 10 links between findings. 10 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
-
-<!-- /links-planted -->
-
-Details: **[generated set →](https://github.com/awss1i/assay/blob/main/bench/README.md)**,
-**[planted set →](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)**.
-Reproduce with `python bench/score.py` and `python bench/planted/score.py`.
+A link is a *same finding as C003* line, or a note that the page crashed
+while loading. The answer key,
+[`bench/links.txt`](https://github.com/awss1i/assay/blob/main/bench/links.txt),
+was written by hand from what each failure actually is: which failures on a
+page are the same bug, and which pages have unrelated failures that must not
+be grouped. Both scripts check every link assay draws against it, and refuse
+to write their results if one is wrong.
 
 ## How It Works
 
@@ -203,13 +218,8 @@ running it. assay runs it, with nothing prepared in advance.
   at a source tree and it tells you what to run first.
 - **A finished game can look broken.** A game that has ended with no way to
   restart stops responding, and that can be reported as nothing responding.
-- **Speed.** Most pages take a few seconds to a minute.
-
-<!-- timing -->
-
-Across the 225 benchmark pages, the median is 14 seconds, 221 of 225 finish inside a minute, and the slowest took 3.9 minutes. Measured on AMD Ryzen 7 255 w/ Radeon 780M Graphics, Linux 7.2.6-200.fc44.x86_64, Python 3.14.7, Chromium 153.0.8010.12, Playwright 1.63.0.
-
-<!-- /timing -->
+- **Speed.** Most pages take a few seconds to a minute. The benchmark page
+  has every page's time and the machine they were measured on.
 
 ## Contributing
 
