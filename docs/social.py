@@ -55,9 +55,9 @@ def page(lines: list[str]) -> str:
          box-shadow:0 24px 60px rgba(0,0,0,.45)}}
   .dots{{padding:16px 20px 0;display:flex;gap:10px}}
   .dots i{{width:12px;height:12px;border-radius:50%}}
-  pre{{margin:16px 0 0;padding:0 22px;font-family:{MONO};font-size:15px;
-       line-height:18px;color:{TEXT};white-space:pre-wrap;overflow-wrap:anywhere;
-       max-height:486px;overflow:hidden}}
+  pre{{margin:16px 0 0;padding:0 22px;font-family:{MONO};font-size:17px;
+       line-height:21px;color:{TEXT};white-space:pre-wrap;overflow-wrap:anywhere;
+       max-height:483px;overflow:hidden}}
   .side{{position:absolute;left:876px;right:48px;top:60px;font-family:{SANS};color:{BRIGHT}}}
   .side h1{{margin:0;font-size:64px;line-height:68px;font-weight:700;letter-spacing:-.02em}}
   .side p{{margin:14px 0 0;font-size:26px;line-height:35px;color:{TEXT}}}

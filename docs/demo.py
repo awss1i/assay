@@ -29,7 +29,7 @@ W, H = 1920, 1080
 #: Font size, line height, and how many rows the window shows.
 SIZE, LEAD, ROWS = 46, 60, 15
 #: Frames at `FPS`: the command alone, each printed row, the finished screen.
-FPS, HOLD, STEP, END = 30, 15, 2, 75
+FPS, HOLD, STEP, END = 30, 30, 4, 75
 
 
 def spans(line: str) -> str:
