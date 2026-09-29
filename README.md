@@ -29,7 +29,15 @@ them, and reports what went wrong.
 ## Install
 
 ```bash
-pip install assay-ui        # Python 3.10+; or: uv tool install assay-ui, pipx install assay-ui
+pip install assay-ui           # Python 3.10+
+```
+
+```bash
+uv tool install assay-ui       # no Python 3.10+? uv downloads one
+```
+
+```bash
+pipx install assay-ui          # its own environment, for when pip says "externally managed"
 ```
 
 If `pip` isn't found, use `python3 -m pip install assay-ui`. The first run
