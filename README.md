@@ -23,9 +23,6 @@ them, and reports what went wrong.
 - **Works with coding agents.** A skill tells the agent in fifteen harnesses
   to check each page it writes, and a plugin for Claude Code and the DeepSeek
   Harness does it automatically after every turn.
-- **Explains each failure in plain words.** For example: *pressing this twice
-  from the same starting point: the first press changed nothing and the
-  second did, so it reacts one press late*.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
 
