@@ -31,11 +31,18 @@ tells it to. opencode and the harnesses under
 only, and the DeepSeek Harness uses the hook only, through its Claude Code
 bridge.
 
-All fifteen need `assay` on your `PATH` first, which needs Python 3.10 or
-newer:
+All fifteen need `assay` on your `PATH` first:
 
 ```bash
-pip install assay-ui        # or: uv tool install assay-ui, pipx install assay-ui
+pip install assay-ui           # Python 3.10+
+```
+
+```bash
+uv tool install assay-ui       # no Python 3.10+? uv downloads one
+```
+
+```bash
+pipx install assay-ui          # its own environment, for when pip says "externally managed"
 ```
 
 ## Claude Code
