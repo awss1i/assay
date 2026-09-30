@@ -26,6 +26,21 @@ them, and reports what went wrong.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
 
+## Contents
+
+- [Install](#install)
+- [Use](#use)
+  - [With coding agents](#with-coding-agents)
+- [Benchmarks](#benchmarks)
+  - [Pages written by AI](#pages-written-by-ai)
+  - [Pages with bugs added on purpose](#pages-with-bugs-added-on-purpose)
+  - [How grouping is checked](#how-grouping-is-checked)
+- [How It Works](#how-it-works)
+- [Why](#why)
+- [Limits](#limits)
+- [Contributing](#contributing)
+- [Licence](#licence)
+
 ## Install
 
 ```bash

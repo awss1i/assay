@@ -3,6 +3,12 @@
 Two ways to have your agent check a page it just wrote.
 **[Install steps for fifteen harnesses →](../../docs/harnesses.md)**
 
+## Contents
+
+- [The Skill](#the-skill)
+- [The Plugin](#the-plugin)
+- [Reporting, Not Fixing](#reporting-not-fixing)
+
 ## The Skill
 
 The skill works in all fifteen supported harnesses.
