@@ -26,22 +26,6 @@ them, and reports what went wrong.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
 
-## Contents
-
-- [Install](#install)
-  - [For coding agents](#for-coding-agents)
-- [Use](#use)
-  - [With coding agents](#with-coding-agents)
-- [Benchmarks](#benchmarks)
-  - [Pages written by AI](#pages-written-by-ai)
-  - [Pages with bugs added on purpose](#pages-with-bugs-added-on-purpose)
-  - [How grouping is checked](#how-grouping-is-checked)
-- [How It Works](#how-it-works)
-- [Why](#why)
-- [Limits](#limits)
-- [Contributing](#contributing)
-- [Licence](#licence)
-
 ## Install
 
 ```bash
@@ -76,13 +60,8 @@ to add the skill or plugin in any of the fifteen supported harnesses.
 
 ```console
 assay ./my-app                    # check index.html in this folder
-assay ./my-app/todo.html          # check a specific page
-assay ./my-app -e app.html        # or name the page inside a folder
-
 assay ./my-app --report out.html  # also write an HTML report with screenshots
-assay ./my-app --json             # print the full run as JSON
 assay ./my-app --one-line         # short summary, for scripts and agents
-assay ./my-app --surface          # list the controls it found, then stop
 ```
 
 This repository includes a drawing program whose Undo is broken:
@@ -91,29 +70,14 @@ This repository includes a drawing program whose Undo is broken:
 $ assay bench/programs/dsh/gpt-oss-120b/37_draw2
 24 case(s) planned, 24 carried out, 23 passed, 1 failed
 
-C015 [ok] draw on canvas, then draw somewhere else on it
 C016 [FAILED] draw on canvas twice, then press Undo twice
     → pressing this twice from the same starting point, the first press changed nothing and the second did, so it reacts one press late
-C017 [ok] draw on canvas twice, then press Redo twice
 ```
 
-Nothing is written to disk unless you ask. The exit code is non-zero if
-anything failed. `--report` shows the page before and after every check:
+The exit code is non-zero if anything failed, and nothing is written to disk
+unless you ask.
 
-<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/report.png" alt="One check from an assay report on a
-tag filter, where the tag was clicked twice, it went back to how it looked,
-and the list stayed filtered. Shown with the actions, the reason, and
-screenshots of the page before and after, twelve items and then one.">
-
-From Python:
-
-```python
-from assay import check
-
-report = check("./my-app")
-for result in report.failing:
-    print(result.case.what, "->", result.detail)
-```
+**[The full flags, the Python API and the HTML report →](https://github.com/awss1i/assay/blob/main/docs/usage.md)**
 
 ### With coding agents
 
@@ -141,60 +105,26 @@ unless you ask.
 
 ## Benchmarks
 
-assay is scored on two sets of pages. Both are in this repository, every
-number below is written by the scoring script rather than typed by hand, and
-neither script needs an API key or network.
+Scored on two sets of pages in this repository. Every number here is written
+by the scoring script, never typed by hand.
 
-### Pages written by AI
-
-225 small web apps that an AI model wrote from 75 prompts (a to-do list, a
-paint program, a seat map, and so on), three times each: through two coding
-tools and on its own. A person opened and tried every one first: 20 are
-broken and 205 work.
+**Pages written by AI.** 225 small web apps an AI wrote from 75 prompts, three
+times each, which a person then opened and tried.
 
 <!-- generated -->
 
-- **Found:** the actual bug on 15 of the 20 broken pages. A flag only counts if it's that page's bug.
-- **False alarms:** 0 of the 205 working pages flagged.
-- **Grouping:** 51 of the 51 links assay drew between findings match the hand-written answer key, and 0 that the key expects are missing.
-- **Speed:** a median of 14 seconds a page, and 221 of the 225 finish inside a minute.
+Found the real bug on 15 of the 20 broken pages, with 0 of the 205 working pages flagged. [Every page and result](https://github.com/awss1i/assay/blob/main/bench/README.md).
 
 <!-- /generated -->
 
-Run it: `python bench/score.py` (about 75 minutes).
-**[Every page and result →](https://github.com/awss1i/assay/blob/main/bench/README.md)**
-
-### Pages with bugs added on purpose
-
-10 working apps, plus a copy of each where a different AI model added 5 bugs
-and wrote down what they were.
+**Pages with bugs added on purpose.** 10 working apps, each copied with 5 bugs
+added and written down.
 
 <!-- planted -->
 
-- **Found:** 12 of the 50 added bugs.
-- **False alarms:** 0 of the 10 original pages flagged.
-- **Grouping:** 10 of the 10 links assay drew between findings match the hand-written answer key, and 0 that the key expects are missing.
+Found 12 of the 50 added bugs, with 0 of the 10 original pages flagged. [Every bug and result](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).
 
 <!-- /planted -->
-
-About half the bugs it misses make a page show a wrong value, like a total
-that's off by one or a swatch that doesn't match its sliders. assay can't
-judge a value without knowing what the page is for, which is what acceptance
-criteria are for. Most of the rest only show up with an input or a step it
-didn't try.
-
-Run it: `python bench/planted/score.py` (about 8 minutes).
-**[Every bug and result →](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)**
-
-### How grouping is checked
-
-A link is a *same finding as C003* line, or a note that the page crashed
-while loading. The answer key,
-[`bench/links.txt`](https://github.com/awss1i/assay/blob/main/bench/links.txt),
-was written by hand from what each failure actually is: which failures on a
-page are the same bug, and which pages have unrelated failures that must not
-be grouped. Both scripts check every link assay draws against it, and refuse
-to write their results if one is wrong.
 
 ## How It Works
 

@@ -39,10 +39,9 @@ from machine import machine, timing  # noqa: E402
 
 #: What a set's block in the front-page README says. Counts are never typed
 #: here. They are filled in from the run.
-RESULTS = ("- **Found:** {caught} of the {planted} added bugs.\n"
-           "- **False alarms:** {noisy} of the {clean} original pages "
-           "flagged.\n"
-           "- **Grouping:** {grouping}.")
+RESULTS = ("Found {caught} of the {planted} added bugs, with {noisy} of the "
+           "{clean} original pages flagged. "
+           "[Every bug and result](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).")
 
 #: How a set introduces itself on its own page.
 ABOUT = {

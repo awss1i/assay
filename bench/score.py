@@ -466,12 +466,9 @@ def write_suite_readme(suite: Path, cells: List[Cell],
 #: line as markdown and the `**` shows up as two asterisks.
 HEADLINE = {
     "generated": (
-        "- **Found:** the actual bug on {found} of the {broken} broken "
-        "pages. A flag only counts if it's that page's bug.\n"
-        "- **False alarms:** {wolf} of the {works} working pages flagged.\n"
-        "- **Grouping:** {grouping}.\n"
-        "- **Speed:** a median of {median:.0f} seconds a page, and {fast} of "
-        "the {total} finish inside a minute."),
+        "Found the real bug on {found} of the {broken} broken pages, with "
+        "{wolf} of the {works} working pages flagged. "
+        "[Every page and result](https://github.com/awss1i/assay/blob/main/bench/README.md)."),
 }
 
 
