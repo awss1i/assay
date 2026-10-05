@@ -76,7 +76,7 @@ def test_a_case_that_never_ran_is_never_silent(tmp_path: Path) -> None:
     run = run_of(
         Result(case=case(1, "press Add"), outcome=PASSED),
         Result(case=case(2, "press Delete"), outcome=UNKNOWN,
-               detail="could not be carried out: timeout"))
+               detail="could not be carried out, timeout"))
 
     assert one_line(run, tmp_path, "index.html") == (
         f"assay: checked {tmp_path.name}/index.html, 2 checks, "

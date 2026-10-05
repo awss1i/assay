@@ -210,4 +210,4 @@ def test_a_repeat_names_the_first_of_its_group_by_its_words() -> None:
     said = one_line(run, Path("tags"), "index.html").splitlines()
 
     assert said[1] == "  - click blue twice: it stayed lit"
-    assert said[2] == "  - click green twice (same finding as: click blue twice)"
+    assert said[2] == "  - click green twice (same finding as click blue twice)"

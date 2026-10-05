@@ -16,6 +16,6 @@
 
 1 missed no expectation of which screen a page opens on
 2 found computed@no NaN, undefined or [object Object] on the page: NaN | NaN% in the visible text
-3 missed Spring's bar is left blank beside three that read NaN%; nothing expects every bar to carry a figure
+3 missed Spring's bar is left blank beside three that read NaN%, and nothing expects every bar to carry a figure
 4 found wiring@labels and radio buttons are linked correctly: two radio buttons in the "option" group both have the value "2", so the form cannot tell which of them was picked | two choices carrying value 2
 5 missed no vote is ever cast, so no radio is ever left checked

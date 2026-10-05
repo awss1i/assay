@@ -29,13 +29,13 @@ or, when something is wrong:
 
 ```
 assay: checked notes/index.html, 12 checks, 4 flagged:
-  - press Clear all: the page threw an error and stopped running: Cannot set properties of null (setting 'innerHTML')
-  - press Clear all twice (same finding as: press Clear all)
-  - press Add, then Clear all (same finding as: press Clear all)
-  - press Clear all, then Add (same finding as: press Clear all)
+  - press Clear all: the page threw an error and stopped running, Cannot set properties of null (setting 'innerHTML')
+  - press Clear all twice (same finding as press Clear all)
+  - press Add, then Clear all (same finding as press Clear all)
+  - press Clear all, then Add (same finding as press Clear all)
 ```
 
-Those four lines are one bug: the repeats name the first finding instead of
+Those four lines are one bug. The repeats name the first finding instead of
 repeating its message. The agent copies assay's output rather than
 summarising it, so the numbers and wording stay exact. With the skill alone,
 the agent decides when to run the check.
@@ -44,7 +44,7 @@ the agent decides when to run the check.
 
 The plugin adds a `Stop` hook, which runs the check at the end of every turn
 that changed a page. In Claude Code it installs the skill and the hook
-together; the DeepSeek Harness uses the hook on its own, through its Claude
+together. The DeepSeek Harness uses the hook on its own, through its Claude
 Code bridge.
 
 - **Which pages it checks.** A change to any web file marks the page in the
@@ -57,7 +57,7 @@ Code bridge.
   mistaken for assay not running. A turn that changed no page reports
   nothing.
 - **It keeps the turn open** so you see the result, and never does this twice
-  in a row: it checks the harness's `stop_hook_active` flag and writes a
+  in a row. It checks the harness's `stop_hook_active` flag and writes a
   timestamp (in the harness's scratch folder, else `.git/`, else a
   `.assay-last-run` file). If it can't write the timestamp, it reports
   without keeping the turn open.
@@ -66,6 +66,6 @@ Code bridge.
 
 The agent shows you what assay found and doesn't change code because of it
 unless you ask. assay doesn't know what the page is for, so a finding is a
-place to look, not a confirmed bug: a control can correctly do nothing in the
+place to look, not a confirmed bug. A control can correctly do nothing in the
 state it was pressed in, and a value can be limited on purpose. Ask the agent
 to fix something and it will.

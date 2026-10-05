@@ -23,7 +23,7 @@ An issue reports that something is wrong. A pull request changes something.
 
 - **A bug** is an issue: a crash, a hang, a wrong count, or a control assay
   should have used and didn't.
-- **A false alarm** is an issue: a working page flagged as broken.
+- **A false alarm** is an issue, a working page flagged as broken.
 - **Everything else is a pull request**: a fix, a new rule, a better
   benchmark number, a feature, support for another harness, or a docs
   improvement.
@@ -72,7 +72,7 @@ Fork, branch, and open a pull request. The template asks what kind it is:
 | Plugin or harness support | See [Adding a Harness](#adding-a-harness). |
 | Docs | Nothing extra. |
 
-One change per pull request: send a fix and a refactor separately.
+One change per pull request. Send a fix and a refactor separately.
 
 ## Setup
 
@@ -84,7 +84,7 @@ python -m playwright install chromium
 
 Use the editable install. If `assay-ui` from PyPI is installed in the same
 Python, it's imported instead of your clone and the tests run against the
-release. Check with `python -c "import assay; print(assay.__file__)"`: it
+release. Check with `python -c "import assay; print(assay.__file__)"`. It
 should point into this folder.
 
 ## How the Code Is Laid Out
@@ -92,7 +92,7 @@ should point into this folder.
 **`src/assay/`**, the tool:
 
 - `browser.py` serves the folder, opens the page, waits for it to load, and
-  reads pixels, text, fields and styles. It only measures; it never decides
+  reads pixels, text, fields and styles. It only measures, it never decides
   whether something failed.
 - `surface.py` turns the rendered page into a list of controls and builds the
   plan of checks.
@@ -127,19 +127,19 @@ scripts that draw the README's pictures from real runs.
 ## Changing a Rule
 
 A rule is anything that decides whether a check failed. Most live in `judge`
-in `run.py`; the checks that exercise them are built in `surface.py`.
+in `run.py`, and the checks that exercise them are built in `surface.py`.
 
 1. **Write two tests:** a page it should flag and a page it must not. Pure
    comparisons go in `tests/test_judge.py`, which needs no browser. Anything
    needing a real page goes in `tests/test_end_to_end.py`.
 2. **Run both benchmarks** and put the before and after numbers in the pull
-   request. The tests can't see a false alarm on a working program; the
+   request. The tests can't see a false alarm on a working program, but the
    benchmarks can.
 3. **A false alarm costs more than a miss.** A rule that catches three more
    bugs but flags one working page is not an improvement.
 4. **Say what happened, in plain words.** A message says what assay did and
    what the page did in response, like *pressing this twice from the same
-   starting point: the first press changed nothing and the second did, so it
+   starting point, the first press changed nothing and the second did, so it
    reacts one press late*. It never gives a bare verdict like *this page is
    broken*, and it should make sense to someone who hasn't read the rule.
 5. **Document it.** Add the rule to [docs/how-it-works.md](docs/how-it-works.md)

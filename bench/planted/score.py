@@ -38,7 +38,7 @@ import linkkey  # noqa: E402
 from machine import machine, timing  # noqa: E402
 
 #: What a set's block in the front-page README says. Counts are never typed
-#: here; they are filled in from the run.
+#: here. They are filled in from the run.
 RESULTS = ("- **Found:** {caught} of the {planted} added bugs.\n"
            "- **False alarms:** {noisy} of the {clean} original pages "
            "flagged.\n"
@@ -207,7 +207,7 @@ def run(folder: Path, verdicts: bool) -> Program:
         got.bugs, got.other = read_verdict(folder)
         numbers = [b.number for b in got.bugs]
         expected = planted_count(folder)
-        # No verdict yet is a set seen for the first time: every flag is
+        # No verdict yet is a set seen for the first time, and every flag is
         # printed as unjudged and nothing is written. A verdict that exists
         # has to cover every planted bug.
         if not (folder / "verdict.txt").is_file():
@@ -327,7 +327,7 @@ def write_readme(root: Path, marker: str, broken: List[Program],
                 "| bug | assay | which finding |", "|---|---|---|"]
         for b in p.bugs:
             if b.caught:
-                said = "; ".join(
+                said = ". ".join(
                     f"{p.failing.get(f.key, '?')} `{f.key}`: {f.note}"
                     for f in b.found)
                 out.append(f"| {b.number} | found | {said} |")
@@ -403,8 +403,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     planted = sum(len(p.bugs) for p in broken)
     caught = sum(p.caught for p in broken)
     noisy = sum(1 for p in clean if p.flagged)
-    print(f"\nassay found {caught} of {planted} planted bugs; "
-          f"{noisy} of {len(clean)} clean programs flagged; "
+    print(f"\nassay found {caught} of {planted} planted bugs, "
+          f"{noisy} of {len(clean)} clean programs flagged, "
           f"{time.time() - began:.0f}s in all")
 
     marks = linkkey.Marks()

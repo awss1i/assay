@@ -61,7 +61,7 @@ $ assay ./my-vite-app
 assay: index.html loads /src/main.jsx, which a browser cannot run. This is a source tree, not a built one.
   Build it first, in your own shell, then check the output:
     npm install && npm run build && assay my-vite-app/dist
-  assay will not run that for you: installing dependencies executes their setup scripts, and this is a tool for checking code nobody has read.
+  assay will not run that for you, because installing dependencies executes their setup scripts, and this is a tool for checking code nobody has read.
 ```
 
 ### Waiting for the page to load
@@ -128,7 +128,7 @@ already cleared by the time anything else could read them.
 An `alert` counts as the page responding. An alert saying *Length must be
 mm:ss* is a form correctly refusing bad input, even though nothing else on the
 page changed. A `prompt` or `confirm` is the page asking a question, so it
-doesn't count as a response by itself; what the page does with the answer
+doesn't count as a response by itself. What the page does with the answer
 does. assay answers prompts with a sensible value and accepts confirms rather
 than dismissing them, because dismissing would cancel the feature being
 tested.
@@ -218,7 +218,7 @@ assay reports it with the browser's own error message:
 
 ```
 C001 [FAILED] open the page and let it settle
-    → the page threw an error and stopped running: Cannot read properties of null (reading 'addEventListener')
+    → the page threw an error and stopped running, Cannot read properties of null (reading 'addEventListener')
 ```
 
 Every check that ran into the same error reports it, and the repeats are
@@ -269,7 +269,7 @@ value for their type. After typing, assay leaves the field, so pages that
 react to the `change` event see it.
 
 For these checks, assay only reports an error the page threw. Read-only
-fields are never typed into, because they're outputs: a password generator
+fields are never typed into, because they're outputs. A password generator
 writes its answer into one.
 
 ### Filling in a form and submitting it
@@ -303,7 +303,7 @@ assay doesn't report this when:
   like a todo list that adds on Enter, gets no submit check at all.
 - **The field is a setting on a canvas page.** On a page with a canvas, a
   number or date field is usually a setting like brush size, so the page
-  isn't required to respond; the canvas checks judge it instead.
+  isn't required to respond, and the canvas checks judge it instead.
 - **The page answered with an alert,** such as a form refusing bad input.
 - **The button is disabled.**
 - **The page has stopped by itself,** like a game that has ended, unless the
@@ -325,7 +325,7 @@ assay reports:
 
 ```
 C014 [FAILED] press Remove, with two saved
-    → this removed a row, but not the one it belongs to: 'Another item https://example.com/other' is still there
+    → this removed a row, but not the one it belongs to, and 'Another item https://example.com/other' is still there
 ```
 
 Items with identical text are skipped, since they can't show which one went.
@@ -336,11 +336,11 @@ it reports:
 
 ```
 F001 [FAILED] values typed into a list show up in the new row
-    → 'https://example.com/page' was typed in and accepted, but the new row in the list does not show it; first seen at C009
+    → 'https://example.com/page' was typed in and accepted, but the new row in the list does not show it, first seen at C009
 ```
 
-This is only asked of lists: anything whose count changed during the run,
-including the rows of a plain table. It's checked with two items in the
+This is only asked of a list, meaning anything whose count changed during the
+run, including the rows of a plain table. It's checked with two items in the
 list, because with one item a running total equals the amount typed and a
 row showing the total would look correct. assay doesn't report it when:
 
@@ -368,7 +368,7 @@ F002 [FAILED] the count of items matches the list
 
 It needs at least three readings at two or more list sizes, and it only uses
 whole numbers, since a decimal is a measurement or an amount of money, not a
-count. Being off by a fixed amount isn't reported by itself: a basket that
+count. Being off by a fixed amount isn't reported by itself. A basket that
 adds a flat delivery fee moves in step with its contents and is correct at
 every size. Only a count that isn't zero on an empty list is reported.
 
@@ -415,11 +415,11 @@ reacting one click late, and assay reports:
 
 ```
 C011 [FAILED] click Mon 9:00 twice
-    → clicking this twice: the first click did not change it and the second did, so it reacts one press late
+    → clicking this twice, the first click did not change it and the second did, so it reacts one press late
 ```
 
 This caught a scheduler whose booked styling was inverted. The element must
-have changed on the second click itself, not just the page around it: a key
+have changed on the second click itself, not just the page around it. A key
 on an on-screen keyboard never changes its own appearance (each press types a
 letter onto a board elsewhere), and reading the board changing as the key
 changing flagged every key as late.
@@ -440,7 +440,7 @@ click, which is the page deliberately choosing a tidy state, so it isn't
 reported. An element that looks the same after both clicks, like a thumbnail
 that opens a lightbox, isn't reported either.
 
-These clicks are otherwise judged like button presses: only errors are
+These clicks are otherwise judged like button presses. Only errors are
 reported.
 
 ### Buttons that come in opposite pairs
@@ -449,7 +449,7 @@ A lone button is allowed to do nothing visible. What a page can't explain is
 offering two buttons that reverse each other, where one changes the page
 every time and the other never does.
 
-assay finds pairs by their labels: two labels that differ by exactly one
+assay finds pairs by their labels. Two labels that differ by exactly one
 word, where that word is an opposite (next and previous, forward and back,
 undo and redo, up and down, increase and decrease, more and less, plus and
 minus, add and remove or delete, expand and collapse). assay also presses
@@ -484,7 +484,7 @@ C019 [FAILED] draw on canvas, then draw somewhere else on it
 ```
 
 The second line is tried in several places before this is reported. A canvas
-that ignored the first line isn't asked at all: a chart doesn't draw when you
+that ignored the first line isn't asked at all. A chart doesn't draw when you
 drag on it, and it exempts itself by not responding. This caught a painter
 that draws one line and silently ignores every line after it, which nothing
 else in the plan could see.
@@ -510,10 +510,10 @@ colour, assay reports it for the whole page:
 
 ```
 C000 [FAILED] something appears on the canvas
-    → nothing ever appeared on this canvas: 12 checks used the page and the canvas stayed one flat colour, so whatever the program draws is not reaching the screen
+    → nothing ever appeared on this canvas, 12 checks used the page and the canvas stayed one flat colour, so whatever the program draws is not reaching the screen
 ```
 
-This caught three WebGL cubes whose transform clipped every vertex away: the
+This caught three WebGL cubes whose transform clipped every vertex away. The
 canvas measured as completely painted, in one colour, with nothing on it.
 It's only reported when at least two checks used the page, no other check
 failed, and every control on the page was reached, since a control assay
@@ -528,11 +528,11 @@ press behind:
 
 ```
 C016 [FAILED] draw on canvas twice, then press Undo twice
-    → pressing this twice from the same starting point: the first press changed nothing and the second did, so it reacts one press late
+    → pressing this twice from the same starting point, the first press changed nothing and the second did, so it reacts one press late
 ```
 
 This is what an undo history that saves the state after each change, instead
-of before it, looks like: the first Undo restores the picture that is already
+of before it, looks like. The first Undo restores the picture that is already
 on screen. It takes two lines, because with only one line on the history both
 presses do nothing and the fault is invisible. It's asked after drawing
 rather than on a freshly loaded page, because a control with nothing to act
@@ -559,7 +559,7 @@ can't be credited to anything assay did, so those checks don't require a
 change.
 
 A program that has stopped by itself, like a snake game that hit a wall,
-isn't reported for ignoring what was pressed afterwards: that's the game
+isn't reported for ignoring what was pressed afterwards. That's the game
 working. The exception is a page that says what to press. If it shows
 *Press Space to restart* and pressing Space changes nothing, the page has
 broken its own instruction, and assay reports:
@@ -601,7 +601,7 @@ to a different colour, and gives every file input a small file of the type
 it accepts.
 
 For these checks, assay only reports an error the page threw, for the same
-reason as buttons: it can't know what a slider or a checkbox is supposed to
+reason as buttons. It can't know what a slider or a checkbox is supposed to
 change. They still count as using the page, which the
 [nothing responds](#a-page-where-nothing-responds) check needs.
 
@@ -615,7 +615,7 @@ reports:
 
 ```
 F001 [FAILED] the panel a selected tab or open section controls is shown
-    → "Tab 2" is marked selected and controls the panel "panel-1", but that panel is not shown; first seen at C004
+    → "Tab 2" is marked selected and controls the panel "panel-1", but that panel is not shown, first seen at C004
 ```
 
 A panel that is empty still counts as shown, since it has a box on the page.
@@ -632,20 +632,20 @@ page:
 
   ```
   F002 [FAILED] labels and radio buttons are linked correctly
-      → two radio buttons in the "option" group both have the value "2", so the form cannot tell which of them was picked; first seen at C001
+      → two radio buttons in the "option" group both have the value "2", so the form cannot tell which of them was picked, first seen at C001
   ```
 
 - A label whose `for` names an id that doesn't exist:
 
   ```
-      → the label "Email" is linked to "emial", but nothing on the page has that id; first seen at C001
+      → the label "Email" is linked to "emial", but nothing on the page has that id, first seen at C001
   ```
 
 - Two labels linked to the same control, which leaves the control the second
   one was meant for without a label:
 
   ```
-      → two labels are both linked to "star4", so one of them was meant for another control, which is left without a label; first seen at C001
+      → two labels are both linked to "star4", so one of them was meant for another control, which is left without a label, first seen at C001
   ```
 
 ### Fields whose placeholder fails their own pattern
@@ -667,13 +667,13 @@ instruction (*Enter five digits*) rather than an example value.
 ### NaN, undefined and [object Object] on the page
 
 During every check, assay looks for `NaN`, `undefined` and `[object Object]`
-in the visible text and in every field. No page shows these on purpose: they
+in the visible text and in every field. No page shows these on purpose. They
 mean a value was used before it was set, or calculated from something that
 isn't a number. assay reports:
 
 ```
-F001 [FAILED] no NaN, undefined or [object Object] on the page: NaN
-    → the page shows `NaN` where a value should be: "Total: NaN". This usually means a value was used before it was set, or calculated from something that is not a number; first seen at C008
+F001 [FAILED] no NaN, undefined or [object Object] on the page
+    → the page shows `NaN` where a value should be, "Total: NaN". This usually means a value was used before it was set, or calculated from something that is not a number, first seen at C008
 ```
 
 It isn't reported from a check in which assay itself typed something that
@@ -690,7 +690,7 @@ used and nothing on the page ever changed, it reports:
 
 ```
 C000 [FAILED] something on the page responds when used
-    → nothing on the page changed after any control was used: 14 checks used what the page offers and none of them changed it, so the controls do not seem to be connected to any code
+    → nothing on the page changed after any control was used, 14 checks used what the page offers and none of them changed it, so the controls do not seem to be connected to any code
 ```
 
 This caught a kanban board whose three Add buttons were wired to nothing.

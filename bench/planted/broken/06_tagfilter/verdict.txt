@@ -25,4 +25,4 @@
 4 found went-back@click round twice | the same, on another tag
 4 found went-back@click small twice | the same, on another tag
 4 found went-back@click square twice | the same, on another tag
-5 missed the tag text is present; that it is the wrong text is a value
+5 missed the tag text is present, and that it is the wrong text is a value

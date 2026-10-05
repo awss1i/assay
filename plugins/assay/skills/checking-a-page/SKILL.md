@@ -25,7 +25,7 @@ assay <the page you changed> --one-line
 
 Point it at the page itself, such as `todo.html` or `dist/index.html`. A
 folder works too and opens the `index.html` inside it. It needs no key,
-network or configuration. A small page takes seconds; a busy one can take a
+network or configuration. A small page takes seconds, and a busy one can take a
 minute or more.
 
 ## Then print what it printed
@@ -45,8 +45,8 @@ can't tell a clean page from a check that never ran.
 
 **If the command did not run, say so instead, in your own words**, naming the
 page and quoting what the shell actually said. Never describe a check that did
-not happen as one that passed, and never guess at a cause: if the shell printed
-an error, quote it; if you didn't see one, say only that it did not run.
+not happen as one that passed, and never guess at a cause. If the shell printed
+an error, quote it. If you didn't see one, say only that it did not run.
 
 ## Do not act on what it found
 
@@ -54,7 +54,7 @@ an error, quote it; if you didn't see one, say only that it did not run.
 reply.
 
 assay doesn't know what the page is for. It presses what the page offers and
-reports what followed, so a finding is a place to look, not a confirmed bug: a
+reports what followed, so a finding is a place to look, not a confirmed bug. A
 control can correctly do nothing in the state it was pressed in, and a value
 can be limited on purpose. Changing working code because of a finding nobody
 has checked is the mistake to avoid, which is why you report instead of
@@ -67,6 +67,6 @@ If the person you are working with asks you to fix it, then fix it.
 - **It will not build your project.** Point it at built output. Given a source
   tree, it says so and names the command to run. It won't run `npm install`
   for you, because installing dependencies executes their setup scripts.
-- **It checks one page.** It doesn't crawl; run it on each page.
+- **It checks one page.** It doesn't crawl, so run it on each page.
 - **It can't check intent.** A control that runs but does the wrong thing
   usually isn't caught.

@@ -16,7 +16,7 @@
 
 1 missed no expectation of what the days are called
 2 missed no expectation of how many slots a row has
-3 missed the summary names the wrong slot, which is a value judgement; the one pair of neighbouring cells clicked is two header cells, so two cells in one row are never clicked together
+3 missed the summary names the wrong slot, which is a value judgement, and the one pair of neighbouring cells clicked is two header cells, so two cells in one row are never clicked together
 4 found one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(1) > td:nth-child(6) twice | the square clicked is one press behind
 4 found one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(2) > td:nth-child(6) twice | the same, on another square
 4 found one-behind-cell@click #grid > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(5) twice | the same, on another square

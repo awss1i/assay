@@ -1,6 +1,6 @@
 """Which findings in one run are the same finding, and which follow a crash.
 
-A page with one fault can fail a dozen cases: eight tag chips that each stay
+A page with one fault can fail a dozen cases. Eight tag chips that each stay
 lit, eighteen cases that all ran on a page that threw on load. Every one of
 those failures is true and every one is still reported, but a reader handed
 them as twelve separate problems goes looking for twelve. This names the
@@ -11,8 +11,8 @@ Nothing here changes what a case decided. It reads the finished results and
 adds notes to them, and it is deliberately narrow about what it will join:
 
 - **Same finding** means the same rule, the same words once the names in
-  them are set aside, and controls from the same family: selectors that match
-  once their positions are dropped, so the chips of one tag bar group and an
+  them are set aside, and controls from the same family, meaning selectors
+  that match once their positions are dropped, so the chips of one tag bar group and an
   Undo and a Redo never do. A crash groups only with the same message thrown
   from the same place in the code, because two handlers can fail with the
   same message for different reasons.
@@ -35,7 +35,7 @@ _POSITION = re.compile(r":nth-child\(\d+\)")
 #: Both name *where*, not *what*, so two findings differing only in them are
 #: the same finding in two places.
 _QUOTED = re.compile(r"'[^']*'|\"[^\"]*\"")
-_FIRST_SEEN = re.compile(r";?\s*first seen at [CF]\d{3}")
+_FIRST_SEEN = re.compile(r"[;,]?\s*first seen at [CF]\d{3}")
 
 #: Findings about the page as a whole, which a crash on load can explain.
 PAGE_WIDE = ("nothing-responds", "nothing-drawn")
@@ -55,7 +55,7 @@ class Link:
 
 
 def family(selector: str) -> str:
-    """A selector with the positions taken out: which kind of control."""
+    """A selector with the positions taken out, so it names the kind of control."""
     return _POSITION.sub("", selector or "")
 
 
@@ -64,7 +64,7 @@ def _shape(detail: str) -> str:
     return " ".join(_QUOTED.sub("_", _FIRST_SEEN.sub("", detail)).split())
 
 
-#: Controls that are one of many by position rather than by name: the cells
+#: Controls that are one of many by position rather than by name, the cells
 #: of a grid, the rows of a list you drag. Two of these in one family are the
 #: same control in two places whatever each is labelled.
 POSITIONAL = ("cell", "handle", "radio", "checkbox")
@@ -79,7 +79,7 @@ def _who(result, controls: Dict[str, object]) -> Tuple[str, ...]:
     where = getattr(control, "family", "") or family(result.case.control)
     if kind in POSITIONAL:
         return (kind, where)
-    # A named control is only the same as one with the same name: an Undo
+    # A named control is only the same as one with the same name. An Undo
     # and a Redo in one toolbar sit in one family and are two controls.
     return (kind, where, getattr(control, "label", ""))
 
@@ -112,7 +112,7 @@ def attach(results: Sequence,
             r.links.append(Link("same", first.case.id,
                                 f"same finding as {first.case.id}"))
 
-    # Every case that opened the page, which is every case in the plan: the
+    # Every case that opened the page, which is every case in the plan. The
     # findings a run adds at the end carry no acts and opened nothing.
     ran = [r for r in results if not r.case.id.startswith(("F", "C000"))]
     crashed = [r for r in ran if r.crash_at_load]

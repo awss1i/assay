@@ -35,13 +35,13 @@
 27_notes2         works   Add Note stores title and body, Search filters live, and the notes survive a reload
 28_cart2          works   changing a quantity retotals the line and the cart, and the promo code takes ten percent off (126.95 to 114.26)
 29_kanban2        works   the plus button adds a card to its column and the board survives a reload
-30_paint2         broken  Undo is one press behind: two strokes give 6 then 12 ink, the first Undo leaves 12 and the second gives back 6; drawing itself is correct
+30_paint2         broken  Undo is one press behind. Two strokes give 6 then 12 ink, the first Undo leaves 12 and the second gives back 6, and drawing itself is correct
 31_tictactoe2     works   the computer answers every move and won, and Play Again clears the board while keeping the score
 32_memory2        works   cards flip, the move counter advances and a non-matching pair turns back over
 33_minesweeper2   works   a click reveals its number and flood-fills the empties, right click plants a flag and the mine counter follows
 34_snake2         works   it runs from load, the arrows steer it, walls end the game, eating raises the score and the high score survives a reload
 35_tetris2        works   pieces fall on their own, all three keys act and Pause freezes the board
-36_breakout2      broken  update() moves the paddle and never the ball: the ball is drawn every frame at its starting spot, the paddle follows the pointer, and whatever is pressed the game cannot be played (bench/checks/breakout2.py)
+36_breakout2      broken  update() moves the paddle and never the ball. The ball is drawn every frame at its starting spot, the paddle follows the pointer, and whatever is pressed the game cannot be played (bench/checks/breakout2.py)
 37_draw2          broken  it throws "Cannot access 'historyStack' before initialization" on load, so the script never runs and the canvas takes no stroke at all
 38_chart2         works   Add Sample Data draws the bars, the button switches to a line and back, and Clear Data empties it
 39_signup2        works   Sign Up stays disabled and names the reason for a bad email, a weak password or a mismatch, and enables only when all three are right
@@ -56,7 +56,7 @@
 48_markdown2      works   headings, bold and links render as you type and the word count follows
 49_routes2        works   each link sets the hash and switches the view, and a deep link still shows its view after a reload
 50_async2         works   the list arrives after its delay and the filter narrows it live
-51_spreadsheet    broken  the grid never builds: the script that wires the cells runs before the block defining onFocus, so it throws on the first cell and the table is left with no rows at all
+51_spreadsheet    broken  the grid never builds. The script that wires the cells runs before the block defining onFocus, so it throws on the first cell and the table is left with no rows at all
 52_treeview       works   four levels deep, folders expand and collapse, collapsing the root leaves exactly one row, and the counter tracks the visible rows exactly
 53_sortable       works   all three headers sort and reverse on a second press, and Age and Joined really do compare with Number() and Date() rather than as text
 54_pagination     works   ten to a page across five pages, items 41-47 on the last, the indicator tracks it, and Previous and Next each disable themselves at their end
@@ -69,15 +69,15 @@
 62_calendar       works   prev and next walk the months, February 2024 gives 29 days and 2023 gives 28, every month starts in the right column of a Sunday-first grid, and today is marked
 64_filtersort     works   the box narrows the rows to the ones that match and a nonsense term empties the table, sorting survives filtering, and filtering after sorting keeps the order and loses no rows
 65_undoredo       works   undo steps back a character at a time and lights Redo, Redo puts it back, and typing after an undo greys Redo out rather than leaving the old branch reachable
-66_zoompan        works   the readout is right at every scale: after zooming in twice, a 120px drag moves the world point by exactly 83.33 and it stays under the pointer, and x1.2 against x1/1.2 returns exactly to 1
+66_zoompan        works   the readout is right at every scale. After zooming in twice, a 120px drag moves the world point by exactly 83.33 and it stays under the pointer, and x1.2 against x1/1.2 returns exactly to 1
 67_palette        works   clicking a shape selects it and a swatch then recolours that shape and neither of the other two, and a swatch pressed with nothing selected leaves the canvas pixel for pixel identical
-69_formarray      works   the summary is refreshed by its own Update Summary button rather than live, and it is right every time: completed people listed, a name with no age left out, and a removed pair gone
-72_survey         works   yes and no lead to different questions and Back walks a real history stack, though every path is only two questions deep and the result screen has no Back of its own; the end lists the path taken
+69_formarray      works   the summary is refreshed by its own Update Summary button rather than live, and it is right every time, completed people listed, a name with no age left out, and a removed pair gone
+72_survey         works   yes and no lead to different questions and Back walks a real history stack, though every path is only two questions deep and the result screen has no Back of its own, and the end lists the path taken
 73_seatmap        works   the booked seats refuse every click and cost nothing, a free seat toggles on and off, and the total counts only the seats currently chosen
 74_cube3d         broken  the canvas never shows anything. The shaders compile, the loop runs and 24 line indices are drawn every frame, but the uploaded MVP leaves every one of the eight corners outside the near and far clip planes (w comes out +/-1 while z is about +/-5), so the whole cube is clipped away and the canvas stays its clear colour
-75_matrix         broken  it multiplies the grids element by element instead of multiplying the matrices: cCells[i].value = aVal * bVal, so 1..9 times 9..1 gives 9 16 21 / 24 25 24 / 21 16 9 and the working shown reads 1 x 9 = 9 rather than a sum of three products
-58_reorder        broken  nothing can ever be reordered. dragenter inserts a placeholder li under the cursor, and the placeholder is not one of the items the handlers were attached to, so nothing calls preventDefault on its dragover; no drop event fires at all, only dragend, and the order line stays 1 2 3 4 5 6
-63_stepper        works   plus and minus clamp at 10 and 1 and disable themselves there, and the typed route clamps too: 99 becomes 10, 0 and -3 become 1, and the total follows at 9.99 a unit
+75_matrix         broken  it multiplies the grids element by element instead of multiplying the matrices. cCells[i].value = aVal * bVal, so 1..9 times 9..1 gives 9 16 21 / 24 25 24 / 21 16 9 and the working shown reads 1 x 9 = 9 rather than a sum of three products
+58_reorder        broken  nothing can ever be reordered. dragenter inserts a placeholder li under the cursor, and the placeholder is not one of the items the handlers were attached to, so nothing calls preventDefault on its dragover, and no drop event fires at all, only dragend, and the order line stays 1 2 3 4 5 6
+63_stepper        works   plus and minus clamp at 10 and 1 and disable themselves there, and the typed route clamps too, 99 becomes 10, 0 and -3 become 1, and the total follows at 9.99 a unit
 68_infinite       works   twenty rows to start, twenty more on each scroll to the bottom of its scrolling container up to sixty, then it says there is no more to load and stops appending
 71_pomodoro       works   the phases really do alternate 25:00 and 05:00 round after round, Pause freezes the clock where it stood, Start resumes from there, Skip jumps to the other phase, and the round count rises once per full cycle
 70_diff           works   side by side, alpha and gamma come back unchanged, beta and delta removed, GAMMA and epsilon added, and editing either pane redoes the comparison

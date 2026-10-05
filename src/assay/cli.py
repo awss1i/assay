@@ -16,10 +16,10 @@ from assay.run import aimed
 
 #: Asked in a subprocess, and that is the whole point of it. Starting a second
 #: playwright inside one process leaves its first connection's tasks pending,
-#: and python says so at exit: several lines of `Task was destroyed but it is
+#: and python says so at exit, several lines of `Task was destroyed but it is
 #: pending!` and a `TargetClosedError`, printed *after* the results, which
 #: reads to anybody running this as a crash rather than a tidy-up. Verified by
-#: bisection: one instance is silent, two are not.
+#: bisection, one instance is silent and two are not.
 _PROBE = ("from playwright.sync_api import sync_playwright as s\n"
           "import pathlib, sys\n"
           "with s() as p:\n"
@@ -71,7 +71,7 @@ def unbuilt(root: Path, entry: str) -> str:
 
     **assay does not run your build, and that is a decision rather than a gap
     left to fill in later.** Serving a folder is safe because the browser is
-    the sandbox: nothing in the page can reach the machine it is measured on.
+    the sandbox. Nothing in the page can reach the machine it is measured on.
     `npm install` has no such property, because it runs whatever `postinstall` the
     dependency tree asks for, with the privileges of whoever typed the
     command, and the code under test here is by definition code nobody has
@@ -90,7 +90,7 @@ def unbuilt(root: Path, entry: str) -> str:
         found = _SOURCE_ENTRY.search(page.read_text(errors="replace")[:8000])
         if not found:
             return ""
-        # Whether the file is *there* decides nothing: a browser cannot run
+        # Whether the file is *there* decides nothing. A browser cannot run
         # JSX or TypeScript either way, and it being present is exactly what
         # an unbuilt source tree looks like. The extension is the whole test.
         names = found.group(1)
@@ -118,14 +118,14 @@ def _build_it(root: Path) -> str:
     """What to run, and why assay will not run it.
 
     Said in both places a source tree is recognised, which is why it is one
-    string: the same paragraph written twice is a paragraph that ends up
+    string. The same paragraph written twice is a paragraph that ends up
     saying two different things.
     """
     return (f"  Build it first, in your own shell, then check the output:\n"
             f"    npm install && npm run build && assay {root}/dist\n"
-            f"  assay will not run that for you: installing dependencies "
-            f"executes their setup scripts, and this is a tool for checking "
-            f"code nobody has read.")
+            f"  assay will not run that for you, because installing "
+            f"dependencies executes their setup scripts, and this is a tool "
+            f"for checking code nobody has read.")
 
 
 def one_line(run: object, root: Path, entry: str) -> str:
@@ -173,7 +173,7 @@ def one_line(run: object, root: Path, entry: str) -> str:
         notes = getattr(r, "links", [])
         same = [one for one in notes if one.kind == "same"]
         if same:
-            out.append(f"  - {r.case.what} (same finding as: "
+            out.append(f"  - {r.case.what} (same finding as "
                        f"{words.get(same[0].to, same[0].to)})")
             continue
         said = f"  - {r.case.what}: {r.detail}" if r.detail \
@@ -247,7 +247,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          "it")
     ap.add_argument("--if-page", action="store_true",
                     help="say nothing and exit 0 unless this is a page assay "
-                         "can check; for hooks that fire on every edit")
+                         "can check, for hooks that fire on every edit")
     ap.add_argument("--surface", action="store_true",
                     help="only report what the program offers, and stop")
     ap.add_argument("--version", action="version",
@@ -274,7 +274,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
     if not ensure_browser():
         # A missing browser is worth saying out loud, and is never worth
-        # failing a turn over: stderr carries it where somebody will see it
+        # failing a turn over. stderr carries it where somebody will see it
         # and the exit code keeps the caller out of it.
         return 0 if args.if_page else 2
 
@@ -305,7 +305,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
         where = report.write(run, args.report, folder=root.name,
                              shots_dir=shots.name)
-        print(f"\nreport: {where}", file=sys.stderr)
+        print(f"\nreport written to {where}", file=sys.stderr)
 
     return 0 if run.works else 1
 

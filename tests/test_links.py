@@ -48,7 +48,7 @@ def test_chips_of_one_bar_are_one_finding() -> None:
 
 def test_undo_and_redo_are_never_one_finding() -> None:
     """Same rule, same sentence, and two different controls."""
-    said = ("pressing this twice from the same starting point: the first "
+    said = ("pressing this twice from the same starting point, the first "
             "press changed nothing and the second did, so it reacts one press "
             "late")
     undo = failed("C010", "draw twice, then press Undo twice", "one-behind",
@@ -64,9 +64,9 @@ def test_undo_and_redo_are_never_one_finding() -> None:
 def test_the_same_crash_from_the_same_place_is_one_finding() -> None:
     boom = dict(crash_message="x is not defined", crash_frame="app.js:4:3")
     one = failed("C001", "open the page", "threw",
-                 "the page threw an error and stopped running: x is not defined", **boom)
+                 "the page threw an error and stopped running, x is not defined", **boom)
     two = failed("C002", "press Go", "threw",
-                 "the page threw an error and stopped running: x is not defined",
+                 "the page threw an error and stopped running, x is not defined",
                  "#go", **boom)
 
     attach([one, two])
@@ -76,7 +76,7 @@ def test_the_same_crash_from_the_same_place_is_one_finding() -> None:
 
 def test_one_message_thrown_from_two_places_is_two_findings() -> None:
     """Two handlers can fail with the same words for different reasons."""
-    said = "the page threw an error and stopped running: Cannot read properties of null"
+    said = "the page threw an error and stopped running, Cannot read properties of null"
     one = failed("C002", "press Add", "threw", said, "#add",
                  crash_message="Cannot read properties of null",
                  crash_frame="app.js:10:5")
@@ -94,7 +94,7 @@ def test_findings_that_differ_only_in_the_names_they_quote_are_one() -> None:
     tabs = [failed(f"F00{n}", "the panel a selected tab or open section "
                    "controls is shown", "aria",
                    f'"Tab {n}" is marked selected and controls the panel '
-                   f'"panel-{n}", but that panel is not shown; first seen at '
+                   f'"panel-{n}", but that panel is not shown, first seen at '
                    f'C00{n + 1}') for n in range(1, 4)]
 
     attach(tabs)
@@ -117,9 +117,9 @@ def test_a_page_wide_finding_on_a_page_that_threw_while_loading() -> None:
     boom = dict(crash_message="historyStack is not defined",
                 crash_frame="index.html:40:7", crash_at_load=True)
     cases = [failed("C001", "open the page", "threw",
-                    "the page threw an error and stopped running: historyStack", **boom),
+                    "the page threw an error and stopped running, historyStack", **boom),
              failed("C002", "press Undo", "threw",
-                    "the page threw an error and stopped running: historyStack",
+                    "the page threw an error and stopped running, historyStack",
                     "#undo", **boom)]
     dead = failed("C000", "something on the page responds when used",
                   "nothing-responds", "nothing on the page changed")
@@ -135,7 +135,7 @@ def test_no_load_note_when_a_case_ran_on_a_page_that_had_not_thrown() -> None:
     boom = dict(crash_message="boom", crash_frame="app.js:1:1",
                 crash_at_load=True)
     cases = [failed("C001", "open the page", "threw",
-                    "the page threw an error and stopped running: boom", **boom),
+                    "the page threw an error and stopped running, boom", **boom),
              passed("C002")]
     dead = failed("C000", "something on the page responds when used",
                   "nothing-responds", "nothing on the page changed")

@@ -25,7 +25,7 @@ WEB = {".html", ".htm", ".js", ".mjs", ".cjs", ".css", ".svg",
        ".jsx", ".ts", ".tsx", ".vue", ".json"}
 
 #: Never worth walking into, and the first one is why a bounded scan is cheap
-#: at all: a dependency tree holds thousands of pages nobody wrote.
+#: at all, a dependency tree holds thousands of pages nobody wrote.
 SKIP = {"node_modules", ".git", ".venv", "venv", "__pycache__", ".next",
         ".cache", ".pytest_cache", "vendor", ".tox"}
 
@@ -109,7 +109,7 @@ def clock(session: str, scratch: str = "",
     if root is not None:
         if (root / ".git").is_dir():
             return root / ".git" / f"assay-last-run-{tag}"
-        # One file per folder rather than one per session: two sessions
+        # One file per folder rather than one per session. Two sessions
         # working in one folder is rare, and the worst it costs is a report
         # the other one already made. Accumulating a file per session in
         # somebody's project is worse than that every time.

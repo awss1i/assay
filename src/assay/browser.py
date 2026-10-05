@@ -2,7 +2,7 @@
 
 Everything here is a measurement. Nothing in this module decides whether a
 program is good. It reports painted pixels, centroids, colours, text and
-element counts, and `qa` decides. That split is deliberate: a measurement that
+element counts, and `qa` decides. That split is deliberate. A measurement that
 also judges is one you cannot check.
 
 Most of what follows exists because a naive version of it returned a confident
@@ -62,7 +62,7 @@ class Element:
     #: The form, or failing that the container, this control sits in. A field
     #: and a button are a pair when they share one.
     pairing: int = 0
-    #: Which widget this belongs to: the smallest ancestor holding both a
+    #: Which widget this belongs to, the smallest ancestor holding both a
     #: field and a button. A board with three columns has three, and pairing
     #: one column's field with another's button tests nothing.
     group: int = 0
@@ -108,7 +108,7 @@ def serve(root: Path) -> Iterator[str]:
 
     **A page is served, never opened off the disk.** A `file://` origin is
     opaque, so the browser refuses every `<script type="module">` before a line
-    of it runs: the page renders, every element is present and correctly sized,
+    of it runs. The page renders, every element is present and correctly sized,
     and nothing works. The module never loads, so it cannot even raise the
     error that would give it away. Any page using modules measures as a
     different program when opened off disk.
@@ -154,13 +154,13 @@ PICK = ('img,a,button,input,select,textarea,h1,h2,canvas,'
 
 #: The tags the pointer-cursor sweep is allowed to promote into a control.
 #: Named once because `UNREACHED_JS` has to ask the same question from the
-#: other side: anything these two disagree about is surface that is invisible
+#: other side. Anything these two disagree about is surface that is invisible
 #: to the plan and invisible to the check that knows the plan is incomplete.
 CLICKY = 'div,span,li,td,th,section,p'
 
 #: Cursors that mean *take hold of this and move it*, as opposed to the click
 #: `pointer` asks for. A split pane's bar carries `col-resize` and a sortable
-#: row carries `move`, and neither is a click: pressing them does nothing at
+#: row carries `move`, and neither is a click, and pressing them does nothing at
 #: all, which is exactly what they did when the sweep only knew `pointer`.
 DRAGGY = ('col-resize', 'row-resize', 'ew-resize', 'ns-resize', 'nwse-resize',
           'nesw-resize', 'move', 'grab', 'grabbing', 'all-scroll')
@@ -206,7 +206,7 @@ CANVAS_JS = """
               // **One colour edge to edge is not a picture.** A spread
               // rather than a palette, because it costs six comparisons and
               // no map, and paired with coverage below, because a black line
-              // on a transparent canvas is also one colour: only the ink is
+              // on a transparent canvas is also one colour. Only the ink is
               // counted, so uniform alone cannot tell a stroke from a clear.
               if (d[i] < rl) rl = d[i]; if (d[i] > rh) rh = d[i];
               if (d[i+1] < gl) gl = d[i+1]; if (d[i+1] > gh) gh = d[i+1];
@@ -269,8 +269,8 @@ __CANVAS__    const pending = [];
         return parts.join(' > ') || el.tagName.toLowerCase();
     };
     // The smallest ancestor holding a field *and* a button is the widget the
-    // two of them make up. Controls sharing one belong together; controls in
-    // different ones do not, however alike they look. Three "New card…"
+    // two of them make up. Controls sharing one belong together, and controls
+    // in different ones do not, however alike they look. Three "New card…"
     // boxes beside three "+" buttons are three widgets, not one.
     const groups = [], pairs = [];
     const groupOf = (el) => {
@@ -295,7 +295,7 @@ __CANVAS__    const pending = [];
     //
     // The rule was already written down here and applied only to counting
     // whether the page is alive. Same rule, two places, and it reached one
-    // of them. Innermost only: a container styled `cursor: pointer` around
+    // of them. Innermost only. A container styled `cursor: pointer` around
     // real cells is one element pretending to be the board.
     const picked = new Set(document.querySelectorAll(__PICK__));
     // Editable regions and drag handles, neither of which any tag announces.
@@ -322,8 +322,8 @@ __CANVAS__    const pending = [];
         cells.push(el);
     }
     // **A label is the control when the page hid the box it names.** A
-    // star rating is five labels over five radios set to `display: none`:
-    // the stars are what a person clicks, and the radios are never on screen
+    // star rating is five labels over five radios set to `display: none`.
+    // The stars are what a person clicks, and the radios are never on screen
     // to be measured, so the whole widget was invisible to the plan.
     const standsIn = __PROXY__;
     const proxies = Array.from(document.querySelectorAll('label'))
@@ -375,7 +375,7 @@ __CANVAS__    const pending = [];
         } else if (proxies.includes(el)) { o.kind = el.control.type; }
         if (o.kind) {
             // A label's own words are its direct text nodes. Everything
-            // nested inside it belongs to something else: the options of a
+            // nested inside it belongs to something else. The options of a
             // select it wraps, the live value in a span beside a slider.
             // Read whole, `<label>Size: <select>` named a control
             // "Size: Small Medium Large" across four lines and a slider
@@ -411,7 +411,7 @@ __CANVAS__    const pending = [];
         if (o.kind) o.group = groupOf(el);
         // **Which kind of control this is, by where it sits.** The tag and
         // classes of it and each wrapper up to the nearest one with an id,
-        // with its own id left out: the chips of one tag bar share this
+        // with its own id left out. The chips of one tag bar share this
         // whatever each is called, and a chip in another bar does not.
         if (o.kind) {
             const bits = [];
@@ -460,7 +460,7 @@ __CANVAS__    return {
     text: (document.body.innerText || '').slice(0, 400),
     // **What is in the fields is part of what the page is showing.** It is
     // not in `innerText`, not in the styles and not on a canvas, so a page
-    // whose whole answer lands in an input was invisible: a converter that
+    // whose whole answer lands in an input was invisible. A converter that
     // puts 212 in the other box, a generator that fills a field, a form that
     // echoes what you typed. Three programs verified by hand to work were
     // reported broken with *nothing on the page changed at all*, and the
@@ -491,13 +491,13 @@ __CANVAS__    return {
 #: What the page offers, reduced to one number, plus how many working
 #: controls are on it.
 #:
-#: The hash is deliberately **not** over text or pixels: a clock rewrites its
+#: The hash is deliberately **not** over text or pixels. A clock rewrites its
 #: text every second and an animation loop repaints every frame, and a page
 #: doing either is working perfectly. What has to stop moving before the
 #: surface can be measured is the set of controls, their labels and whether
 #: they are enabled, so that is what it covers.
 #:
-#: `live` is the second half, and without it the first half is not enough: a
+#: `live` is the second half, and without it the first half is not enough. A
 #: spinner is perfectly still. See `settle`.
 STRUCTURE_JS = """() => {
     let h = 0, live = 0;
@@ -622,7 +622,7 @@ class Settled(NamedTuple):
     #: How long the watching took.
     ms: int
     #: Whether a single reading ever came back. A page can put the instrument
-    #: out rather than be empty: one generated calculator declares
+    #: out rather than be empty. One generated calculator declares
     #: `function eval()`, replacing the global the driver evaluates through,
     #: so every reading returns nothing. That page works, it computes
     #: 7 + 3 = 10, and calling it blank would be the one mistake this whole
@@ -640,7 +640,7 @@ def settle(page: Any, poll_ms: int = 100, stable: int = 3,
     page still showing *Loading…* came to be measured as a program offering no
     controls at all, and reported as working.
 
-    So nothing is waited *for*; what is watched is whether anything is still
+    So nothing is waited *for*. What is watched is whether anything is still
     changing. With one qualification that the first version of this lacked and
     which is the whole difficulty: **a page can be perfectly still and not be
     finished.** A spinner does not move. Three quiet polls over a page holding
@@ -653,7 +653,7 @@ def settle(page: Any, poll_ms: int = 100, stable: int = 3,
     Returns whether it settled and how long that took. A page that never
     settles is a real and ordinary thing (a growing feed, a carousel, and
     equally an app that renders nothing at all) so hitting the ceiling is
-    **reported, never failed on** here: what is on the page at that moment is
+    **reported, never failed on** here. What is on the page at that moment is
     still the best measurement available, and calling a working page broken
     costs more than the missing certainty. Whether an empty one is a fault is
     a question for the surface, which is the thing that can see it is empty.
@@ -666,7 +666,7 @@ def settle(page: Any, poll_ms: int = 100, stable: int = 3,
             now = page.evaluate(STRUCTURE_JS)
         except Exception:
             # Mid-navigation, or the page went away. Not a verdict about the
-            # program; give it another poll rather than declaring anything.
+            # program, so give it another poll rather than declaring anything.
             now = None
         # A reading that came back at all, whatever it said. A page can put
         # the instrument out rather than be empty, and the two must not end
@@ -692,7 +692,7 @@ def _drag(page: Any, target: str) -> None:
     """Draw across an element with the mouse held down.
 
     A freehand canvas responds to nothing else. It is not clicked into life
-    and it has no keys: the whole program is press, move, release, and a plan
+    and it has no keys. The whole program is press, move, release, and a plan
     that only clicks and types reports a working drawing tool as a canvas
     that does not respond. Two working ones were called broken exactly here.
 
@@ -734,7 +734,7 @@ def answer_dialogs(page: Any) -> None:
 
     Dismissing is not the neutral choice it looks like. It is answering
     *no* to everything, which is exactly the answer that makes a feature not
-    happen. Accepting is what a person testing the program does: they are
+    happen. Accepting is what a person testing the program does. They are
     trying to see the thing work, and a `confirm` they agree to is a button
     that did what it said.
 
@@ -745,9 +745,9 @@ def answer_dialogs(page: Any) -> None:
 
     def answer(dialog: Any) -> None:
         with contextlib.suppress(Exception):
-            # **An alert is a reply; a prompt or a confirm is a question.**
+            # **An alert is a reply, and a prompt or a confirm is a question.**
             # What a page does with the answer is its response, so only an
-            # alert counts as the page having answered: a board whose Add
+            # alert counts as the page having answered. A board whose Add
             # asks for a title and then adds nothing has not answered.
             if dialog.type == "alert":
                 heard.append(str(dialog.message or "")[:120])
@@ -759,7 +759,7 @@ def answer_dialogs(page: Any) -> None:
 
 
 #: Every alert each open page has raised, in order. An alert is the page
-#: answering: one saying *Length must be mm:ss* is a form refusing what it
+#: answering. One saying *Length must be mm:ss* is a form refusing what it
 #: was given, out loud, and it leaves nothing in the document to measure.
 _DIALOGS: "weakref.WeakKeyDictionary[Any, List[str]]" = weakref.WeakKeyDictionary()
 
@@ -800,12 +800,12 @@ def sample_for(words: str) -> str:
 #: Boxes whose own placeholder fails their own `pattern`.
 #:
 #: **A box whose own example fails its own rule can never be filled.** One
-#: wizard here carries `pattern="\\d{5}"` on its postcode: an escaped
+#: wizard here carries `pattern="\\d{5}"` on its postcode, an escaped
 #: backslash, so the rule matches a literal backslash followed by five letter
 #: d's, no postcode passes, and the step it sits on can never be completed.
 #:
 #: Nothing that drives the page can see it, which is why this is read rather
-#: than driven: the field is on a later step, off screen, so it is not in the
+#: than driven. The field is on a later step, off screen, so it is not in the
 #: surface to be typed into and the step before it advances perfectly well.
 #: The placeholder is the page's own worked example, so a page whose example
 #: fails its own validation is contradicting itself, and that is a fact about
@@ -862,7 +862,7 @@ class Rested(NamedTuple):
     """How a canvas came to a stop, and whether it was ever going.
 
     The two are separate because only together do they mean anything. Quiet
-    and never moving is an ordinary still picture; quiet **after moving** is a
+    and never moving is an ordinary still picture, and quiet **after moving** is a
     program that ran and reached a state of its own, and what it does next is
     not evidence about whether it was ever wired.
     """
@@ -885,11 +885,11 @@ def settle_canvas(page: Any, poll_ms: int = 200, stable: int = 3,
 
     So the canvas is brought to rest first. A program still moving when the
     ceiling arrives is alive and nothing can be attributed to a gesture, so the
-    caller leaves it alone; one that has gone quiet is a program where what
+    caller leaves it alone. One that has gone quiet is a program where what
     happens next is down to what was done to it.
 
     The ceiling is the one number here that ends something, and it measures
-    exactly what it is allowed to: whether the canvas is still producing
+    exactly what it is allowed to, whether the canvas is still producing
     frames. It is not a bound on how long a case may take.
     """
     seen, still, waited, moved = None, 0, 0, False
@@ -917,14 +917,14 @@ def settle_canvas(page: Any, poll_ms: int = 200, stable: int = 3,
 #: three headers, pressed all twenty-four, and announced that the page
 #: answers nothing. It was right about the cells and wrong about the page.
 #:
-#: So the rule needs the other half of the picture: is there anything here
+#: So the rule needs the other half of the picture. Is there anything here
 #: that plainly does something, which I did not include? Three things say
-#: that without a listener being readable: a cursor the page went out of its
+#: that without a listener being readable. A cursor the page went out of its
 #: way to change, `contenteditable`, and `draggable`. None of them proves the
 #: element works. All of them prove the plan is not the whole page.
 #:
 #: It counts what is **left over**, never how much was found. Small and
-#: complete is a real answer: a spreadsheet whose script died before building
+#: complete is a real answer. A spreadsheet whose script died before building
 #: a single cell offers nothing, and nothing is what should be reported.
 UNREACHED_JS = """() => {
     const seen = (el) => { const r = el.getBoundingClientRect();
@@ -981,7 +981,7 @@ def unreached(page: Any) -> Dict[str, int]:
     try:
         return dict(page.evaluate(UNREACHED_JS))
     except Exception:
-        # Never worth failing a run over: an empty answer costs one page-wide
+        # Never worth failing a run over. An empty answer costs one page-wide
         # finding and inventing one costs a program called broken.
         return {}
 
@@ -999,7 +999,7 @@ def elements(page: Any) -> List[Element]:
         return []
     # A page that has replaced what the driver evaluates through answers with
     # whatever it likes: an int, a string, nothing. Only a list of mappings
-    # is an answer; anything else is the instrument being out, and iterating
+    # is an answer. Anything else is the instrument being out, and iterating
     # it raises in the middle of a measurement.
     if not isinstance(rows, list):
         return []
@@ -1027,12 +1027,12 @@ def elements(page: Any) -> List[Element]:
 
 #: Two things a page can say about itself that need no opinion about what
 #: it is for. Asked together because each is one round trip and they are
-#: wanted at the same moment: after a case has acted, with the page open.
+#: wanted at the same moment, after a case has acted, with the page open.
 #:
 #: **Computed text.** `[object Object]` is a value printed where one of its
 #: fields was wanted, `NaN` is arithmetic on something that was not a number,
 #: `undefined` is a name read before anything was put in it. None is typed on
-#: purpose. `null` is deliberately absent: a table showing a database value
+#: purpose. `null` is deliberately absent. A table showing a database value
 #: says it legitimately, and a rule that cannot tell those apart fires on
 #: correct pages.
 #:
@@ -1125,12 +1125,12 @@ FACTS_JS = r"""() => {
 
 
 #: How many things are on show, and every number the page is displaying on
-#: its own. Together these answer whether a number is *about* the list: one
+#: its own. Together these answer whether a number is *about* the list. One
 #: that moves with it one for one is tracking it, and the page has said so by
 #: moving them together.
 #:
 #: A number is a leaf holding nothing but an integer. Anything with a child
-#: is a container and its text is somebody else's; anything with a decimal
+#: is a container and its text is somebody else's. Anything with a decimal
 #: point is a measurement rather than a count, and money is exactly the thing
 #: a count must not be confused with.
 COUNTED_JS = r"""() => {
@@ -1147,7 +1147,7 @@ COUNTED_JS = r"""() => {
 
     // **What a list is cannot be decided from one reading of it.** A
     // bookmark manager holding a single row has one element of its class,
-    // which looks like nothing at all; the same page after two saves has
+    // which looks like nothing at all, and the same page after two saves has
     // two. So every class is reported with how many of it are on show, and
     // which of them are lists is settled across the whole run, where the
     // list has been seen at more than one size.
@@ -1275,7 +1275,7 @@ def rows_now(page: Any, holder: str, shape: str) -> Optional[Dict[str, Any]]:
 
 #: **A box that corrects what it is given was tried and removed.** A
 #: quantity box with a maximum of ten, handed twenty-five, correctly holds
-#: ten; a stepper restores its floor when it is emptied. Reading either as
+#: ten, and a stepper restores its floor when it is emptied. Reading either
 #: the page losing what somebody wrote flagged four working programs and
 #: caught nothing, because clamping is what a careful field does.
 def row_of(page: Any, selector: str) -> Optional[Dict[str, Any]]:
@@ -1363,7 +1363,7 @@ def signature(page: Any) -> Dict[str, Any]:
     It includes how many dialogs the page has raised and what the last one
     said. **A page that refuses bad input with an `alert` has answered**, and
     measured only by its document it looked like a page that ignored the
-    press: a playlist refusing a length that is not mm:ss was reported as
+    press. A playlist refusing a length that is not mm:ss was reported as
     one where nothing changed.
     """
     try:
@@ -1460,7 +1460,7 @@ def _slide(page: Any, selector: str, timeout: float) -> None:
 
     The far end rather than a fixed number, because a slider already sitting
     at the number you chose does not move, and an act that changes nothing
-    proves nothing. Filled rather than dragged: dragging lands wherever the
+    proves nothing. Filled rather than dragged, because dragging lands wherever the
     pixels fall and two runs disagree, which is the one thing this must not
     do.
     """
@@ -1470,7 +1470,7 @@ def _slide(page: Any, selector: str, timeout: float) -> None:
     page.fill(selector, reach, timeout=timeout)
 
 
-#: Which option to pick in a select: the next one along from where it sits,
+#: Which option to pick in a select, the next one along from where it sits,
 #: skipping any the page has disabled, such as a "Choose..." placeholder.
 _OTHER_OPTION_JS = """(sel) => {
     const el = document.querySelector(sel);
@@ -1508,7 +1508,7 @@ def _recolour(page: Any, selector: str, timeout: float) -> None:
               timeout=timeout)
 
 
-#: The smallest PNG there is: one pixel. Enough for a page that previews an
+#: The smallest PNG there is, one pixel. Enough for a page that previews an
 #: image to have something to show.
 _PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQ"
@@ -1570,7 +1570,7 @@ def perform(page: Any, acts: Sequence[Dict[str, str]],
                         # that recalculates on `change` hears nothing from
                         # typing alone, because `change` is sent when the
                         # box loses focus. Only a case whose last act is the
-                        # typing does this: where a press follows, the press
+                        # typing does this. Where a press follows, the press
                         # moves the focus itself, inside the act measured.
                         page.eval_on_selector(sel.strip(), "e => e.blur()")
                 elif verb == "choose":
@@ -1628,7 +1628,7 @@ def changed(was: Dict[str, Any], now: Dict[str, Any]) -> str:
     """What moved, in the numbers a reader can act on, pass or fail.
 
     Reported either way, because *which way* a thing moved is a judgement the
-    machine does not have: gravity moves a piece down and Left moves it left,
+    machine does not have. Gravity moves a piece down and Left moves it left,
     and stating `centre (640, 320)->(640, 704)` lets a reader see for itself
     that pressing Left moved nothing sideways.
     """
@@ -1637,12 +1637,12 @@ def changed(was: Dict[str, Any], now: Dict[str, Any]) -> str:
     bits: List[str] = []
     for i, (a, b) in enumerate(zip(was.get("canvas") or [], now.get("canvas") or [])):
         if a == b:
-            bits.append(f"canvas {i}: unchanged ({a[0]} painted px)")
+            bits.append(f"canvas {i} unchanged ({a[0]} painted px)")
         elif len(a) > 6 and len(b) > 6 and a[:6] == b[:6]:
-            bits.append(f"canvas {i}: its pixels changed, by less than the "
+            bits.append(f"canvas {i} changed its pixels by less than the "
                         f"painted count or mean colour can show ({a[0]} px)")
         else:
-            said = (f"canvas {i}: {a[0]}->{b[0]} painted px, "
+            said = (f"canvas {i} went from {a[0]} to {b[0]} painted px, "
                     f"centre ({a[1]}, {a[2]})->({b[1]}, {b[2]})")
             if len(a) > 5 and len(b) > 5 and a[3:6] != b[3:6]:
                 said += (f", mean colour rgb({a[3]}, {a[4]}, {a[5]})"
@@ -1657,8 +1657,8 @@ def changed(was: Dict[str, Any], now: Dict[str, Any]) -> str:
     if was.get("styles") != now.get("styles"):
         bits.append("something on the page was restyled or recoloured")
     if int(now.get("dialogs") or 0) > int(was.get("dialogs") or 0):
-        bits.append(f"the page showed an alert: {now.get('dialog')!r}")
-    return "; ".join(bits)
+        bits.append(f"the page showed an alert, {now.get('dialog')!r}")
+    return ", ".join(bits)
 
 
 def moved(was: Dict[str, Any], now: Dict[str, Any]) -> Optional[bool]:
@@ -1676,7 +1676,7 @@ def canvas_still(was: Dict[str, Any], now: Dict[str, Any]) -> bool:
     """Whether every canvas is byte-identical afterwards.
 
     The **exact** term decides this one, where `moved` compares the whole
-    coarse signature: the question here is whether the canvas that was acted
+    coarse signature. The question here is whether the canvas that was acted
     on responded at all, and rounding a brush stroke away answers it wrongly.
     """
     before, after = (was or {}).get("canvas"), (now or {}).get("canvas")
@@ -1731,7 +1731,7 @@ def told_to_press(text: str) -> str:
 
     **A page that says what to press has written down its own contract.** It
     is the one thing that separates a program which finished from a program
-    which is stuck: both sit there ignoring the keyboard, and only one of
+    which is stuck. Both sit there ignoring the keyboard, and only one of
     them put `Press Space to restart` on the screen and then ignored Space.
 
     Read off the rendered text, so it is what a person would have read.
@@ -1755,7 +1755,7 @@ def was_pressed(key: str, acts: Sequence[Dict[str, str]]) -> bool:
 
 
 #: One element, closely enough to tell whether it answered. Its own markup
-#: catches a class going on or off and the text inside it changing; the
+#: catches a class going on or off and the text inside it changing, and the
 #: painted properties catch a page that colours it directly.
 #:
 #: **And what happens just above it, because that is where a click often
@@ -1838,7 +1838,7 @@ def aimed_at_canvas(acts: Sequence[Dict[str, str]]) -> bool:
     """Whether an act names a canvas as its target.
 
     The page-wide floor is a whole-*page* test and a page is free to respond
-    somewhere else: one grid announced *"Row 1 Column 1 turned on"* into a live
+    somewhere else. One grid announced *"Row 1 Column 1 turned on"* into a live
     region on every click, so the text moved while the cell being announced did
     not. This narrows the canvas check to where the act itself said what it
     aimed at.

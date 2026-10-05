@@ -1,6 +1,6 @@
 """Colour for the terminal, and the rules about when not to use it.
 
-Colour earns its place here for one reason: a run of forty cases with two
+Colour earns its place here for one reason. A run of forty cases with two
 failures in it is a wall of identical lines, and the two that matter are
 found by scrolling. Dimming what passed and reddening what did not makes the
 answer visible without reading a word.

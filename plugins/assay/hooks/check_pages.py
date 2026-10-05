@@ -87,8 +87,8 @@ def summarise(page: Path) -> str:
         return (f"assay: could not check {short} ({slipped}), so nothing "
                 f"was verified.")
 
-    # Exit 2 is a refusal and `--if-page` makes it silent: not a page this can
-    # check, and the one case with genuinely nothing to report.
+    # Exit 2 is a refusal and `--if-page` makes it silent, for a page this
+    # cannot check, the one case with genuinely nothing to report.
     return "" if done.returncode == 2 else done.stdout.strip()
 
 
@@ -129,7 +129,7 @@ def main() -> int:
     print("\n".join(lines), file=sys.stderr)
     # **Holding the turn open is only safe while this can remember doing
     # it.** Exit 2 is what puts the line in front of the model, and it is
-    # also what brings the next `Stop` round; with nowhere to record that
+    # also what brings the next `Stop` round. With nowhere to record that
     # the check has run, the page still reads as changed and it says the
     # same thing again, forever. Unheard once is recoverable. A loop is not.
     return 2 if remembered else 0

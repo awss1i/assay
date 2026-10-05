@@ -14,7 +14,7 @@ is not evidence of anything.
 **How well assay judged them.** Whether it found each broken program's actual
 defect, and how often it flagged a program that works, counted separately,
 because they do not cost the same. Calling a working program broken sends
-whoever is holding it to edit code that was right; calling a broken one
+whoever is holding it to edit code that was right, and calling a broken one
 working is a bug that got through.
 
 **Found means the defect, not any flag.** A broken program flagged for
@@ -300,7 +300,7 @@ def write_cell_results(cell: Cell) -> None:
            f"`../../../objectives.txt`.",
            "",
            "`truth` is what a person found by opening and using each "
-           "program. `assay` is what the tool reported; for a broken "
+           "program. `assay` is what the tool reported, and for a broken "
            "program, whether it flagged the actual bug, as judged by hand in "
            "[`verdicts.txt`](verdicts.txt).",
            "",
@@ -500,7 +500,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--entry", default="index.html")
     ap.add_argument("--limit", type=int, default=0, metavar="N",
                     help="only the first N programs of each cell, for a "
-                         "smoke run that proves this script still works; "
+                         "smoke run that proves this script still works. It "
                          "writes nothing")
     args = ap.parse_args(argv)
 
@@ -524,10 +524,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     broken = sum(len(c.broken) for c in cells)
     found = broken - sum(len(c.missed) for c in cells)
     wolf = sum(len(c.cried_wolf) for c in cells)
-    print(f"\nassay found {found} of {broken} defects; {wolf} false alarms "
-          f"across {works} working programs; "
+    print(f"\nassay found {found} of {broken} defects, {wolf} false alarms "
+          f"across {works} working programs, "
           f"{sum(len(c.other_flags) for c in cells)} flag(s) on broken "
-          f"programs that are not the defect; "
+          f"programs that are not the defect, "
           f"{time.time() - began:.0f}s in all")
 
     marks = linkkey.Marks()
@@ -558,7 +558,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 1
 
     # A partial run must not overwrite the record of a full one. The files in
-    # the tree say "this is what happened"; three programs out of 75 is not
+    # the tree say "this is what happened". Three programs out of 75 is not
     # what happened, and CI writing that over it would be a lie told by a
     # green tick.
     if args.limit or args.cell:

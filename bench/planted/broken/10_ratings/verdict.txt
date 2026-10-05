@@ -14,7 +14,7 @@
 # judgement: assay reports an act and a measurement, and whether that
 # measurement is this bug showing itself is what a person has to decide.
 
-1 missed the stars are clicked and Submit is pressed, but never in the same check: the comment box and Submit sit in different containers, so assay doesn't treat them as one form
+1 missed the stars are clicked and Submit is pressed, but never in the same check. The comment box and Submit sit in different containers, so assay doesn't treat them as one form
 2 missed no check picks a star and then presses Submit, so no rating is ever recorded and there is no average to read
 3 missed no check picks a star and then presses Submit, so no rating is ever recorded and no entry is drawn
 4 missed no check picks a star and then presses Submit, so no rating is ever recorded and the box is never refilled

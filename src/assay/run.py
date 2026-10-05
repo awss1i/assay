@@ -30,7 +30,7 @@ from assay.surface import Case, Surface, from_page, plan
 SETTLE_CEILING_MS = 15000
 
 #: How long the page-level rule waits before calling a whole program dead.
-#: Long on purpose: a case measures a moment after acting, and something that
+#: Long on purpose. A case measures a moment after acting, and something that
 #: starts a slow job is still something that answered.
 SLOW_LOOKS, SLOW_POLL_MS = 8, 500
 
@@ -64,10 +64,10 @@ class Opened:
 
         Not *offers no controls*: a page of pure prose offers none and is
         perfectly good. This is no text, no image that loaded, no canvas with
-        anything in it: a program whose whole output is an empty document.
+        anything in it. A program whose whole output is an empty document.
 
         And nothing to work either, which is the guard against the one way
-        this could call a working page dead: a grid built from coloured
+        this could call a working page dead. A grid built from coloured
         `div`s has no text and no canvas, so it renders nothing this can
         see, but its cells are clickable, and a page offering something to
         click is not a blank one whatever it is drawn with.
@@ -79,7 +79,7 @@ class Opened:
     def unmeasurable(self) -> bool:
         """Whether nothing could be read off this page at all.
 
-        Not a verdict about the program: a page that replaces a global the
+        Not a verdict about the program. A page that replaces a global the
         driver evaluates through answers every reading with nothing, and what
         that establishes about the program is nothing.
         """
@@ -90,10 +90,10 @@ class Browser:
     """One browser and one server, held open for a whole run.
 
     A fresh page per case, not a fresh browser. Every case needs the program
-    in its starting state: a paint tool with a cell already filled is a
+    in its starting state. A paint tool with a cell already filled is a
     different program from one just loaded. A new tab gives you that.
     Launching the engine per case instead cost a browser start and a server
-    bind every time: on a 21-case program that is 21 of each, and it turned
+    bind every time. On a 21-case program that is 21 of each, and it turned
     seconds of work into minutes, and a tool meant to run in CI should not
     spend it starting Chromium.
     """
@@ -122,7 +122,7 @@ class Browser:
     def __exit__(self, *exc: Any) -> None:
         # In this order, and it is not a detail. Handing the teardown to an
         # ExitStack unwinds playwright's own context before the browser it
-        # owns has finished closing, and it says so: several lines of
+        # owns has finished closing, and it says so. Several lines of
         # `Task was destroyed but it is pending!` and a `TargetClosedError`,
         # printed *after* the results, which reads to anybody running this as
         # a crash rather than a tidy-up.
@@ -175,7 +175,7 @@ def aimed(where: str | Path, entry: str) -> Tuple[Path, str]:
     answer rather than ask again.
 
     Both facts are real and a file path states both at once. The folder is
-    what gets served, because a page's siblings are part of it; which of
+    what gets served, because a page's siblings are part of it. Which of
     those to open is separate, and defaults to `index.html` only because
     something has to.
 
@@ -244,7 +244,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # that replaces a global the driver evaluates through (`function eval()`
     # is the one that has actually turned up) answers every reading with
     # nothing. That is the instrument being out, not the program being
-    # broken, and the two must never come out the same: a check that could
+    # broken, and the two must never come out the same. A check that could
     # not run reading like one that failed is the fault this tool is for.
     if unmeasurable:
         return Result(case=case, outcome=UNKNOWN,
@@ -255,16 +255,16 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
                       evidence="")
 
     # **A page that rendered nothing is not a page that works.** It is the one
-    # thing the derived plan cannot otherwise report: an app that mounts
+    # thing the derived plan cannot otherwise report. An app that mounts
     # nothing offers no controls, so the plan is a single case that asserts
     # only that nothing threw, and an empty document throws nothing. That
     # came back `1 case, 1 passed, exit 0` about a React app whose component
-    # returned null for ever. No text, no image, no paint: whatever else is
+    # returned null for ever. No text, no image, no paint. Whatever else is
     # true of the program, what it renders is a blank page.
     # …but only once there was a chance for something to appear. A freehand
     # drawing tool is an empty canvas and nothing else until somebody draws
     # on it, and at load it is indistinguishable from a dead game that draws
-    # nothing ever. What separates them is whether anything answers: so this
+    # nothing ever. What separates them is whether anything answers, so this
     # fails a case that *acted* and left the page still empty, or a page that
     # offers nothing to act on at all. A blank page with a canvas on it gets
     # to be judged by what the canvas does, and by a case that actually
@@ -278,7 +278,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # **A page that threw is not the program the case is about.** Everything
     # after an uncaught exception did not happen.
     if crashes:
-        flag("threw", f"the page threw an error and stopped running: "
+        flag("threw", f"the page threw an error and stopped running, "
                       f"{crashes[0]}")
 
     # An act the page refused fails a case only when nothing could be done.
@@ -286,7 +286,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # that is the program working, and a `quiet` case never fails on one at
     # all, because `quiet` asserts only that nothing threw.
     if could_not and not quiet and len(could_not) >= len(case.acts or [None]):
-        flag("could-not", "could not " + "; nor ".join(could_not[:3]))
+        flag("could-not", "could not " + ", nor ".join(could_not[:3]))
 
     if case.expect.get("painted") and browser.unpainted(after):
         flag("unpainted", f"{browser.unpainted(after)} canvas(es) still show "
@@ -313,7 +313,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # whose whole point is how two acts compare with each other, and it
     # fires first, so its complaint is what gets reported. That is how the
     # off-by-one case came to fail every button on a working painter with
-    # `the first press: changed the page` printed in its own evidence.
+    # `the first press changed the page` printed in its own evidence.
     own_rule = any(case.expect.get(k) for k in ("again", "same_each"))
 
     # **A program that ran to a stop on its own reached a state it chose,
@@ -324,7 +324,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # describes the tool's timing, not the program.
     #
     # **Unless the page said what to press.** That is the whole of the
-    # difference, and it is readable: one snake puts `Game Over! Press Space
+    # difference, and it is readable. One snake puts `Game Over! Press Space
     # to restart.` on the screen and ignores Space, which is a contract it
     # wrote itself and broke, and the other says nothing and owes nothing.
     # From outside they are otherwise the same page.
@@ -367,7 +367,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
             and int(now_row.get("many") or 0) < int(was_row.get("many") or 0)
             and was_row["text"] in (now_row.get("all") or [])):
         flag("wrong-row", f"this removed a row, but not the one it belongs "
-                          f"to: {was_row['text'][:60]!r} is still there")
+                          f"to, and {was_row['text'][:60]!r} is still there")
 
 
     # **A surface that took the first stroke has to take the second.** The
@@ -379,9 +379,9 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # this needs no policy about what kind of canvas it is looking at. The
     # program establishes its own baseline, exactly as the settle rule does.
     # **A control that answers only its second press has lost one.** Both
-    # presses are the same act; `answered_once` says what the first one did
+    # presses are the same act, and `answered_once` says what the first one did
     # and `before`/`after` bracket the second. Nothing here reads the words
-    # on the control: a page where the first press does nothing and the
+    # on the control. A page where the first press does nothing and the
     # second does something is incoherent whatever the button is called.
     if case.expect.get("same_each"):
         # **Asked of the square itself, where the square is what was
@@ -389,7 +389,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
         # the cell plain on the first click and looking booked on the
         # second, and the page moved both times because a summary line
         # followed. Asked of the page, both presses answered and nothing was
-        # wrong; asked of the cell, the first press did nothing to the thing
+        # wrong. Asked of the cell, the first press did nothing to the thing
         # it was aimed at.
         #
         # A gallery thumbnail that opens a lightbox is unchanged by *both*
@@ -404,7 +404,7 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
             if was == now and back is not None and back != now \
                     and shifted is True:
                 flag("one-behind-cell",
-                     "clicking this twice: the first click did not change it "
+                     "clicking this twice, the first click did not change it "
                      "and the second did, so it reacts one press late")
             # **It went back and the page did not.** A tag that switches
             # itself off is saying the filter it switched on is off again,
@@ -432,14 +432,14 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
                      "click did is still in effect")
         elif answered_once is False and shifted is True:
             flag("one-behind",
-                 "pressing this twice from the same starting point: the first "
+                 "pressing this twice from the same starting point, the first "
                  "press changed nothing and the second did, so it reacts one "
                  "press late")
+        first = "changed the page" if answered_once else "did nothing"
+        second = browser.changed(before, after) or "nothing changed"
         return Result(case=case, outcome=FAILED if bad else PASSED,
-                      detail="; ".join(bad)[:400], rules=rules,
-                      evidence=(f"the first press: "
-                                f"{'changed the page' if answered_once else 'did nothing'}"
-                                f"; the second: {browser.changed(before, after)}")[:400])
+                      detail=". ".join(bad)[:400], rules=rules,
+                      evidence=f"the first press {first}. on the second, {second}"[:400])
 
     if case.expect.get("again") and answered_setup:
         if shifted is False:
@@ -462,14 +462,14 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
     # taking its word is how a limit gets to be a limit.
     observed = browser.changed(before, after)
     if was_off:
-        observed += ("; " if observed else "") + (
-            f"{was_off[0]}: the program has that control disabled")
+        observed += (", " if observed else "") + (
+            f"the program has {was_off[0]} disabled")
     if could_not and not bad:
-        observed += ("; " if observed else "") + (
+        observed += (", " if observed else "") + (
             "could not " + could_not[0] + ", and the rest of the case went ahead")
 
     return Result(case=case, outcome=FAILED if bad else PASSED,
-                  detail="; ".join(bad)[:400], evidence=observed[:400],
+                  detail=". ".join(bad)[:400], evidence=observed[:400],
                   rules=rules)
 
 
@@ -483,7 +483,7 @@ def _text(page: Any) -> str:
 def _shoot(page: Any, into: Optional[Path], name: str) -> str:
     """A picture of the page, or nothing when none are being kept.
 
-    Full page rather than viewport: a report whose screenshot stops at 800px
+    Full page rather than viewport. A report whose screenshot stops at 800px
     cuts off the thing that failed about as often as not.
     """
     if into is None:
@@ -523,7 +523,7 @@ def _seeding(cases: Sequence[Case]) -> List[Dict[str, str]]:
 
     Taken from the plan rather than invented, because working out what to
     type into which box and which button sends it is exactly what the plan
-    already did. The shortest one: a widget with two fields is filled
+    already did. The shortest one, a widget with two fields is filled
     together, and the case naming the first field carries the same acts as
     the case naming the second.
     """
@@ -582,7 +582,7 @@ def _once_there_is_data(was: Surface, now: Surface,
     this shape.
 
     The page is filled in and submitted twice, so the list holds more than
-    one thing: a Delete that removes the wrong row cannot show that with one
+    one thing. A Delete that removes the wrong row cannot show that with one
     row on screen. Then the surface is measured again and the ordinary
     planner is asked for cases about it, and every case that reaches a
     control which was not there before is kept, with the filling in front of
@@ -613,7 +613,7 @@ def check(folder: str | Path, entry: str = "index.html",
     case. Without it nothing is written and the run is a little faster, which
     is what you want from a CI check that only cares about the exit code.
     """
-    # The same reading the command line gives a path: a file is the page,
+    # The same reading the command line gives a path. A file is the page,
     # a folder holds one. Both entry points agree, so `check("./todo.html")`
     # and `assay ./todo.html` open the same thing.
     root, entry = aimed(folder, entry)
@@ -671,7 +671,7 @@ def check(folder: str | Path, entry: str = "index.html",
         #: and the case that fills that field is not the one that looks.
         drew: List[bool] = []
         #: What the page said about itself, against the first case that saw
-        #: it. Kept once each: a label pointing at nothing is the same fault
+        #: it. Kept once each. A label pointing at nothing is the same fault
         #: whether one case noticed it or fifteen did, and reporting it
         #: fifteen times buries everything else.
         noticed: Dict[str, Tuple[str, str]] = {}
@@ -717,15 +717,15 @@ def check(folder: str | Path, entry: str = "index.html",
                 # now holds what was typed, so a case that types and then
                 # presses a dead button was satisfied by its own keystrokes,
                 # and a todo list whose Add does nothing passed. The setup
-                # runs first and is measured out of the way; what has to
-                # answer for itself is the act the case is named for.
+                # runs first and is measured out of the way, and what has
+                # to answer for itself is the act the case is named for.
                 # ...but only where the setup is *typing*. A canvas case is
                 # click, drag and a run of keys, and the whole sequence is
-                # the point: measuring just its last act put the keyboard's
+                # the point. Measuring just its last act put the keyboard's
                 # effect into the *before* picture and failed a canvas that
-                # answers the keyboard. Filling is setup; pressing is not.
+                # answers the keyboard. Filling is setup, pressing is not.
                 # The same split serves the second-stroke case, and for the
-                # same reason: what has to answer is the stroke the case is
+                # same reason. What has to answer is the stroke the case is
                 # named for, so the first stroke's marks belong in the
                 # *before* picture or the case is satisfied by them.
                 fills_first = (len(case.acts) > 1
@@ -734,7 +734,7 @@ def check(folder: str | Path, entry: str = "index.html",
                                         for a in case.acts[:-1])
                                     or case.expect.get("again")))
                 # The second-stroke case is one stroke of setup and every
-                # trial after it, not everything-but-the-last: the trials are
+                # trial after it, not everything-but-the-last. The trials are
                 # alternatives, and burying all but one of them in the setup
                 # would make the extra places change nothing.
                 setup, final = (
@@ -748,7 +748,7 @@ def check(folder: str | Path, entry: str = "index.html",
                 # case whatever is pressed, and one that had already died
                 # passed on the strength of its own last frames.
                 # The second-stroke case needs this every bit as much as
-                # the `changes` case does, and for one reason: on a canvas
+                # the `changes` case does, and for one reason. On a canvas
                 # that moves by itself, *the first stroke drew* is a
                 # sentence about the animation. Two working snakes were
                 # called painters that had forgotten how to draw.
@@ -760,7 +760,7 @@ def check(folder: str | Path, entry: str = "index.html",
                 itself_before = (browser.itself(page, case.control)
                                  if case.expect.get("itself") else None)
                 was_quiet = rested.quiet
-                # Moving when the watch began and still by the end: the
+                # Moving when the watch began and still by the end. The
                 # program ran and stopped on its own terms.
                 self_stopped = rested.quiet and rested.moved
                 if was_quiet:
@@ -775,7 +775,7 @@ def check(folder: str | Path, entry: str = "index.html",
                                            "told from the animation")
 
                 # **The off-by-one case is measured between its two
-                # presses**, because that is the whole question: a control
+                # presses**, because that is the whole question. A control
                 # answering only the second press is what has to be visible,
                 # and a before-and-after across both cannot see it.
                 if case.expect.get("same_each"):
@@ -801,7 +801,7 @@ def check(folder: str | Path, entry: str = "index.html",
                                 answered.add(case.id)
                             drew.append(_drew(one_stroke))
                             # Judged for everything but the one question it
-                            # cannot ask: a page that threw is still a page
+                            # cannot ask. A page that threw is still a page
                             # that threw.
                             result = judge(
                                 case, one_stroke, two_strokes, crashes,
@@ -822,7 +822,7 @@ def check(folder: str | Path, entry: str = "index.html",
                     # differs either side of anything.** A world clock ticks,
                     # so a toggle that switched itself back looked like one
                     # whose effect had stuck. `settle_canvas` cannot answer
-                    # this: it is only asked where there is a canvas, and a
+                    # this. It is only asked where there is a canvas, and a
                     # grid has none. So the page is watched doing nothing for
                     # a moment, which is the whole question.
                     watched = bool(case.expect.get("itself"))
@@ -855,7 +855,7 @@ def check(folder: str | Path, entry: str = "index.html",
                         answered.add(case.id)
                     drew.append(_drew(after_one) or _drew(after))
                     # The element either side of the *first* press, against
-                    # a page compared either side of the second: the
+                    # a page compared either side of the second. The
                     # question is whether the square sat out the press it
                     # was given.
                     result = judge(
@@ -902,7 +902,7 @@ def check(folder: str | Path, entry: str = "index.html",
                 if len(final) > 1:
                     could_not_more, was_off_more = [], []
                     # **Which of the two presses answered.** A sequence is
-                    # judged as one measurement, which is right: what it
+                    # judged as one measurement, which is right. What it
                     # asks is whether the page responded to the pair. But a
                     # control only ever gets its turn inside a pair when it
                     # needs the other one to have gone first, and Previous
@@ -913,7 +913,7 @@ def check(folder: str | Path, entry: str = "index.html",
                     for at, step in enumerate(final):
                         # **The row has to be read after the page has been
                         # filled in and before the button is pressed.** These
-                        # cases carry their own setup: the whole point is a
+                        # cases carry their own setup. The whole point is a
                         # control that does not exist until the page is
                         # holding something, so on a freshly loaded page
                         # there is no row to be in.
@@ -935,7 +935,7 @@ def check(folder: str | Path, entry: str = "index.html",
                             # **The list with two rows in it, before the
                             # case's own press.** One row cannot show a row
                             # holding the wrong figure when that figure is a
-                            # running total: with one row the total is the
+                            # running total. With one row the total is the
                             # amount. Each submission is asked about on its
                             # own, so a second one the page refused is not
                             # read as the first one's words going missing.
@@ -972,7 +972,7 @@ def check(folder: str | Path, entry: str = "index.html",
                     page.wait_for_timeout(1200)
                     after = browser.signature(page)
                 # **A field can be submitted by pressing Enter**, and some
-                # pages have no submit button at all: one todo list adds a
+                # pages have no submit button at all. One todo list adds a
                 # task on `keydown` and its only button is a `Clear
                 # completed` sitting in the same container, which takes
                 # nothing from the field and is right not to. The case means
@@ -988,7 +988,7 @@ def check(folder: str | Path, entry: str = "index.html",
                         page.wait_for_timeout(500)
                         after = browser.signature(page)
                 if was_quiet and browser.moved(before, after) is False:
-                    # Quiet before, acted on, still quiet: nothing answered.
+                    # Quiet before, acted on, still quiet. Nothing answered.
                     # Give it the same grace a first paint gets, in case the
                     # response is on a timer.
                     page.wait_for_timeout(900)
@@ -999,7 +999,7 @@ def check(folder: str | Path, entry: str = "index.html",
                         if case.expect.get("survives") else [])
                 shot_after = _shoot(page, shots, f"{case.id}-after")
                 text = _text(page)
-                # Read now, not at load: a canvas is meant to be empty until
+                # Read now, not at load. A canvas is meant to be empty until
                 # something is done to it, so what settles whether this page
                 # shows nothing is what it shows *after* the case.
                 now = browser.rendered(page)
@@ -1054,7 +1054,7 @@ def check(folder: str | Path, entry: str = "index.html",
         # nothing.** This finding is about the whole program, so it has to
         # be sure the whole program arrived, and `settle` giving up at its
         # ceiling means exactly that it could not tell. One page here loads
-        # its list after a delay: on a quiet machine it settles and is
+        # its list after a delay. On a quiet machine it settles and is
         # tested properly, and on a busy one it was still arriving, offered
         # one control instead of two, and was called dead. A verdict must
         # not depend on how loaded the machine is.
@@ -1141,7 +1141,7 @@ def _noted(seen: Dict[str, Any], case: Case,
 
 
 #: Words that mean the opposite of each other, as a page labels its
-#: controls. Deliberately short: each pair has to be a genuine reversal, so
+#: controls. Deliberately short. Each pair has to be a genuine reversal, so
 #: that a page offering both is a page claiming one undoes the other. `on`
 #: and `off` are not here because one button is routinely labelled with the
 #: state it will move to rather than the state it is in.
@@ -1157,7 +1157,7 @@ _WORDS = re.compile(r"[a-z]+")
 
 
 #: What is safe to look for afterwards. The long and awkward probes are
-#: deliberately absent: a page is allowed to trim three hundred characters or
+#: deliberately absent. A page is allowed to trim three hundred characters or
 #: escape a quotation, and neither is a fault.
 _PLAIN = re.compile(r"^[\w .@:/-]{2,40}$")
 
@@ -1179,7 +1179,7 @@ def _plainly(acts: Sequence[Dict[str, str]]) -> List[str]:
 
 
 def _lists_in(counts: Sequence[Dict[str, Any]]) -> set:
-    """Which classes are a list: the ones whose count varies across the run.
+    """Which classes are a list, the ones whose count varies across the run.
 
     Waiting for two of something on screen at once misses the commonest
     shape there is, because a page that goes from holding nothing to holding
@@ -1199,12 +1199,12 @@ def _never_shown(run: QA, counts: List[Dict[str, Any]],
     address and a password, says *Account created*, and shows neither, which
     is correct and in the password's case required. The first version of
     this asked only whether the page had grown, and reported exactly that
-    form. A row in a list is different: it exists to show what went into it,
+    form. A row in a list is different. It exists to show what went into it,
     and a bookmark whose Open link carries the title instead of the address
     has lost the address entirely.
 
     So the question is asked of the list rather than of the page, and only
-    of a page that has one, which is why it waits until the end: what counts
+    of a page that has one, which is why it waits until the end. What counts
     as a list is settled by watching it change size.
     """
     lists = _lists_in(counts)
@@ -1232,7 +1232,7 @@ def _never_shown(run: QA, counts: List[Dict[str, Any]],
                  "never-shown",
                  f"{', '.join(repr(one) for one in gone[:2])} was typed in "
                  f"and accepted, but the new row in the list does not show "
-                 f"it; first seen at {case_id}",
+                 f"it, first seen at {case_id}",
                  evidence=shown[:300])
         return
 
@@ -1258,7 +1258,7 @@ def _opposites_disagree(run: QA, surface: Optional[Surface],
     it is pressed, and never once answering the other.
 
     The reversal is the whole of it, and it is read from the page's own
-    labels rather than assumed: two controls whose words differ by exactly
+    labels rather than assumed. Two controls whose words differ by exactly
     one, and that one word a genuine opposite. A flashcard deck whose
     Previous is wired to a condition that can never be true meets it, and so
     does a history with a dead Redo.
@@ -1294,7 +1294,7 @@ def _how_many(seen: Dict[str, Any], lists: Sequence[str]) -> int:
     """How many things were on show in one reading.
 
     The largest single repeated thing rather than the sum of them, because a
-    row holds its own parts: a bookmark carries a title and a link that
+    row holds its own parts. A bookmark carries a title and a link that
     repeat exactly as often as the bookmark does, and adding those together
     counts one row three times.
     """
@@ -1309,7 +1309,7 @@ def _counts_wrong(run: QA, counts: List[Dict[str, Any]]) -> None:
     **The page says which number is about the list, by moving them
     together.** A bookmark manager whose counter reads one fewer than the
     rows beneath it changes that counter by one every time a row arrives, so
-    it plainly is the count; it is simply always wrong by the same amount.
+    it plainly is the count, it is simply always wrong by the same amount.
     Nothing here decides what a number is for. It is read off how the number
     behaves across the whole run, and a number that does not move with the
     list is never looked at again.
@@ -1317,7 +1317,7 @@ def _counts_wrong(run: QA, counts: List[Dict[str, Any]]) -> None:
     **And being off by a constant is not enough on its own.** A basket
     charging a flat fee moves in step with its contents and is right at every
     step. What cannot be right is a count that is not zero when there is
-    nothing to count, and that is the whole of the test: the page showed an
+    nothing to count, and that is the whole of the test. The page showed an
     empty list and a number about that list saying there was something.
 
     Whole numbers only. A decimal point is a measurement rather than a
@@ -1326,7 +1326,7 @@ def _counts_wrong(run: QA, counts: List[Dict[str, Any]]) -> None:
     if len(counts) < 3:
         return
     # **A list is a thing whose count varies.** Waiting for two of it on
-    # screen at once misses the commonest shape there is: a page that goes
+    # screen at once misses the commonest shape there is. A page that goes
     # from holding nothing to holding one thing has shown you a list, and a
     # run that never fills it twice never learns that.
     lists = _lists_in(counts)
@@ -1353,7 +1353,7 @@ def _counts_wrong(run: QA, counts: List[Dict[str, Any]]) -> None:
                  f"a number on this page goes up and down by one with the "
                  f"list, so it counts the list, but it shows {empty[0]} when "
                  f"the list is empty. It is {off:+d} off at every size",
-                 evidence="; ".join(f"{size} shown, it says {said}"
+                 evidence=". ".join(f"{size} shown, it says {said}"
                                     for size, said in sorted(pairs))[:300])
         return
 
@@ -1371,9 +1371,9 @@ def _follows_one_way(run: QA, counts: List[Dict[str, Any]],
 
     **An expense tracker that forgets to re-total on delete.** Adding moves
     the total every time, so the page has said plainly that the total is
-    about the list; removing a row leaves it standing at a figure for money
+    about the list, and removing a row leaves it standing at a figure for money
     that is no longer owed. Nothing here does the arithmetic, and it does
-    not need to: the question is only whether the number moved, and the page
+    not need to. The question is only whether the number moved, and the page
     answered it one way a moment earlier.
 
     Money is deliberately allowed here where the counting rule refuses it. A
@@ -1384,7 +1384,7 @@ def _follows_one_way(run: QA, counts: List[Dict[str, Any]],
     unanimous. A number that sometimes moves and sometimes does not is a
     number doing something else.
     """
-    # No guard on there being a class that repeats: a table's rows are
+    # No guard on there being a class that repeats. A table's rows are
     # `<tr>` and carry no class at all, and an expense tracker is exactly
     # that shape. What settles whether there is a list here is that the
     # count moved.
@@ -1427,14 +1427,14 @@ def _page_says(run: QA, noticed: Dict[str, Tuple[str, str]]) -> None:
     """Turn what the page said about itself into findings.
 
     Read rather than driven, like `_unfillable_boxes` beside it, and
-    numbered in the same `F` series for the same reason: none of these is an
+    numbered in the same `F` series for the same reason. None of these is an
     act somebody could repeat, they are things that were true while the page
     was being used.
     """
     for key, (case_id, detail) in noticed.items():
         kind, _, what = key.partition(":")
         if kind == "computed":
-            said = (f"the page shows `{what}` where a value should be: "
+            said = (f"the page shows `{what}` where a value should be, "
                     f"\"{detail}\". This usually means a value was used "
                     f"before it was set, or calculated from something that "
                     f"is not a number")
@@ -1445,7 +1445,7 @@ def _page_says(run: QA, noticed: Dict[str, Tuple[str, str]]) -> None:
         else:
             said = detail
             asked = "labels and radio buttons are linked correctly"
-        _finding(run, asked, kind, f"{said}; first seen at {case_id}",
+        _finding(run, asked, kind, f"{said}, first seen at {case_id}",
                  subject=f"{asked}: {what}")
 
 
@@ -1478,7 +1478,7 @@ def _unfillable_boxes(run: QA, engine: Browser) -> None:
 
 
 def _worth_pressing(where: Surface) -> List[Any]:
-    """What the page-wide guard presses: the first few things to click."""
+    """What the page-wide guard presses, the first few things to click."""
     return [c for c in where.operable
             if c.kind in ("button", "link", "cell") and c.enabled][:6]
 
@@ -1489,7 +1489,7 @@ def _waited_out(engine: Browser, surface: Surface) -> bool:
     **The most expensive verdict here is the one that gets the most
     patience.** Every case measures a moment after it acts, which is right
     for a button that answers immediately and wrong for one that starts
-    something slow: a page whose Retry begins a two-second load looks inert
+    something slow. A page whose Retry begins a two-second load looks inert
     in the four hundred milliseconds a case allows it, and the page-level
     rule then calls the whole program dead.
 
@@ -1522,7 +1522,7 @@ def _one_look(engine: Browser) -> bool:
             # **The page is opened again, so what it offers now is what can
             # be pressed.** One program here rejects its own load thirty per
             # cent of the time by design, so the reopened page is often not
-            # the page the surface was measured on: it shows a list where the
+            # the page the surface was measured on. It shows a list where the
             # first load showed an error and a Retry. Pressing selectors from
             # a page that no longer exists presses nothing, nothing moves,
             # and the guard then waves through the very verdict it exists to
@@ -1530,8 +1530,8 @@ def _one_look(engine: Browser) -> bool:
             pressable = _worth_pressing(
                 from_page(_Shot(browser.elements(page))))
             # **Nothing to press is not evidence of death.** The page this
-            # was reopened for offered a Retry because its load had failed;
-            # this one loaded and shows the list, so it has a filter box and
+            # was reopened for offered a Retry because its load had failed.
+            # This one loaded and shows the list, so it has a filter box and
             # no buttons at all. Pressing nothing moves nothing, and reading
             # that as confirmation condemned a working program one run in
             # five. A program that comes up differently from the one the
@@ -1554,7 +1554,7 @@ def _drew(shot: Dict[str, Any]) -> bool:
     on a transparent canvas counts, which is why this cannot be uniformity
     alone: only the ink is measured there, so a black line is a single colour.
     """
-    # A page can blind the driver: one generated calculator declares
+    # A page can blind the driver. One generated calculator declares
     # `function eval()`, so every reading comes back as whatever that
     # returns rather than as a measurement. Unreadable is not undrawn.
     if not isinstance(shot, dict):
@@ -1576,7 +1576,7 @@ def _nothing_drawn(run: QA, drew: bool, opened: Opened) -> None:
     pixels out of 836,000: completely full, and showing nothing.
 
     No single case can say this. The plan demands that a canvas draw only when
-    the page offers nothing else to press, and that gate is right: a chart is
+    the page offers nothing else to press, and that gate is right. A chart is
     blank until something is typed into the field beside it, and a canvas of
     bouncing balls has no balls until one is added, so demanding an answer
     from either called four working programs dead. What is fair to ask is the
@@ -1584,7 +1584,7 @@ def _nothing_drawn(run: QA, drew: bool, opened: Opened) -> None:
     every field was filled, the canvas was clicked at four points, dragged
     across and driven with the keyboard, and it never once held two colours.
 
-    Guarded exactly as the page-wide verdict is, and for the same reason: if
+    Guarded exactly as the page-wide verdict is, and for the same reason. If
     there is surface here the plan could not reach, then what was never driven
     may be the only thing that would have drawn.
     """
@@ -1595,7 +1595,7 @@ def _nothing_drawn(run: QA, drew: bool, opened: Opened) -> None:
     if len(acted) < 2 or any(r.failed for r in run.results.values()):
         return
     _finding(run, "something appears on the canvas", "nothing-drawn",
-             f"nothing ever appeared on this canvas: {len(acted)} checks used "
+             f"nothing ever appeared on this canvas, {len(acted)} checks used "
              f"the page and the canvas stayed one flat colour, so whatever "
              f"the program draws is not reaching the screen",
              page_wide=True)
@@ -1606,7 +1606,7 @@ def _nothing_responds(run: QA, answered: set, engine: Browser,
     """A page that answers none of its own controls has nothing behind it.
 
     This is the only finding here that no single case can make, and it has
-    to be that way. A lone button is allowed to do nothing visible: a
+    to be that way. A lone button is allowed to do nothing visible. A
     palette swatch selects a colour and says so somewhere the driver cannot
     read, so every case asks only that it survives being pressed, and a
     kanban board whose three `+ Add` buttons are wired to nothing passed
@@ -1624,7 +1624,7 @@ def _nothing_responds(run: QA, answered: set, engine: Browser,
 
     **And it needs the plan to have been the whole page.** This is a verdict
     on everything, drawn from whatever the plan happened to reach, and the
-    count of cases cannot tell those apart: a kanban board with three dead
+    count of cases cannot tell those apart. A kanban board with three dead
     `Add` buttons ran fourteen cases and deserved it, and a sortable table
     ran twelve, every one of them a click on a data cell, while the three
     headers that do the sorting were never touched. It said the page answers
@@ -1652,7 +1652,7 @@ def _nothing_responds(run: QA, answered: set, engine: Browser,
         return
     _finding(run, "something on the page responds when used",
              "nothing-responds",
-             f"nothing on the page changed after any control was used: "
+             f"nothing on the page changed after any control was used, "
              f"{len(acted)} checks used what the page offers and none of them "
              f"changed it, so the controls do not seem to be connected to "
              f"any code",

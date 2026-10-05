@@ -93,7 +93,7 @@ $ assay bench/programs/dsh/gpt-oss-120b/37_draw2
 
 C015 [ok] draw on canvas, then draw somewhere else on it
 C016 [FAILED] draw on canvas twice, then press Undo twice
-    → pressing this twice from the same starting point: the first press changed nothing and the second did, so it reacts one press late
+    → pressing this twice from the same starting point, the first press changed nothing and the second did, so it reacts one press late
 C017 [ok] draw on canvas twice, then press Redo twice
 ```
 
@@ -101,9 +101,9 @@ Nothing is written to disk unless you ask. The exit code is non-zero if
 anything failed. `--report` shows the page before and after every check:
 
 <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/report.png" alt="One check from an assay report on a
-tag filter: the tag was clicked twice, it went back to how it looked, and the
-list stayed filtered. Shown with the actions, the reason, and screenshots of
-the page before and after: twelve items, then one.">
+tag filter, where the tag was clicked twice, it went back to how it looked,
+and the list stayed filtered. Shown with the actions, the reason, and
+screenshots of the page before and after, twelve items and then one.">
 
 From Python:
 

@@ -50,7 +50,7 @@ class Result:
     #: browser word here would be the first thread of the tangle.
     artifacts: Dict[str, str] = field(default_factory=dict)
     #: Which rules this case broke, as short fixed names, in the order they
-    #: fired. The detail is prose for a person; this is what a benchmark
+    #: fired. The detail is prose for a person. This is what a benchmark
     #: verdict or a grouping can hold on to without parsing it.
     rules: List[str] = field(default_factory=list)
     #: What the finding is about, when the case's own words do not say it:
@@ -96,7 +96,7 @@ class Result:
                 + tint.paint(self.case.what,
                              *(() if self.failed else (tint.DIM,)), on=colour))
         # A repeat points at the first of its group instead of saying the
-        # same sentence again; everything else keeps its own detail.
+        # same sentence again, and everything else keeps its own detail.
         same = [one for one in self.links if one.kind == "same"]
         if self.detail and not same:
             line += "\n" + tint.paint(f"    → {self.detail}", tint.RED,
@@ -125,7 +125,7 @@ class QA:
         self.plan: List[Case] = []
         self.results: Dict[str, Result] = {}
         #: What the page logged as errors and which requests failed, across
-        #: every tab the run opened. Information only; see `cli.as_json`.
+        #: every tab the run opened. Information only. See `cli.as_json`.
         self.console_errors: List[str] = []
         self.failed_requests: List[str] = []
 
@@ -143,10 +143,10 @@ class QA:
             try:
                 self.results[case.id] = self.carry_out(case)
             except Exception as exc:                    # a harness fault
-                LOG.debug("case %s could not be carried out: %s", case.id, exc)
+                LOG.debug("case %s could not be carried out, %s", case.id, exc)
                 self.results[case.id] = Result(
                     case=case, outcome=UNKNOWN,
-                    detail=f"could not be carried out: {exc}")
+                    detail=f"could not be carried out, {exc}")
 
     # -- what it established ------------------------------------------------
 
@@ -154,7 +154,7 @@ class QA:
     def failing(self) -> List[Result]:
         """Every case that came out wrong, worst first.
 
-        The contract before the rest: a criterion is what the program owes
+        The contract before the rest. A criterion is what the program owes
         and a derived case is coverage, so a program that fails its contract
         is broken whatever else passes.
         """
@@ -187,7 +187,7 @@ class QA:
     def render(self, colour: bool = False) -> str:
         """The whole record, in plan order.
 
-        Plan order rather than failures-first: the sequence is the story of
+        Plan order rather than failures-first. The sequence is the story of
         what was tried, and a case reads differently for what came before it.
         Colour is what makes the failures findable without reordering them.
         """
