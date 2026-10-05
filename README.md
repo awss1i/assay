@@ -1,15 +1,19 @@
-# assay
+<h1 align="center">assay</h1>
 
-[![python](https://img.shields.io/badge/python-3.10%2B-blue)](https://github.com/awss1i/assay/blob/main/pyproject.toml)
-[![licence](https://img.shields.io/badge/licence-MIT-blue)](https://github.com/awss1i/assay/blob/main/LICENSE)
-[![X](https://img.shields.io/badge/follow-@awss1i-blue?logo=x)](https://x.com/awss1i)
+<p align="center">
+  <a href="https://github.com/awss1i/assay/blob/main/pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python"></a>
+  <a href="https://github.com/awss1i/assay/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-MIT-blue" alt="licence"></a>
+  <a href="https://x.com/awss1i"><img src="https://img.shields.io/badge/follow-@awss1i-blue?logo=x" alt="X"></a>
+</p>
 
-**Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.**
+<p align="center"><strong>Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.</strong></p>
 
-<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a list
+<p align="center">
+  <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a list
 you reorder by dragging. 7 checks planned from the page, 1 passed and 6
 failed. The first failure says nothing on the page changed at all, and the
 other five say they are the same finding.">
+</p>
 
 <p align="center"><i>Checking a drag-to-reorder list with a bug in it.</i> <code>pip install assay-ui</code></p>
 
@@ -25,6 +29,23 @@ them, and reports what went wrong.
   Harness does it automatically after every turn.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
+
+---
+
+## Contents
+
+- [Install](#install)
+  - [For coding agents](#for-coding-agents)
+- [Use](#use)
+  - [With coding agents](#with-coding-agents)
+- [Benchmarks](#benchmarks)
+- [How It Works](#how-it-works)
+- [Why](#why)
+- [Limits](#limits)
+- [Contributing](#contributing)
+- [Licence](#licence)
+
+---
 
 ## Install
 
@@ -55,6 +76,8 @@ pip install -e ".[dev]"
 Install the CLI above first, then follow the
 **[harness setup →](https://github.com/awss1i/assay/blob/main/docs/harnesses.md)**
 to add the skill or plugin in any of the fifteen supported harnesses.
+
+---
 
 ## Use
 
@@ -103,6 +126,8 @@ unless you ask.
 
 **[How the skill and plugin work →](https://github.com/awss1i/assay/blob/main/plugins/assay/README.md)**
 
+---
+
 ## Benchmarks
 
 Scored on two sets of pages in this repository. Every number here is written
@@ -125,6 +150,8 @@ added and written down.
 Found 12 of the 50 added bugs, with 0 of the 10 original pages flagged. [Every bug and result](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).
 
 <!-- /planted -->
+
+---
 
 ## How It Works
 
@@ -150,6 +177,8 @@ contradicts itself. For example:
 
 **[Every rule →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.md)**
 
+---
+
 ## Why
 
 Playwright and Cypress need tests someone wrote. Visual regression needs a
@@ -162,6 +191,8 @@ running it. assay runs it, with nothing prepared in advance.
 | Percy / Chromatic | no | **yes** | it screenshots it |
 | ask a model to review it | no | no | **no, it reads the source** |
 | **assay** | **no** | **no** | **yes, all of it** |
+
+---
 
 ## Limits
 
@@ -177,11 +208,15 @@ running it. assay runs it, with nothing prepared in advance.
 - **Speed.** Most pages take a few seconds to a minute. The benchmark page
   has every page's time and the machine they were measured on.
 
+---
+
 ## Contributing
 
 Report bugs and false alarms as issues, send changes as pull requests, and ask
 questions in [Discussions](https://github.com/awss1i/assay/discussions). See
 **[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)**.
+
+---
 
 ## Licence
 
