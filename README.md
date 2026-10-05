@@ -6,11 +6,12 @@
 
 **Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.**
 
-<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a snake
-game. 7 checks planned from the page, 6 passed and 1 failed. The failure says
-the page tells you to press Space, but pressing Space changes nothing.">
+<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a list
+you reorder by dragging. 7 checks planned from the page, 1 passed and 6
+failed. The first failure says nothing on the page changed at all, and the
+other five say they are the same finding.">
 
-<p align="center"><i>Checking a snake game with a bug in it.</i> <code>pip install assay-ui</code></p>
+<p align="center"><i>Checking a drag-to-reorder list with a bug in it.</i> <code>pip install assay-ui</code></p>
 
 assay opens your page in Chromium, finds every control on it, uses all of
 them, and reports what went wrong.

@@ -1,7 +1,7 @@
 """Draw `run.svg` from a real run, so the picture cannot drift from the tool.
 
-    python docs/hero.py bench/programs/dsh/gpt-oss-120b/34_snake2 \
-                        "assay ./snake" docs/run.svg
+    python docs/hero.py bench/programs/opencode/gpt-oss-120b/58_reorder \
+                        "assay ./reorder" docs/run.svg
 
 The one this replaces was drawn by hand, and by the time anybody looked it
 showed colour the command did not print and a program that does not exist. A
@@ -24,20 +24,20 @@ PAPER, DIM, TEXT, BRIGHT = "#12131a", "#6d7385", "#c6cad6", "#eef0f5"
 GREEN, RED, AMBER = "#5ac37d", "#ef6b73", "#e2c15f"
 #: Font size, line spacing, and how wide one character is at that size.
 #:
-#: A monospace character at 15px takes about 9.0, and the box is sized from
-#: `ADVANCE`, so 9.1 leaves a little room: a box wider than its text costs
+#: A monospace character at 17px takes about 10.2, and the box is sized from
+#: `ADVANCE`, so 10.3 leaves a little room: a box wider than its text costs
 #: nothing, and one narrower than its text clips the longest row.
 #:
-#: `LEAD` is 20 for a line height of 1.33, which is what a terminal looks
+#: `LEAD` is 23 for a line height of 1.35, which is what a terminal looks
 #: like.
-SIZE, LEAD, TOP, LEFT, PAD, ADVANCE = 15, 20, 46, 22, 18, 9.1
+SIZE, LEAD, TOP, LEFT, PAD, ADVANCE = 17, 23, 50, 22, 18, 10.3
 #: Where long lines wrap. GitHub shows a README picture at most about 830px
-#: wide and scales a wider one down, text and all. Unwrapped, the error line
-#: makes the picture over 1300px wide and the text shows at about 9px. At 86
-#: columns the picture is 826px wide, so it fits and the text shows at `SIZE`.
-#: Lines break between words and the rest is indented under the text, so a
-#: message reads as one.
-COLUMNS = 86
+#: wide and scales a wider one down, text and all. Unwrapped, a long error
+#: line makes the picture over 1300px wide and GitHub shrinks the text to
+#: about 10px. At 76 columns the picture is 827px wide, so it fits and the
+#: text shows at `SIZE`. Lines break between words and the rest is indented
+#: under the text, so a message reads as one.
+COLUMNS = 76
 #: Seconds: typing starts at `TYPE`, a key every `KEY`; the run answers
 #: `WAIT` after the last key and prints a line every `STEP`; the finished
 #: screen holds for `HOLD`, fades over `FADE`, and the cycle starts again.

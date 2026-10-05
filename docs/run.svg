@@ -1,46 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="827" height="316"
-     viewBox="0 0 827 316" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
-     font-size="15">
+<svg xmlns="http://www.w3.org/2000/svg" width="827" height="471"
+     viewBox="0 0 827 471" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+     font-size="17">
   <style>
-  .play{animation:fade 5.41s linear infinite}
-  .row{animation:5.41s step-end infinite}
-  .keys{transform:translateX(118.3px);animation:type 5.41s infinite}
-  .cursor{opacity:0;animation:cursor 5.41s step-end infinite}
-  @keyframes fade{0%,87.99%{opacity:1}100%{opacity:0}}
+  .play{animation:fade 6.33s linear infinite}
+  .row{animation:6.33s step-end infinite}
+  .keys{transform:translateX(154.5px);animation:type 6.33s infinite}
+  .cursor{opacity:0;animation:cursor 6.33s step-end infinite}
+  @keyframes fade{0%,89.73%{opacity:1}100%{opacity:0}}
   @keyframes type{0%{transform:translateX(0)}
-    5.55%{transform:translateX(0);animation-timing-function:steps(13,end)}
-    19.96%,100%{transform:translateX(118.3px)}}
-  @keyframes cursor{0%{opacity:1}38.45%,100%{opacity:0}}
-  @keyframes r0{0%{opacity:0}38.45%,100%{opacity:1}}
-  @keyframes r1{0%{opacity:0}41.40%,100%{opacity:1}}
-  @keyframes r2{0%{opacity:0}44.36%,100%{opacity:1}}
-  @keyframes r3{0%{opacity:0}47.32%,100%{opacity:1}}
-  @keyframes r4{0%{opacity:0}50.28%,100%{opacity:1}}
-  @keyframes r5{0%{opacity:0}53.23%,100%{opacity:1}}
-  @keyframes r6{0%{opacity:0}56.19%,100%{opacity:1}}
-  @keyframes r7{0%{opacity:0}59.15%,100%{opacity:1}}
-  @keyframes r8{0%{opacity:0}62.11%,100%{opacity:1}}
+    4.74%{transform:translateX(0);animation-timing-function:steps(15,end)}
+    18.96%,100%{transform:translateX(154.5px)}}
+  @keyframes cursor{0%{opacity:1}34.76%,100%{opacity:0}}
+  @keyframes r0{0%{opacity:0}34.76%,100%{opacity:1}}
+  @keyframes r1{0%{opacity:0}37.28%,100%{opacity:1}}
+  @keyframes r2{0%{opacity:0}39.81%,100%{opacity:1}}
+  @keyframes r3{0%{opacity:0}42.34%,100%{opacity:1}}
+  @keyframes r4{0%{opacity:0}44.87%,100%{opacity:1}}
+  @keyframes r5{0%{opacity:0}47.39%,100%{opacity:1}}
+  @keyframes r6{0%{opacity:0}49.92%,100%{opacity:1}}
+  @keyframes r7{0%{opacity:0}52.45%,100%{opacity:1}}
+  @keyframes r8{0%{opacity:0}54.98%,100%{opacity:1}}
+  @keyframes r9{0%{opacity:0}57.50%,100%{opacity:1}}
+  @keyframes r10{0%{opacity:0}60.03%,100%{opacity:1}}
+  @keyframes r11{0%{opacity:0}62.56%,100%{opacity:1}}
+  @keyframes r12{0%{opacity:0}65.09%,100%{opacity:1}}
+  @keyframes r13{0%{opacity:0}67.61%,100%{opacity:1}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important}}
   </style>
-  <rect width="827" height="316" rx="10" fill="#12131a"/>
+  <rect width="827" height="471" rx="10" fill="#12131a"/>
   <circle cx="24" cy="22" r="6" fill="#ef6b73"/>
   <circle cx="44" cy="22" r="6" fill="#e2c15f"/>
   <circle cx="64" cy="22" r="6" fill="#5ac37d"/>
   <g class="play" fill="#c6cad6">
-    <text x="22" y="46" xml:space="preserve"><tspan fill="#5ac37d">$</tspan> <tspan fill="#eef0f5">assay ./snake</tspan></text>
-    <text class="row" style="animation-name:r0" x="22" y="86" xml:space="preserve"><tspan fill="#eef0f5">7 case(s) planned, 7 carried out, 6 passed, 1 failed</tspan></text>
-    <text class="row" style="animation-name:r1" x="22" y="126" xml:space="preserve"><tspan fill="#6d7385">C001</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">open the page and let it settle</tspan></text>
-    <text class="row" style="animation-name:r2" x="22" y="146" xml:space="preserve"><tspan fill="#6d7385">C002</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click game at point 1</tspan></text>
-    <text class="row" style="animation-name:r3" x="22" y="166" xml:space="preserve"><tspan fill="#6d7385">C003</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click game at point 2</tspan></text>
-    <text class="row" style="animation-name:r4" x="22" y="186" xml:space="preserve"><tspan fill="#6d7385">C004</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click game at point 3</tspan></text>
-    <text class="row" style="animation-name:r5" x="22" y="206" xml:space="preserve"><tspan fill="#6d7385">C005</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click game at point 4</tspan></text>
-    <text class="row" style="animation-name:r6" x="22" y="226" xml:space="preserve"><tspan fill="#6d7385">C006</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">use game: click it, drag on it, and press the keys a program like this</tspan></text>
-    <text class="row" style="animation-name:r6" x="22" y="246" xml:space="preserve"><tspan fill="#eef0f5">              is driven with</tspan></text>
-    <text class="row" style="animation-name:r7" x="22" y="266" xml:space="preserve"><tspan fill="#ef6b73">    → the page says to press Space, but pressing Space changes nothing</tspan></text>
-    <text class="row" style="animation-name:r8" x="22" y="286" xml:space="preserve"><tspan fill="#6d7385">C007</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">draw on game, then draw somewhere else on it</tspan></text>
+    <text x="22" y="50" xml:space="preserve"><tspan fill="#5ac37d">$</tspan> <tspan fill="#eef0f5">assay ./reorder</tspan></text>
+    <text class="row" style="animation-name:r0" x="22" y="96" xml:space="preserve"><tspan fill="#eef0f5">7 case(s) planned, 7 carried out, 1 passed, 6 failed (5 of them repeat an</tspan></text>
+    <text class="row" style="animation-name:r0" x="22" y="119" xml:space="preserve"><tspan fill="#eef0f5">earlier finding)</tspan></text>
+    <text class="row" style="animation-name:r1" x="22" y="165" xml:space="preserve"><tspan fill="#6d7385">C001</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">open the page and let it settle</tspan></text>
+    <text class="row" style="animation-name:r2" x="22" y="188" xml:space="preserve"><tspan fill="#6d7385">C002</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">drag Item 1 onto Item 6</tspan></text>
+    <text class="row" style="animation-name:r3" x="22" y="211" xml:space="preserve"><tspan fill="#ef6b73">    → nothing on the page changed at all</tspan></text>
+    <text class="row" style="animation-name:r4" x="22" y="234" xml:space="preserve"><tspan fill="#6d7385">C003</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">drag Item 2 onto Item 6</tspan></text>
+    <text class="row" style="animation-name:r5" x="22" y="257" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C002</tspan></text>
+    <text class="row" style="animation-name:r6" x="22" y="280" xml:space="preserve"><tspan fill="#6d7385">C004</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">drag Item 3 onto Item 6</tspan></text>
+    <text class="row" style="animation-name:r7" x="22" y="303" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C002</tspan></text>
+    <text class="row" style="animation-name:r8" x="22" y="326" xml:space="preserve"><tspan fill="#6d7385">C005</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">drag Item 4 onto Item 1</tspan></text>
+    <text class="row" style="animation-name:r9" x="22" y="349" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C002</tspan></text>
+    <text class="row" style="animation-name:r10" x="22" y="372" xml:space="preserve"><tspan fill="#6d7385">C006</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">drag Item 5 onto Item 1</tspan></text>
+    <text class="row" style="animation-name:r11" x="22" y="395" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C002</tspan></text>
+    <text class="row" style="animation-name:r12" x="22" y="418" xml:space="preserve"><tspan fill="#6d7385">C007</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">drag Item 6 onto Item 1</tspan></text>
+    <text class="row" style="animation-name:r13" x="22" y="441" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C002</tspan></text>
     <g class="keys">
-      <rect x="40.2" y="32" width="120" height="19" fill="#12131a"/>
-      <rect class="cursor" x="40.2" y="33" width="9" height="17" fill="#c6cad6"/>
+      <rect x="42.6" y="34" width="156" height="21" fill="#12131a"/>
+      <rect class="cursor" x="42.6" y="35" width="10" height="19" fill="#c6cad6"/>
     </g>
   </g>
 </svg>
