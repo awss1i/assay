@@ -17,6 +17,8 @@ other five say they are the same finding.">
 
 <p align="center"><i>Checking a drag-to-reorder list with a bug in it.</i> <code>pip install assay-ui</code></p>
 
+---
+
 assay opens your page in Chromium, finds every control on it, uses all of
 them, and reports what went wrong.
 
@@ -35,9 +37,7 @@ them, and reports what went wrong.
 ## Contents
 
 - [Install](#install)
-  - [For coding agents](#for-coding-agents)
 - [Use](#use)
-  - [With coding agents](#with-coding-agents)
 - [Benchmarks](#benchmarks)
 - [How It Works](#how-it-works)
 - [Why](#why)
