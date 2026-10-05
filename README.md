@@ -28,6 +28,7 @@ them, and reports what went wrong.
 ## Contents
 
 - [Install](#install)
+  - [For coding agents](#for-coding-agents)
 - [Use](#use)
   - [With coding agents](#with-coding-agents)
 - [Benchmarks](#benchmarks)
@@ -55,8 +56,7 @@ pipx install assay-ui          # its own environment, for when pip says "externa
 ```
 
 If `pip` isn't found, use `python3 -m pip install assay-ui`. The first run
-downloads Chromium if needed. For coding agents, install the CLI first, then
-see **[harness setup →](https://github.com/awss1i/assay/blob/main/docs/harnesses.md)**
+downloads Chromium if needed.
 
 To work on assay itself:
 
@@ -64,6 +64,12 @@ To work on assay itself:
 git clone https://github.com/awss1i/assay.git && cd assay
 pip install -e ".[dev]"
 ```
+
+### For coding agents
+
+Install the CLI above first, then follow the
+**[harness setup →](https://github.com/awss1i/assay/blob/main/docs/harnesses.md)**
+to add the skill or plugin in any of the fifteen supported harnesses.
 
 ## Use
 
