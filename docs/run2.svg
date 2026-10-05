@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="772" height="696"
+     viewBox="0 0 772 696" font-family="ui-monospace,SFMono-Regular,Menlo,monospace"
+     font-size="15">
+  <style>
+  .play{animation:fade 8.23s linear infinite}
+  .row{animation:8.23s step-end infinite}
+  .keys{transform:translateX(109.2px);animation:type 8.23s infinite}
+  .cursor{opacity:0;animation:cursor 8.23s step-end infinite}
+  @keyframes fade{0%,92.10%{opacity:1}100%{opacity:0}}
+  @keyframes type{0%{transform:translateX(0)}
+    3.65%{transform:translateX(0);animation-timing-function:steps(12,end)}
+    12.39%,100%{transform:translateX(109.2px)}}
+  @keyframes cursor{0%{opacity:1}24.54%,100%{opacity:0}}
+  @keyframes r0{0%{opacity:0}24.54%,100%{opacity:1}}
+  @keyframes r1{0%{opacity:0}26.49%,100%{opacity:1}}
+  @keyframes r2{0%{opacity:0}28.43%,100%{opacity:1}}
+  @keyframes r3{0%{opacity:0}30.38%,100%{opacity:1}}
+  @keyframes r4{0%{opacity:0}32.32%,100%{opacity:1}}
+  @keyframes r5{0%{opacity:0}34.26%,100%{opacity:1}}
+  @keyframes r6{0%{opacity:0}36.21%,100%{opacity:1}}
+  @keyframes r7{0%{opacity:0}38.15%,100%{opacity:1}}
+  @keyframes r8{0%{opacity:0}40.10%,100%{opacity:1}}
+  @keyframes r9{0%{opacity:0}42.04%,100%{opacity:1}}
+  @keyframes r10{0%{opacity:0}43.99%,100%{opacity:1}}
+  @keyframes r11{0%{opacity:0}45.93%,100%{opacity:1}}
+  @keyframes r12{0%{opacity:0}47.87%,100%{opacity:1}}
+  @keyframes r13{0%{opacity:0}49.82%,100%{opacity:1}}
+  @keyframes r14{0%{opacity:0}51.76%,100%{opacity:1}}
+  @keyframes r15{0%{opacity:0}53.71%,100%{opacity:1}}
+  @keyframes r16{0%{opacity:0}55.65%,100%{opacity:1}}
+  @keyframes r17{0%{opacity:0}57.59%,100%{opacity:1}}
+  @keyframes r18{0%{opacity:0}59.54%,100%{opacity:1}}
+  @keyframes r19{0%{opacity:0}61.48%,100%{opacity:1}}
+  @keyframes r20{0%{opacity:0}63.43%,100%{opacity:1}}
+  @keyframes r21{0%{opacity:0}65.37%,100%{opacity:1}}
+  @keyframes r22{0%{opacity:0}67.31%,100%{opacity:1}}
+  @keyframes r23{0%{opacity:0}69.26%,100%{opacity:1}}
+  @keyframes r24{0%{opacity:0}71.20%,100%{opacity:1}}
+  @keyframes r25{0%{opacity:0}73.15%,100%{opacity:1}}
+  @keyframes r26{0%{opacity:0}75.09%,100%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  </style>
+  <rect width="772" height="696" rx="10" fill="#12131a"/>
+  <circle cx="24" cy="22" r="6" fill="#ef6b73"/>
+  <circle cx="44" cy="22" r="6" fill="#e2c15f"/>
+  <circle cx="64" cy="22" r="6" fill="#5ac37d"/>
+  <g class="play" fill="#c6cad6">
+    <text x="22" y="46" xml:space="preserve"><tspan fill="#5ac37d">$</tspan> <tspan fill="#eef0f5">assay ./tags</tspan></text>
+    <text class="row" style="animation-name:r0" x="22" y="86" xml:space="preserve"><tspan fill="#eef0f5">18 case(s) planned, 18 carried out, 10 passed, 8 failed (7 of them repeat an</tspan></text>
+    <text class="row" style="animation-name:r0" x="22" y="106" xml:space="preserve"><tspan fill="#eef0f5">earlier finding)</tspan></text>
+    <text class="row" style="animation-name:r1" x="22" y="146" xml:space="preserve"><tspan fill="#6d7385">C001</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">open the page and let it settle</tspan></text>
+    <text class="row" style="animation-name:r2" x="22" y="166" xml:space="preserve"><tspan fill="#6d7385">C002</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click blue</tspan></text>
+    <text class="row" style="animation-name:r3" x="22" y="186" xml:space="preserve"><tspan fill="#6d7385">C003</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click blue twice</tspan></text>
+    <text class="row" style="animation-name:r4" x="22" y="206" xml:space="preserve"><tspan fill="#ef6b73">    → clicking this twice switched it back off, but the rest of the page did not</tspan></text>
+    <text class="row" style="animation-name:r4" x="22" y="226" xml:space="preserve"><tspan fill="#ef6b73">      change back, so what the first click did is still in effect</tspan></text>
+    <text class="row" style="animation-name:r5" x="22" y="246" xml:space="preserve"><tspan fill="#6d7385">C004</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click green</tspan></text>
+    <text class="row" style="animation-name:r6" x="22" y="266" xml:space="preserve"><tspan fill="#6d7385">C005</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click green twice</tspan></text>
+    <text class="row" style="animation-name:r7" x="22" y="286" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r8" x="22" y="306" xml:space="preserve"><tspan fill="#6d7385">C006</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click large</tspan></text>
+    <text class="row" style="animation-name:r9" x="22" y="326" xml:space="preserve"><tspan fill="#6d7385">C007</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click large twice</tspan></text>
+    <text class="row" style="animation-name:r10" x="22" y="346" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r11" x="22" y="366" xml:space="preserve"><tspan fill="#6d7385">C008</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click medium</tspan></text>
+    <text class="row" style="animation-name:r12" x="22" y="386" xml:space="preserve"><tspan fill="#6d7385">C009</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click medium twice</tspan></text>
+    <text class="row" style="animation-name:r13" x="22" y="406" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r14" x="22" y="426" xml:space="preserve"><tspan fill="#6d7385">C010</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click red</tspan></text>
+    <text class="row" style="animation-name:r15" x="22" y="446" xml:space="preserve"><tspan fill="#6d7385">C011</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click red twice</tspan></text>
+    <text class="row" style="animation-name:r16" x="22" y="466" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r17" x="22" y="486" xml:space="preserve"><tspan fill="#6d7385">C012</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click round</tspan></text>
+    <text class="row" style="animation-name:r18" x="22" y="506" xml:space="preserve"><tspan fill="#6d7385">C013</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click round twice</tspan></text>
+    <text class="row" style="animation-name:r19" x="22" y="526" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r20" x="22" y="546" xml:space="preserve"><tspan fill="#6d7385">C014</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click small</tspan></text>
+    <text class="row" style="animation-name:r21" x="22" y="566" xml:space="preserve"><tspan fill="#6d7385">C015</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click small twice</tspan></text>
+    <text class="row" style="animation-name:r22" x="22" y="586" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r23" x="22" y="606" xml:space="preserve"><tspan fill="#6d7385">C016</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click square</tspan></text>
+    <text class="row" style="animation-name:r24" x="22" y="626" xml:space="preserve"><tspan fill="#6d7385">C017</tspan> <tspan fill="#ef6b73">[FAILED]</tspan> <tspan fill="#eef0f5">click square twice</tspan></text>
+    <text class="row" style="animation-name:r25" x="22" y="646" xml:space="preserve"><tspan fill="#e2c15f">    ↳ same finding as C003</tspan></text>
+    <text class="row" style="animation-name:r26" x="22" y="666" xml:space="preserve"><tspan fill="#6d7385">C018</tspan> <tspan fill="#5ac37d">[ok]</tspan> <tspan fill="#6d7385">click blue, then the one beside it</tspan></text>
+    <g class="keys">
+      <rect x="40.2" y="32" width="111" height="19" fill="#12131a"/>
+      <rect class="cursor" x="40.2" y="33" width="9" height="17" fill="#c6cad6"/>
+    </g>
+  </g>
+</svg>

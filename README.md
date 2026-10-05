@@ -6,12 +6,11 @@
 
 **Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.**
 
-<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a tag
-filter page. 18 checks planned from the page, 10 passed and 8 failed. The
-first failure says a tag went back to how it looked but the list stayed
-filtered, and the other seven say they are the same finding.">
+<img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a snake
+game. 7 checks planned from the page, 6 passed and 1 failed. The failure says
+the page tells you to press Space, but pressing Space changes nothing.">
 
-<p align="center"><i>Checking a tag filter page with a bug in it.</i> <code>pip install assay-ui</code></p>
+<p align="center"><i>Checking a snake game with a bug in it.</i> <code>pip install assay-ui</code></p>
 
 assay opens your page in Chromium, finds every control on it, uses all of
 them, and reports what went wrong.

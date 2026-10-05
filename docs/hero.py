@@ -1,7 +1,7 @@
 """Draw `run.svg` from a real run, so the picture cannot drift from the tool.
 
-    python docs/hero.py bench/planted/broken/06_tagfilter \
-                        "assay ./tags" docs/run.svg
+    python docs/hero.py bench/programs/dsh/gpt-oss-120b/34_snake2 \
+                        "assay ./snake" docs/run.svg
 
 The one this replaces was drawn by hand, and by the time anybody looked it
 showed colour the command did not print and a program that does not exist. A
@@ -33,10 +33,11 @@ GREEN, RED, AMBER = "#5ac37d", "#ef6b73", "#e2c15f"
 SIZE, LEAD, TOP, LEFT, PAD, ADVANCE = 15, 20, 46, 22, 18, 9.1
 #: Where long lines wrap. GitHub shows a README picture at most about 830px
 #: wide and scales a wider one down, text and all. Unwrapped, the error line
-#: makes the picture over 1300px wide and the text shows at about 9px; at 80
-#: columns the picture fits and the text shows at `SIZE`. Lines break between
-#: words and the rest is indented under the text, so a message reads as one.
-COLUMNS = 80
+#: makes the picture over 1300px wide and the text shows at about 9px. At 86
+#: columns the picture is 826px wide, so it fits and the text shows at `SIZE`.
+#: Lines break between words and the rest is indented under the text, so a
+#: message reads as one.
+COLUMNS = 86
 #: Seconds: typing starts at `TYPE`, a key every `KEY`; the run answers
 #: `WAIT` after the last key and prints a line every `STEP`; the finished
 #: screen holds for `HOLD`, fades over `FADE`, and the cycle starts again.
