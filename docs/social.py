@@ -61,7 +61,7 @@ def page(lines: list[str]) -> str:
   .side{{position:absolute;left:876px;right:48px;top:60px;font-family:{SANS};color:{BRIGHT}}}
   .side h1{{margin:0;font-size:64px;line-height:68px;font-weight:700;letter-spacing:-.02em}}
   .side p{{margin:14px 0 0;font-size:26px;line-height:35px;color:{TEXT}}}
-  .side code{{display:block;margin-top:28px;font-family:{MONO};font-size:19px;color:{DIM}}}
+  .side code{{display:block;margin-top:28px;font-family:{MONO};font-size:19px;color:{TEXT}}}
 </style>
 <div class="term">
   <div class="dots"><i style="background:{RED}"></i><i style="background:{AMBER}"></i><i style="background:{GREEN}"></i></div>
