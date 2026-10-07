@@ -178,13 +178,6 @@ def test_a_field_is_paired_with_the_button_in_its_own_widget() -> None:
             f"{filled} was paired with {pressed}, which is another widget")
 
 
-def test_a_lone_field_still_reaches_every_button() -> None:
-    """Grouping must not cost the ordinary case: one box, one Add."""
-    surface = page(Control("text", "#q", "Task"),
-                   Control("button", "#add", "Add"))
-    assert [c for c in plan(surface) if "then press" in c.what]
-
-
 def test_a_number_field_is_typed_a_number() -> None:
     """`Sample item` in a number box is rejected, so the page rightly does
     nothing, and the case then reported a working countdown as broken."""

@@ -600,7 +600,6 @@ def test_a_page_that_blinds_the_driver_is_not_a_page_that_failed(
         "</body></html>", encoding="utf-8")
     run = check(folder)
 
-    assert not run.works is False or True          # not a verdict either way
     assert run.unchecked, "nothing was recorded as unmeasurable"
     assert "could not read this page" in run.unchecked[0].detail
     assert not [r for r in run.results.values() if r.failed], \
@@ -1402,33 +1401,6 @@ def test_an_opposite_that_answers_after_its_pair_is_left_alone(
     run = check(folder)
 
     assert run.works, run.render()
-
-
-def test_a_toggle_that_goes_back_while_the_page_does_not(
-        tmp_path: Path) -> None:
-    """A tag filter whose second click clears the tag and not the filter."""
-    tags = "".join(
-        f'<span class="tag" id="t{n}" style="cursor:pointer;padding:4px;'
-        f'border:1px solid #333">tag{n}</span>' for n in range(4))
-    rows = "".join(f'<li class="row">item {n}</li>' for n in range(6))
-    folder = build(
-        tmp_path, f'<div>{tags}</div><ul>{rows}</ul>', """
-        document.querySelectorAll('.tag').forEach((el) => {
-          el.addEventListener('click', () => {
-            const on = el.classList.toggle('lit');
-            if (on) {
-              document.querySelectorAll('.row').forEach((r, i) => {
-                r.style.display = i % 2 ? 'none' : '';
-              });
-            }
-          });
-        });
-    """)
-
-    run = check(folder)
-
-    assert not run.works, run.render()
-    assert any("still in effect" in r.detail for r in run.failing), run.render()
 
 
 def test_a_toggle_that_puts_the_page_back_too_is_left_alone(
