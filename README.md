@@ -3,7 +3,6 @@
 <p align="center">
   <a href="https://github.com/awss1i/assay/blob/main/pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python"></a>
   <a href="https://github.com/awss1i/assay/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-MIT-blue" alt="licence"></a>
-  <a href="https://x.com/awss1i"><img src="https://img.shields.io/badge/follow-@awss1i-blue?logo=x" alt="X"></a>
 </p>
 
 <p align="center"><strong>Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.</strong></p>
@@ -58,7 +57,7 @@ uv tool install assay-ui       # no Python 3.10+? uv downloads one
 ```
 
 ```bash
-pipx install assay-ui          # its own environment, for when pip says "externally managed"
+pipx install assay-ui          # installs assay in its own isolated environment
 ```
 
 If `pip` isn't found, use `python3 -m pip install assay-ui`. The first run
