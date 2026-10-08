@@ -213,7 +213,7 @@ running it. assay runs it, with nothing prepared in advance.
 ## Contributing
 
 Report bugs and false alarms as issues, send changes as pull requests, and ask
-questions in [Discussions](https://github.com/awss1i/assay/discussions). See
+questions or share ideas in [Discussions](https://github.com/awss1i/assay/discussions). See
 **[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)**.
 
 ---

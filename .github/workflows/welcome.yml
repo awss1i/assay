@@ -19,9 +19,10 @@ jobs:
       - uses: actions/first-interaction@v3
         with:
           issue_message: >-
-            Thanks for opening your first issue here. Issues are for bugs and
-            false alarms, and a false alarm needs the page attached. Features
-            and improvements come as pull requests, and questions go in
+            Thanks for opening your first issue. Issues are for bugs and false
+            alarms, and a false alarm needs the page attached. New features,
+            improvements and fixes come as pull requests. Questions, ideas and
+            general discussion belong in
             [Discussions](https://github.com/awss1i/assay/discussions).
             [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
             has the details.

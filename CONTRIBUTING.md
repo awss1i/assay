@@ -1,7 +1,7 @@
 # Contributing
 
 Report bugs and false alarms as issues, send changes as pull requests, and ask
-questions in [Discussions](https://github.com/awss1i/assay/discussions).
+questions or share ideas in [Discussions](https://github.com/awss1i/assay/discussions).
 
 ## Contents
 
@@ -28,10 +28,11 @@ An issue reports that something is wrong. A pull request changes something.
   benchmark number, a feature, support for another harness, or a docs
   improvement.
 
-Feature requests aren't taken as issues or in Discussions. If you want assay
-to do something, build it and open a pull request. For anything large, open a
-draft pull request early with the idea and a first commit, so we can agree on
-the approach before you spend a lot of time on it.
+Ideas and suggestions are welcome in Discussions, though not every one gets
+built. The surest way to get something into assay is to build it and open a
+pull request. For anything large, open a draft pull request early with the idea
+and a first commit, so we can agree on the approach before you spend a lot of
+time on it.
 
 ## Opening an Issue
 
