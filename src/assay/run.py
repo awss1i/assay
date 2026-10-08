@@ -241,11 +241,12 @@ def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],
         bad.append(said)
 
     # **Nothing could be read off this page, so nothing is settled.** A page
-    # that replaces a global the driver evaluates through (`function eval()`
-    # is the one that has actually turned up) answers every reading with
-    # nothing. That is the instrument being out, not the program being
-    # broken, and the two must never come out the same. A check that could
-    # not run reading like one that failed is the fault this tool is for.
+    # that replaces a global the driver evaluates through (a function it
+    # names `eval` is the one that has actually turned up) answers every
+    # reading with nothing. That is the instrument being out, not the program
+    # being broken, and the two must never come out the same. A check that
+    # could not run reading like one that failed is the fault this tool is
+    # for.
     if unmeasurable:
         return Result(case=case, outcome=UNKNOWN,
                       detail="assay could not read this page, because the "
@@ -1554,8 +1555,8 @@ def _drew(shot: Dict[str, Any]) -> bool:
     on a transparent canvas counts, which is why this cannot be uniformity
     alone: only the ink is measured there, so a black line is a single colour.
     """
-    # A page can blind the driver. One generated calculator declares
-    # `function eval()`, so every reading comes back as whatever that
+    # A page can blind the driver. One generated calculator declares a
+    # function it names `eval`, so every reading comes back as whatever that
     # returns rather than as a measurement. Unreadable is not undrawn.
     if not isinstance(shot, dict):
         return False

@@ -1,5 +1,6 @@
 {
   "name": "assay",
+  "strict": false,
   "owner": {
     "name": "awss1i",
     "url": "https://github.com/awss1i/assay"

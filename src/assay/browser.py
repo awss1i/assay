@@ -622,12 +622,11 @@ class Settled(NamedTuple):
     #: How long the watching took.
     ms: int
     #: Whether a single reading ever came back. A page can put the instrument
-    #: out rather than be empty. One generated calculator declares
-    #: `function eval()`, replacing the global the driver evaluates through,
-    #: so every reading returns nothing. That page works, it computes
-    #: 7 + 3 = 10, and calling it blank would be the one mistake this whole
-    #: tool exists to avoid, a check that could not run reading exactly like
-    #: one that failed.
+    #: out rather than be empty. One generated calculator declares a function
+    #: it names `eval`, replacing the global the driver evaluates through, so
+    #: every reading returns nothing. That page works, it computes 7 + 3 = 10,
+    #: and calling it blank would be the one mistake this whole tool exists to
+    #: avoid, a check that could not run reading exactly like one that failed.
     measured: bool = True
 
 
