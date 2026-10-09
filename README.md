@@ -10,6 +10,8 @@
   <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#how-it-works">How it works</a> · <a href="#why">Why</a> · <a href="#limits">Limits</a> · <a href="#contributing">Contributing</a> · <a href="#licence">Licence</a>
 </p>
 
+---
+
 <p align="center"><strong>Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.</strong></p>
 
 <p align="center"><code>pip install assay-ui</code></p>
