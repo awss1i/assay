@@ -1,7 +1,11 @@
-# Contributing
+<h1 align="center">Contributing</h1>
 
-Report bugs and false alarms as issues, send changes as pull requests, and ask
-questions or share ideas in [Discussions](https://github.com/awss1i/assay/discussions).
+---
+
+<p align="center">Report bugs and false alarms as issues, send changes as pull requests, and ask
+questions or share ideas in <a href="https://github.com/awss1i/assay/discussions">Discussions</a>.</p>
+
+---
 
 ## Contents
 
@@ -16,6 +20,8 @@ questions or share ideas in [Discussions](https://github.com/awss1i/assay/discus
 - [Adding a Harness](#adding-a-harness)
 - [Before You Open It](#before-you-open-it)
 - [Licence](#licence)
+
+---
 
 ## Issues and Pull Requests
 
@@ -33,6 +39,8 @@ built. The surest way to get something into assay is to build it and open a
 pull request. For anything large, open a draft pull request early with the idea
 and a first commit, so we can agree on the approach before you spend a lot of
 time on it.
+
+---
 
 ## Opening an Issue
 
@@ -60,6 +68,8 @@ right. That makes it the most useful issue you can open.
 - **A security problem.** Report it privately, as
   [SECURITY.md](SECURITY.md) describes.
 
+---
+
 ## Opening a Pull Request
 
 Fork, branch, and open a pull request. The template asks what kind it is:
@@ -75,6 +85,8 @@ Fork, branch, and open a pull request. The template asks what kind it is:
 
 One change per pull request. Send a fix and a refactor separately.
 
+---
+
 ## Setup
 
 ```bash
@@ -87,6 +99,8 @@ Use the editable install. If `assay-ui` from PyPI is installed in the same
 Python, it's imported instead of your clone and the tests run against the
 release. Check with `python -c "import assay; print(assay.__file__)"`. It
 should point into this folder.
+
+---
 
 ## How the Code Is Laid Out
 
@@ -125,6 +139,8 @@ should point into this folder.
 **`tests/`** is the test suite. **`docs/`** holds the longer pages and the
 scripts that draw the README's pictures from real runs.
 
+---
+
 ## Changing a Rule
 
 A rule is anything that decides whether a check failed. Most live in `judge`
@@ -147,6 +163,8 @@ in `run.py`, and the checks that exercise them are built in `surface.py`.
    under the action that triggers it: what assay does, the message it prints,
    and when it stays quiet and why.
 
+---
+
 ## Tests
 
 ```bash
@@ -162,6 +180,8 @@ rather than fails when there's no browser.
 CI runs the whole suite on Python 3.10, 3.12, 3.13 and 3.14 for every pull
 request, plus a short run of both benchmark scorers. All of it must pass
 before anything is merged.
+
+---
 
 ## Benchmarks
 
@@ -194,6 +214,8 @@ written by hand like the existing ones. [bench/README.md](bench/README.md)
 and [bench/planted/README.md](bench/planted/README.md) describe how each set
 was built.
 
+---
+
 ## Adding a Harness
 
 - **If the harness reads skills,** add its install steps to
@@ -209,6 +231,8 @@ was built.
   pressed and what happened, and don't edit code because of it. Keep it that
   way.
 
+---
+
 ## Before You Open It
 
 - The tests for what you changed pass, or you only changed docs.
@@ -217,6 +241,8 @@ was built.
 - One change per pull request.
 - Commit messages say where and what, in lowercase: `readme: add X badge`,
   `docs: correct the harness count`.
+
+---
 
 ## Licence
 

@@ -1,8 +1,19 @@
-# Security
+<h1 align="center">Security</h1>
 
-**Report a vulnerability privately, never in a public issue.** Use
-[Report a vulnerability](https://github.com/awss1i/assay/security/advisories/new)
-on the Security tab. A fix goes out as a new release on PyPI.
+---
+
+<p align="center"><strong>Report a vulnerability privately, never in a public issue.</strong> Use
+<a href="https://github.com/awss1i/assay/security/advisories/new">Report a vulnerability</a>
+on the Security tab. A fix goes out as a new release on PyPI.</p>
+
+---
+
+## Contents
+
+- [What Counts](#what-counts)
+- [Supported Versions](#supported-versions)
+
+---
 
 ## What Counts
 
@@ -20,6 +31,8 @@ outside the browser through assay, the hook running anything other than
 `assay`, or assay running a build.
 
 Anything a page can normally do inside a browser is not a vulnerability.
+
+---
 
 ## Supported Versions
 

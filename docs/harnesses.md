@@ -1,8 +1,12 @@
-# Installing assay in Your Harness
+<h1 align="center">Installing assay in Your Harness</h1>
 
-Install steps for fifteen harnesses. Six install assay with their own plugin
+---
+
+<p align="center">Install steps for fifteen harnesses. Six install assay with their own plugin
 command. For the other nine, you copy the skill file into place, which works
-in any harness that reads skills.
+in any harness that reads skills.</p>
+
+---
 
 ## Contents
 
@@ -14,6 +18,8 @@ in any harness that reads skills.
 - [Factory Droid](#factory-droid)
 - [GitHub Copilot CLI](#github-copilot-cli)
 - [Everywhere Else: The Skill on Its Own](#everywhere-else-the-skill-on-its-own)
+
+---
 
 ## What You Get
 
@@ -42,8 +48,10 @@ uv tool install assay-ui       # no Python 3.10+? uv downloads one
 ```
 
 ```bash
-pipx install assay-ui          # its own environment, for when pip says "externally managed"
+pipx install assay-ui          # installs assay in its own isolated environment
 ```
+
+---
 
 ## Claude Code
 
@@ -51,6 +59,8 @@ pipx install assay-ui          # its own environment, for when pip says "externa
 /plugin marketplace add awss1i/assay
 /plugin install assay@assay
 ```
+
+---
 
 ## DeepSeek Harness
 
@@ -75,6 +85,8 @@ composed tree, so it is what tells you the bridge mounted.
 To scope it to one profile, put the same block in that profile's
 `cordis.patch.yml` instead, or pass it per run with `--patch`.
 
+---
+
 ## opencode
 
 ```bash
@@ -86,6 +98,8 @@ opencode reads `.claude/skills/`, `.opencode/skills/`, `.agents/skills/` and
 `~/.config/opencode/skills/`. Prefer `.claude/skills/`: Claude Code reads it
 too, so one folder serves both.
 
+---
+
 ## Devin CLI
 
 ```bash
@@ -95,6 +109,8 @@ devin plugins install awss1i/assay#plugins/assay
 The plugin lives in `plugins/assay`, and `#` is how Devin is told to look
 there. Update with `devin plugins update assay`.
 
+---
+
 ## Factory Droid
 
 ```bash
@@ -102,12 +118,16 @@ droid plugin marketplace add https://github.com/awss1i/assay
 droid plugin install assay@assay
 ```
 
+---
+
 ## GitHub Copilot CLI
 
 ```bash
 copilot plugin marketplace add awss1i/assay
 copilot plugin install assay@assay
 ```
+
+---
 
 ## Everywhere Else: The Skill on Its Own
 

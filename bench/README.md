@@ -1,16 +1,22 @@
-# The generated benchmark
+<h1 align="center">The generated benchmark</h1>
 
-*Written by `score.py`. Every number here comes from running it. Which flag is a broken program's actual bug is judged by hand in each folder's `verdicts.txt`.*
+---
 
-225 programs, written to the 75 objectives in [`objectives.txt`](objectives.txt) by dsh, no-harness, opencode on gpt-oss-120b. A person opened and tested every one by hand, and assay is scored against that answer key.
+<p align="center"><i>Written by <code>score.py</code>. Every number here comes from running it. Which flag is a broken program's actual bug is judged by hand in each folder's <code>verdicts.txt</code>.</i></p>
 
-**20 of the 225 are broken.** The rest work.
+<p align="center">225 programs, written to the 75 objectives in <a href="objectives.txt"><code>objectives.txt</code></a> by dsh, no-harness, opencode on gpt-oss-120b. A person opened and tested every one by hand, and assay is scored against that answer key.</p>
+
+<p align="center"><strong>20 of the 225 are broken.</strong> The rest work.</p>
+
+---
 
 ## Contents
 
 - [What It Found](#what-it-found)
 - [The Broken Programs](#the-broken-programs)
 - [Where the Programs Came From](#where-the-programs-came-from)
+
+---
 
 ## What It Found
 
@@ -25,6 +31,8 @@ Per program, the median is 14 seconds, 221 of 225 finish inside a minute, and th
 Misses and false alarms are counted separately because a false alarm costs more: it sends someone to change code that was right.
 
 There is no single accuracy percentage, because it would be misleading: 205 of these 225 programs work, so a tool that called everything clean without opening a browser would score 91%.
+
+---
 
 ## The Broken Programs
 
@@ -52,6 +60,8 @@ Every program is in this repository, so you can open any of them and check.
 | [`opencode/58_reorder`](programs/opencode/gpt-oss-120b/58_reorder/index.html) | nothing can ever be reordered. dragenter inserts a placeholder li under the cursor, and the placeholder is not one of the items the handlers were attached to, so nothing calls preventDefault on its dragover, and no drop event fires at all, only dragend, and the order line stays 1 2 3 4 5 6 | found |
 | [`opencode/74_cube3d`](programs/opencode/gpt-oss-120b/74_cube3d/index.html) | the canvas never shows anything. The shaders compile, the loop runs and 24 line indices are drawn every frame, but the uploaded MVP leaves every one of the eight corners outside the near and far clip planes (w comes out +/-1 while z is about +/-5), so the whole cube is clipped away and the canvas stays its clear colour | found |
 | [`opencode/75_matrix`](programs/opencode/gpt-oss-120b/75_matrix/index.html) | it multiplies the grids element by element instead of multiplying the matrices. cCells[i].value = aVal * bVal, so 1..9 times 9..1 gives 9 16 21 / 24 25 24 / 21 16 9 and the working shown reads 1 x 9 = 9 rather than a sum of three products | **missed** |
+
+---
 
 ## Where the Programs Came From
 

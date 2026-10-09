@@ -3,6 +3,7 @@
 <p align="center">
   <a href="https://github.com/awss1i/assay/blob/main/pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python"></a>
   <a href="https://github.com/awss1i/assay/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-MIT-blue" alt="licence"></a>
+  <a href="https://github.com/sickn33/agentic-awesome-skills"><img src="https://img.shields.io/badge/listed%20in-agentic--awesome--skills-blue" alt="listed in agentic-awesome-skills"></a>
 </p>
 
 <p align="center"><strong>Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.</strong></p>
@@ -15,6 +16,10 @@ other five say they are the same finding.">
 </p>
 
 <p align="center"><i>Checking a drag-to-reorder list with a bug in it.</i> <code>pip install assay-ui</code></p>
+
+<p align="center">
+  <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#how-it-works">How it works</a> · <a href="#why">Why</a> · <a href="#limits">Limits</a> · <a href="#contributing">Contributing</a> · <a href="#licence">Licence</a>
+</p>
 
 ---
 
@@ -30,19 +35,6 @@ them, and reports what went wrong.
   DeepSeek Harness runs the check automatically after every turn.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
-
----
-
-## Contents
-
-- [Install](#install)
-- [Use](#use)
-- [Benchmarks](#benchmarks)
-- [How It Works](#how-it-works)
-- [Why](#why)
-- [Limits](#limits)
-- [Contributing](#contributing)
-- [Licence](#licence)
 
 ---
 

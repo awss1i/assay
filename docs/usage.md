@@ -1,4 +1,19 @@
-# Using assay
+<h1 align="center">Using assay</h1>
+
+---
+
+<p align="center">Everything assay does from the command line and from Python.</p>
+
+---
+
+## Contents
+
+- [The command](#the-command)
+- [An example](#an-example)
+- [The HTML report](#the-html-report)
+- [From Python](#from-python)
+
+---
 
 ## The command
 
@@ -14,6 +29,8 @@ assay ./my-app --surface          # list the controls it found, then stop
 ```
 
 Nothing is written to disk unless you ask, and the exit code is non-zero if anything failed.
+
+---
 
 ## An example
 
@@ -33,6 +50,8 @@ C017 [ok] draw on canvas twice, then press Redo twice
 C016 is the failure. The first Undo did nothing and the second did the work, so
 Undo is one press behind.
 
+---
+
 ## The HTML report
 
 `--report` writes a page you can open, showing the page before and after every check:
@@ -41,6 +60,8 @@ Undo is one press behind.
 tag filter, where the tag was clicked twice, it went back to how it looked,
 and the list stayed filtered. Shown with the actions, the reason, and
 screenshots of the page before and after, twelve items and then one.">
+
+---
 
 ## From Python
 

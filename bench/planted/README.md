@@ -1,14 +1,20 @@
-# The planted-bug set
+<h1 align="center">The planted-bug set</h1>
 
-*Written by `planted/score.py`. The checks, flags and times come from running it. Which planted bug each flag shows is judged by hand in each `verdict.txt`.*
+---
 
-10 programs with bugs added on purpose (50 in all, as listed in each `bugs.md`), and 10 working originals.
+<p align="center"><i>Written by <code>planted/score.py</code>. The checks, flags and times come from running it. Which planted bug each flag shows is judged by hand in each <code>verdict.txt</code>.</i></p>
+
+<p align="center">10 programs with bugs added on purpose (50 in all, as listed in each <code>bugs.md</code>), and 10 working originals.</p>
+
+---
 
 ## Contents
 
 - [What It Found](#what-it-found)
 - [Every Planted Bug](#every-planted-bug)
 - [How the Set Was Built](#how-the-set-was-built)
+
+---
 
 ## What It Found
 
@@ -18,6 +24,8 @@
 - **Grouped findings:** assay drew 10 links between findings. 10 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
 
 Per program, the median is 23 seconds, 19 of 20 finish inside a minute, and the slowest took 62 seconds. Measured on AMD Ryzen 7 255 w/ Radeon 780M Graphics, Linux 7.2.6-200.fc44.x86_64, Python 3.14.7, Chromium 153.0.8010.12, Playwright 1.63.0.
+
+---
 
 ## Every Planted Bug
 
@@ -140,6 +148,8 @@ Per program, the median is 23 seconds, 19 of 20 finish inside a minute, and the 
 | 3 | missed | no check picks a star and then presses Submit, so no rating is ever recorded and no entry is drawn |
 | 4 | missed | no check picks a star and then presses Submit, so no rating is ever recorded and the box is never refilled |
 | 5 | found | F001 `wiring@labels and radio buttons are linked correctly: two labels are both linked to "star4", so one of them was meant for another control, which is left without a label`: two labels pointing at star4 |
+
+---
 
 ## How the Set Was Built
 

@@ -1,17 +1,21 @@
-# How It Works
+<h1 align="center">How It Works</h1>
 
-assay opens your page in a real browser, finds every control on it, uses each
+---
+
+<p align="center">assay opens your page in a real browser, finds every control on it, uses each
 one in a planned set of checks, and compares the page before and after every
 check. It doesn't know what your page is for, so it only reports something
 when the page contradicts itself: it throws an error, a control reacts one
-press late, a count says 1 when the list is empty, and so on.
+press late, a count says 1 when the list is empty, and so on.</p>
 
-The first half of this page describes how a run goes. The second half goes
+<p align="center">The first half of this page describes how a run goes. The second half goes
 through each kind of check: what assay does, what it reports and the exact
 message it prints, and when it deliberately stays quiet and why. Every rule
-here is measured against the [benchmarks](../bench/README.md), and most of the
+here is measured against the <a href="../bench/README.md">benchmarks</a>, and most of the
 exceptions exist because a broader version of the rule flagged a page that
-works.
+works.</p>
+
+---
 
 ## Contents
 
@@ -44,6 +48,8 @@ works.
   - [NaN, undefined and [object Object] on the page](#nan-undefined-and-object-object-on-the-page)
   - [A page where nothing responds](#a-page-where-nothing-responds)
 - [What assay can't check](#what-assay-cant-check)
+
+---
 
 ## How a run goes
 
@@ -199,6 +205,8 @@ a finding about the whole page (such as nothing responding) says so:
 
 Every grouping on the benchmark pages is checked against a hand-written
 answer key, [`bench/links.txt`](../bench/links.txt).
+
+---
 
 ## What assay checks
 
@@ -704,6 +712,8 @@ Because it calls the whole page broken, it's only reported when:
 - the page still does nothing when opened again and given several seconds
   instead of a fraction of one, three times over. A page whose Retry starts a
   two-second load looks inert in the time a single check allows it.
+
+---
 
 ## What assay can't check
 
