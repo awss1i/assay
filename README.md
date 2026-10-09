@@ -25,9 +25,9 @@ them, and reports what went wrong.
   on the page.
 - **No LLM.** There's no API key and no cost, and every run gives the same
   result.
-- **Works with coding agents.** A skill tells the agent in fifteen harnesses
-  to check each page it writes, and a plugin for Claude Code and the DeepSeek
-  Harness does it automatically after every turn.
+- **Works with coding agents.** A skill, supported across fifteen harnesses,
+  has the agent check each page it writes, and a plugin for Claude Code and the
+  DeepSeek Harness runs the check automatically after every turn.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
 
@@ -86,20 +86,10 @@ assay ./my-app --report out.html  # also write an HTML report with screenshots
 assay ./my-app --one-line         # short summary, for scripts and agents
 ```
 
-This repository includes a drawing program whose Undo is broken:
-
-```console
-$ assay bench/programs/dsh/gpt-oss-120b/37_draw2
-24 case(s) planned, 24 carried out, 23 passed, 1 failed
-
-C016 [FAILED] draw on canvas twice, then press Undo twice
-    → pressing this twice from the same starting point, the first press changed nothing and the second did, so it reacts one press late
-```
-
 The exit code is non-zero if anything failed, and nothing is written to disk
 unless you ask.
 
-**[The full flags, the Python API and the HTML report →](https://github.com/awss1i/assay/blob/main/docs/usage.md)**
+**[The full flags, a worked example, the Python API and the HTML report →](https://github.com/awss1i/assay/blob/main/docs/usage.md)**
 
 ### With coding agents
 

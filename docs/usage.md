@@ -17,7 +17,8 @@ Nothing is written to disk unless you ask, and the exit code is non-zero if anyt
 
 ## An example
 
-This repository includes a drawing program whose Undo is broken:
+assay ships with the benchmark pages it is scored on, so you can run it on one
+right now. This one is a small drawing program whose Undo reacts a press late:
 
 ```console
 $ assay bench/programs/dsh/gpt-oss-120b/37_draw2
@@ -28,6 +29,9 @@ C016 [FAILED] draw on canvas twice, then press Undo twice
     → pressing this twice from the same starting point, the first press changed nothing and the second did, so it reacts one press late
 C017 [ok] draw on canvas twice, then press Redo twice
 ```
+
+C016 is the failure. The first Undo did nothing and the second did the work, so
+Undo is one press behind.
 
 ## The HTML report
 
