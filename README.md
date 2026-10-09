@@ -6,7 +6,13 @@
   <a href="https://github.com/sickn33/agentic-awesome-skills"><img src="https://img.shields.io/badge/listed%20in-agentic--awesome--skills-blue" alt="listed in agentic-awesome-skills"></a>
 </p>
 
+<p align="center">
+  <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#how-it-works">How it works</a> · <a href="#why">Why</a> · <a href="#limits">Limits</a> · <a href="#contributing">Contributing</a> · <a href="#licence">Licence</a>
+</p>
+
 <p align="center"><strong>Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.</strong></p>
+
+<p align="center"><code>pip install assay-ui</code></p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="A terminal running assay on a list
@@ -15,11 +21,7 @@ failed. The first failure says nothing on the page changed at all, and the
 other five say they are the same finding.">
 </p>
 
-<p align="center"><i>Checking a drag-to-reorder list with a bug in it.</i> <code>pip install assay-ui</code></p>
-
-<p align="center">
-  <a href="#install">Install</a> · <a href="#use">Use</a> · <a href="#benchmarks">Benchmarks</a> · <a href="#how-it-works">How it works</a> · <a href="#why">Why</a> · <a href="#limits">Limits</a> · <a href="#contributing">Contributing</a> · <a href="#licence">Licence</a>
-</p>
+<p align="center"><i>Checking a drag-to-reorder list with a bug in it.</i></p>
 
 ---
 

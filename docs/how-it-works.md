@@ -70,6 +70,8 @@ assay: index.html loads /src/main.jsx, which a browser cannot run. This is a sou
   assay will not run that for you, because installing dependencies executes their setup scripts, and this is a tool for checking code nobody has read.
 ```
 
+---
+
 ### Waiting for the page to load
 
 The `load` event fires before most frameworks have drawn anything, so assay
@@ -79,6 +81,8 @@ changing.
 A page showing only a spinner is also still, so stillness only counts as
 ready once the page has something to interact with. Otherwise a page stuck on
 *Loading…* would look like a finished page with no controls.
+
+---
 
 ### Finding the controls
 
@@ -103,6 +107,8 @@ It also finds controls that no HTML tag announces:
 Click handlers added in JavaScript can't be read from the page, so the mouse
 cursor is often the only sign that an element does something.
 
+---
+
 ### Planning the checks
 
 From the controls it found, assay builds a list of checks. Each check is one
@@ -115,6 +121,8 @@ size, like the cells of a grid), assay uses at most three of them, spread
 across the group rather than the first three. One page with a 256-cell grid
 produced a 505-check plan before this, and all the extra checks said the same
 thing.
+
+---
 
 ### Running each check
 
@@ -138,6 +146,8 @@ doesn't count as a response by itself. What the page does with the answer
 does. assay answers prompts with a sensible value and accepts confirms rather
 than dismissing them, because dismissing would cancel the feature being
 tested.
+
+---
 
 ### Passed, failed, or not checked
 
@@ -163,6 +173,8 @@ A disabled control is the page saying "not now". assay records that the
 control was disabled and doesn't count its silence against the page. A
 quantity box that clamps 25 to its maximum of 10 and disables `+` is working
 as intended.
+
+---
 
 ### Grouping findings
 
@@ -245,6 +257,8 @@ expects a response (like submitting a form) leaves it blank. A drawing tool
 that is just an empty canvas until you draw on it isn't reported for being
 blank on load.
 
+---
+
 ### Pressing buttons and links
 
 assay presses every button and link once, and then twice in a row, because
@@ -267,6 +281,8 @@ an opposite that does work (see
 the whole page responds (see
 [a page where nothing responds](#a-page-where-nothing-responds)).
 
+---
+
 ### Typing into fields
 
 assay types four kinds of value into every text field: nothing, ordinary
@@ -279,6 +295,8 @@ react to the `change` event see it.
 For these checks, assay only reports an error the page threw. Read-only
 fields are never typed into, because they're outputs. A password generator
 writes its answer into one.
+
+---
 
 ### Filling in a form and submitting it
 
@@ -316,6 +334,8 @@ assay doesn't report this when:
 - **The button is disabled.**
 - **The page has stopped by itself,** like a game that has ended, unless the
   page said what to press (see [games](#games-and-animated-canvases)).
+
+---
 
 ### Adding items to a list and removing them
 
@@ -361,6 +381,8 @@ row showing the total would look correct. assay doesn't report it when:
 - **The page refused the second item.** A value the page didn't accept isn't
   counted as lost.
 
+---
+
 ### Numbers that count or total a list
 
 Throughout the run, assay reads every number on the page along with how many
@@ -395,6 +417,8 @@ seen both growing and shrinking, and the number must have changed on every
 single addition, since a number that only sometimes moves is tracking
 something else.
 
+---
+
 ### Saving and reloading
 
 After adding two items, assay checks whether the page wrote them to its own
@@ -409,6 +433,8 @@ C021 [FAILED] save two, reload, and they are still there
 
 It's only asked when the page both saved the values and was showing them
 before the reload. A page that never saves anything is never asked.
+
+---
 
 ### Clicking cells, chips and cards twice
 
@@ -451,6 +477,8 @@ that opens a lightbox, isn't reported either.
 These clicks are otherwise judged like button presses. Only errors are
 reported.
 
+---
+
 ### Buttons that come in opposite pairs
 
 A lone button is allowed to do nothing visible. What a page can't explain is
@@ -472,6 +500,8 @@ F001 [FAILED] Previous works as well as Next
 
 Previous on a freshly loaded deck correctly does nothing, which is why the
 press that counts is the one straight after Next.
+
+---
 
 ### Drawing on a canvas
 
@@ -527,6 +557,8 @@ It's only reported when at least two checks used the page, no other check
 failed, and every control on the page was reached, since a control assay
 couldn't reach might be the one that starts the drawing.
 
+---
+
 ### Pressing a button after drawing
 
 For every button on a page with a canvas, assay draws two lines, then presses
@@ -559,6 +591,8 @@ draw, was previously reported as having a late Undo. The canvas itself is
 still reported if the second line didn't draw (see
 [drawing on a canvas](#drawing-on-a-canvas)).
 
+---
+
 ### Games and animated canvases
 
 If a canvas animates by itself, like a game that plays on its own, assay
@@ -578,6 +612,8 @@ broken its own instruction, and assay reports:
 
 A finished game with no restart can still look broken, which is listed in
 the README's limits.
+
+---
 
 ### Dragging handles and rows
 
@@ -601,6 +637,8 @@ C012 [FAILED] drag the divider, then drag it again
     → nothing on the page changed at all
 ```
 
+---
+
 ### Sliders, checkboxes, dropdowns, colours and files
 
 assay moves every slider to the far end, ticks every checkbox and radio
@@ -612,6 +650,8 @@ For these checks, assay only reports an error the page threw, for the same
 reason as buttons. It can't know what a slider or a checkbox is supposed to
 change. They still count as using the page, which the
 [nothing responds](#a-page-where-nothing-responds) check needs.
+
+---
 
 ### Tabs and expandable sections
 
@@ -628,6 +668,8 @@ F001 [FAILED] the panel a selected tab or open section controls is shown
 
 A panel that is empty still counts as shown, since it has a box on the page.
 Only a panel the browser doesn't render at all is reported.
+
+---
 
 ### Labels and radio buttons in the markup
 
@@ -656,6 +698,8 @@ page:
       → two labels are both linked to "star4", so one of them was meant for another control, which is left without a label, first seen at C001
   ```
 
+---
+
 ### Fields whose placeholder fails their own pattern
 
 assay reads every field with both a `pattern` and a placeholder. If the
@@ -671,6 +715,8 @@ This is read from the markup rather than found by typing, because the field
 that prompted it sits on a later step of a wizard that the checks never
 reach. A placeholder with a space in it is left alone, since that's an
 instruction (*Enter five digits*) rather than an example value.
+
+---
 
 ### NaN, undefined and [object Object] on the page
 
@@ -688,6 +734,8 @@ It isn't reported from a check in which assay itself typed something that
 isn't a number. A temperature converter given `Sample item` correctly shows
 `NaN`, since that's the right answer to the question it was asked. An empty
 field counts as a number here.
+
+---
 
 ### A page where nothing responds
 
