@@ -58,18 +58,20 @@ def page(lines: list[str]) -> str:
   pre{{margin:16px 0 0;padding:0 22px;font-family:{MONO};font-size:17px;
        line-height:21px;color:{TEXT};white-space:pre-wrap;overflow-wrap:anywhere;
        max-height:483px;overflow:hidden}}
-  .side{{position:absolute;left:876px;right:48px;top:60px;font-family:{SANS};color:{BRIGHT}}}
-  .side h1{{margin:0;font-size:64px;line-height:68px;font-weight:700;letter-spacing:-.02em}}
-  .side p{{margin:14px 0 0;font-size:26px;line-height:35px;color:{TEXT}}}
+  .rule{{position:absolute;left:848px;top:150px;height:340px;width:1px;background:#333a47}}
+  .side{{position:absolute;left:876px;right:48px;top:60px;font-family:{MONO};color:{BRIGHT}}}
+  .side h1{{margin:0;font-size:64px;line-height:68px;font-weight:700;letter-spacing:-.01em}}
+  .side p{{margin:18px 0 0;font-size:22px;line-height:30px;color:{TEXT}}}
   .side code{{display:block;margin-top:28px;font-family:{MONO};font-size:19px;color:{TEXT}}}
 </style>
 <div class="term">
   <div class="dots"><i style="background:{RED}"></i><i style="background:{AMBER}"></i><i style="background:{GREEN}"></i></div>
 <pre>{rows}</pre>
 </div>
+<div class="rule"></div>
 <div class="side">
   <h1>assay</h1>
-  <p>drives your web page in a real browser and tells you what broke. no tests to write, no LLM.</p>
+  <p>a deterministic, browser-driven QA tool for web pages. no tests to write, no LLM.</p>
   <code>pip install assay-ui</code>
 </div>
 """

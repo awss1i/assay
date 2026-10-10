@@ -3,7 +3,8 @@
 <p align="center">
   <a href="https://github.com/awss1i/assay/blob/main/pyproject.toml"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="python"></a>
   <a href="https://github.com/awss1i/assay/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-MIT-blue" alt="licence"></a>
-  <a href="https://github.com/sickn33/agentic-awesome-skills"><img src="https://img.shields.io/badge/listed%20in-agentic--awesome--skills-blue" alt="listed in agentic-awesome-skills"></a>
+  <a href="https://github.com/sickn33/agentic-awesome-skills"><img src="https://img.shields.io/badge/listed%20in-agentic--awesome--skills-5bb5ac" alt="listed in agentic-awesome-skills"></a>
+  <a href="https://github.com/TheJambo/awesome-testing"><img src="https://img.shields.io/badge/listed%20in-awesome--testing-5bb5ac" alt="listed in awesome-testing"></a>
 </p>
 
 <p align="center">
@@ -12,7 +13,7 @@
 
 ---
 
-<p align="center"><strong>Drives your web page in a real browser and tells you what broke. No tests to write, no LLM.</strong></p>
+<p align="center"><strong>A deterministic, browser-driven QA tool for web pages. No tests to write, no LLM.</strong></p>
 
 <p align="center"><code>pip install assay-ui</code></p>
 
