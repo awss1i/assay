@@ -231,8 +231,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     """Check one folder and say what happened. Non-zero if anything failed."""
     ap = argparse.ArgumentParser(
         prog="assay",
-        description="A deterministic, browser-driven QA tool for web pages. "
-                    "No tests to write, no LLM.")
+        description="An agent-native QA CLI for web pages. "
+                    "Deterministic, no tests to write, no LLM.")
     ap.add_argument("folder",
                     help="the folder holding the program, or the page")
     ap.add_argument("-e", "--entry", default="index.html",

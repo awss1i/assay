@@ -13,7 +13,7 @@
 
 ---
 
-<p align="center"><strong>A deterministic, browser-driven QA tool for web pages. No tests to write, no LLM.</strong></p>
+<p align="center"><strong>An agent-native QA CLI for web pages. Deterministic, no tests to write, no LLM.</strong></p>
 
 <p align="center"><code>pip install assay-ui</code></p>
 

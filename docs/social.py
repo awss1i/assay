@@ -17,6 +17,7 @@ sys.path.insert(0, "src")
 PAPER, PAGE, EDGE = "#12131a", "#0b0c11", "#262938"
 DIM, TEXT, BRIGHT = "#6d7385", "#c6cad6", "#eef0f5"
 GREEN, RED, AMBER = "#5ac37d", "#ef6b73", "#e2c15f"
+TEAL = "#5bb5ac"
 MONO = "'Adwaita Mono','JetBrains Mono','Liberation Mono',monospace"
 SANS = "'Adwaita Sans','Inter','Noto Sans',sans-serif"
 W, H = 1280, 640
@@ -58,11 +59,12 @@ def page(lines: list[str]) -> str:
   pre{{margin:16px 0 0;padding:0 22px;font-family:{MONO};font-size:17px;
        line-height:21px;color:{TEXT};white-space:pre-wrap;overflow-wrap:anywhere;
        max-height:483px;overflow:hidden}}
-  .rule{{position:absolute;left:848px;top:150px;height:340px;width:1px;background:#333a47}}
-  .side{{position:absolute;left:876px;right:48px;top:60px;font-family:{MONO};color:{BRIGHT}}}
-  .side h1{{margin:0;font-size:64px;line-height:68px;font-weight:700;letter-spacing:-.01em}}
+  .rule{{position:absolute;left:848px;top:150px;height:340px;width:2px;background:{TEAL};opacity:.5}}
+  .side{{position:absolute;left:876px;right:48px;top:150px;font-family:{MONO};color:{BRIGHT}}}
+  .side svg{{display:block}}
+  .side h1{{margin:16px 0 0;font-size:64px;line-height:68px;font-weight:700;letter-spacing:-.01em;color:{TEAL}}}
   .side p{{margin:18px 0 0;font-size:22px;line-height:30px;color:{TEXT}}}
-  .side code{{display:block;margin-top:28px;font-family:{MONO};font-size:19px;color:{TEXT}}}
+  .side code{{display:block;margin-top:28px;font-family:{MONO};font-size:19px;color:{TEAL}}}
 </style>
 <div class="term">
   <div class="dots"><i style="background:{RED}"></i><i style="background:{AMBER}"></i><i style="background:{GREEN}"></i></div>
@@ -70,8 +72,9 @@ def page(lines: list[str]) -> str:
 </div>
 <div class="rule"></div>
 <div class="side">
+  <svg viewBox="0 0 64 64" width="66" height="66"><rect width="64" height="64" rx="14" fill="#111317"/><rect x="12" y="18" width="40" height="28" rx="4" fill="none" stroke="#eef0f4" stroke-width="3"/><line x1="12" y1="26" x2="52" y2="26" stroke="#eef0f4" stroke-width="3"/><circle cx="17.5" cy="22" r="1.7" fill="#eef0f4"/><circle cx="23.3" cy="22" r="1.7" fill="#eef0f4"/><path d="M28 30 L28 43.5 L31.7 40 L34.3 45.3 L36.4 44.3 L33.9 39.1 L38.6 38.8 Z" fill="{TEAL}" stroke="#111317" stroke-width="1.6" stroke-linejoin="round"/></svg>
   <h1>assay</h1>
-  <p>a deterministic, browser-driven QA tool for web pages. no tests to write, no LLM.</p>
+  <p>an agent-native QA CLI for web pages. deterministic, no tests to write, no LLM.</p>
   <code>pip install assay-ui</code>
 </div>
 """
