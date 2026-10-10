@@ -19,6 +19,7 @@ questions or share ideas in <a href="https://github.com/awss1i/assay/discussions
 - [Benchmarks](#benchmarks)
 - [Adding a Harness](#adding-a-harness)
 - [Before You Open It](#before-you-open-it)
+- [Code of Conduct](#code-of-conduct)
 - [Licence](#licence)
 
 ---
@@ -84,6 +85,10 @@ Fork, branch, and open a pull request. The template asks what kind it is:
 | Docs | Nothing extra. |
 
 One change per pull request. Send a fix and a refactor separately.
+
+A pull request that skips what its kind needs gets one request for the missing
+piece, and is closed if it doesn't arrive. A feature pull request opened
+without a prior issue and a maintainer go-ahead may be closed on sight.
 
 ---
 
@@ -241,6 +246,15 @@ was built.
 - One change per pull request.
 - Commit messages say where and what, in lowercase: `readme: add X badge`,
   `docs: correct the harness count`.
+- If you used an AI tool to write any of it, say so in the pull request and
+  confirm you've read and understood every line.
+
+---
+
+## Code of Conduct
+
+Everyone taking part in assay is expected to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md).
 
 ---
 

@@ -27,3 +27,7 @@ Fixes #
 |---|---|---|
 | `python bench/score.py` | | |
 | `python bench/planted/score.py` | | |
+
+## AI use
+
+- [ ] AI-written or AI-assisted, and I've read every line.
