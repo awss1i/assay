@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CSS‑Drawn Tile Gallery</title>
+<style>
+/* ------- Layout --------------------------------------------------- */
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#111;
+    color:#eee;
+}
+.gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:12px;
+    padding:12px;
+}
+
+/* ------- Tile appearance ------------------------------------------ */
+.tile{
+    position:relative;
+    width:100%;
+    padding-top:100%;               /* square */
+    border-radius:8px;
+    cursor:pointer;
+    overflow:hidden;
+    transition:transform .2s;
+}
+.tile:hover{
+    transform:scale(1.03);
+}
+
+/* 20 distinct background styles – pure CSS -------------------------------- */
+.tile-0 {background:linear-gradient(45deg,#ff7e5f,#feb47b);}
+.tile-1 {background:radial-gradient(circle at 30% 30%,#6a11cb,#2575fc);}
+.tile-2 {background:conic-gradient(from 0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);}
+.tile-3 {background:repeating-linear-gradient(45deg,#fff,#fff 10px,#000 10px,#000 20px);}
+.tile-4 {background:linear-gradient(to right,#00c6ff,#0072ff);}
+.tile-5 {background:radial-gradient(circle at 50% 50%,#f0f,#0ff);}
+.tile-6 {background:linear-gradient(135deg,#f7971e,#ffd200);}
+.tile-7 {background:conic-gradient(#ff7e5f,#feb47b,#ff7e5f);}
+.tile-8 {background:repeating-linear-gradient(90deg,#222,#222 5px,#555 5px,#555 10px);}
+.tile-9 {background:linear-gradient(to bottom,#c2e59c,#64b3f6);}
+.tile-10{background:radial-gradient(circle farthest-corner at 10% 20%,#ff9a9e,#fad0c4);}
+.tile-11{background:linear-gradient(60deg,#29323c,#2c5364);}
+.tile-12{background:conic-gradient(from 90deg,#ff5f6d,#ffc371);}
+.tile-13{background:repeating-radial-gradient(circle at center,#fff,#fff 5px,#bbb 5px,#bbb 10px);}
+.tile-14{background:linear-gradient(to left,#ff9966,#ff5e62);}
+.tile-15{background:radial-gradient(circle at 70% 30%,#cfd9df,#e2ebf0);}
+.tile-16{background:linear-gradient(80deg,#11998e,#38ef7d);}
+.tile-17{background:conic-gradient(#00c9ff,#92fe9d,#00c9ff);}
+.tile-18{background:repeating-linear-gradient(135deg,#222,#222 3px,#444 3px,#444 6px);}
+.tile-19{background:linear-gradient(to top,#0f2027,#203a43,#2c5364);}
+
+/* ------- Lightbox ------------------------------------------------- */
+#lightbox{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:none;                /* toggled via JS */
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+}
+.lightbox-content{
+    position:relative;
+    width:60vw;
+    max-width:90vh;              /* keep it roughly square */
+    aspect-ratio:1/1;
+    border-radius:12px;
+    background-size:cover;
+    background-position:center;
+    box-shadow:0 0 30px rgba(0,0,0,0.7);
+}
+.lightbox-close{
+    position:absolute;
+    top:8px;
+    right:12px;
+    font-size:28px;
+    color:#fff;
+    cursor:pointer;
+    user-select:none;
+}
+</style>
+</head>
+<body>
+
+<div class="gallery">
+    <!-- 20 tiles -->
+    <div class="tile tile-0" data-index="0"></div>
+    <div class="tile tile-1" data-index="1"></div>
+    <div class="tile tile-2" data-index="2"></div>
+    <div class="tile tile-3" data-index="3"></div>
+    <div class="tile tile-4" data-index="4"></div>
+    <div class="tile tile-5" data-index="5"></div>
+    <div class="tile tile-6" data-index="6"></div>
+    <div class="tile tile-7" data-index="7"></div>
+    <div class="tile tile-8" data-index="8"></div>
+    <div class="tile tile-9" data-index="9"></div>
+    <div class="tile tile-10" data-index="10"></div>
+    <div class="tile tile-11" data-index="11"></div>
+    <div class="tile tile-12" data-index="12"></div>
+    <div class="tile tile-13" data-index="13"></div>
+    <div class="tile tile-14" data-index="14"></div>
+    <div class="tile tile-15" data-index="15"></div>
+    <div class="tile tile-16" data-index="16"></div>
+    <div class="tile tile-17" data-index="17"></div>
+    <div class="tile tile-18" data-index="18"></div>
+    <div class="tile tile-19" data-index="19"></div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+    <div class="lightbox-content" id="lb-content"></div>
+    <span class="lightbox-close" id="lb-close">&times;</span>
+</div>
+
+<script>
+(function(){
+    const tiles = document.querySelectorAll('.tile');
+    const lightbox = document.getElementById('lightbox');
+    const content  = document.getElementById('lb-content');
+    const closeBtn = document.getElementById('lb-close');
+    let current = 0;
+
+    const open = (idx) => {
+        current = idx;
+        updateContent();
+        lightbox.style.display = 'flex';
+    };
+
+    const close = () => {
+        lightbox.style.display = 'none';
+    };
+
+    const updateContent = () => {
+        /* reset class list then add the tile‑X background class */
+        content.className = 'lightbox-content';
+        content.classList.add('tile-' + current);
+    };
+
+    const prev = () => {
+        current = (current - 1 + tiles.length) % tiles.length;
+        updateContent();
+    };
+    const next = () => {
+        current = (current + 1) % tiles.length;
+        updateContent();
+    };
+
+    // Click on a tile
+    tiles.forEach(t => {
+        t.addEventListener('click', () => open(parseInt(t.dataset.index)));
+    });
+
+    // Close via button or clicking outside the content
+    closeBtn.addEventListener('click', close);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) close();
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (lightbox.style.display !== 'flex') return;   // ignore when closed
+        if (e.key === 'Escape') { e.preventDefault(); close(); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+    });
+})();
+</script>
+</body>
+</html>

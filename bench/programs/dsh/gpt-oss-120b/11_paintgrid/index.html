@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Paint Grid</title>
+<style>
+body {font-family: sans-serif; display:flex; flex-direction:column; align-items:center; margin:20px;}
+#palette {margin-bottom:10px;}
+.color-swatch {width:24px;height:24px;display:inline-block;margin:2px;cursor:pointer;border:2px solid #000;}
+#grid {display:grid; grid-template-columns: repeat(16, 30px); grid-template-rows: repeat(16, 30px); gap:1px;}
+.cell {width:30px;height:30px;background:#fff;border:1px solid #ccc; cursor:pointer;}
+</style>
+</head>
+<body>
+<h2>Paint Grid</h2>
+<div id="palette">
+<div class="color-swatch" style="background:#ff0000;" data-color="#ff0000"></div>
+<div class="color-swatch" style="background:#00ff00;" data-color="#00ff00"></div>
+<div class="color-swatch" style="background:#0000ff;" data-color="#0000ff"></div>
+<div class="color-swatch" style="background:#ffff00;" data-color="#ffff00"></div>
+<div class="color-swatch" style="background:#ff00ff;" data-color="#ff00ff"></div>
+<div class="color-swatch" style="background:#00ffff;" data-color="#00ffff"></div>
+<div class="color-swatch" style="background:#000000;" data-color="#000000"></div>
+<div class="color-swatch" style="background:#ffffff;" data-color="#ffffff"></div>
+</div>
+<button id="clearBtn">Clear</button>
+<div id="grid"></div>
+<script>
+let currentColor = '#000000';
+document.querySelectorAll('.color-swatch').forEach(s => {
+  s.addEventListener('click', () => {
+    currentColor = s.dataset.color;
+    document.querySelectorAll('.color-swatch').forEach(sw => sw.style.outline = '');
+    s.style.outline = '2px solid #000';
+  });
+});
+function createGrid() {
+  const grid = document.getElementById('grid');
+  for(let i=0;i<256;i++){
+    const cell = document.createElement('div');
+    cell.className='cell';
+    cell.addEventListener('click',()=>{ cell.style.backgroundColor = currentColor; });
+    grid.appendChild(cell);
+  }
+}
+document.getElementById('clearBtn').addEventListener('click',()=> {
+  const cells=document.querySelectorAll('.cell');
+  cells.forEach(c=>c.style.backgroundColor='');
+});
+createGrid();
+</script>
+</body>
+</html>

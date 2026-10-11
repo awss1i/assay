@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Searchable Country List</title>
+    <style>
+        /* Basic page layout */
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: #f7f9fc;
+            color: #222;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+        #loader {
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 3rem;
+        }
+        #app {
+            display: none;               /* hidden until the delay expires */
+        }
+        #search {
+            width: 100%;
+            max-width: 400px;
+            padding: .5rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+            max-width: 400px;
+        }
+        li {
+            padding: .4rem .6rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        li.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Country Finder</h1>
+
+    <div id="loader">Loading…</div>
+
+    <div id="app">
+        <input type="text" id="search" placeholder="Type to search countries…" autocomplete="off">
+        <ul id="countryList">
+            <li>Argentina</li>
+            <li>Australia</li>
+            <li>Brazil</li>
+            <li>Canada</li>
+            <li>China</li>
+            <li>Denmark</li>
+            <li>Egypt</li>
+            <li>France</li>
+            <li>Germany</li>
+            <li>India</li>
+            <li>Indonesia</li>
+            <li>Italy</li>
+            <li>Japan</li>
+            <li>Mexico</li>
+            <li>Netherlands</li>
+            <li>Nigeria</li>
+            <li>Russia</li>
+            <li>South Africa</li>
+            <li>Spain</li>
+            <li>United Kingdom</li>
+            <li>United States</li>
+        </ul>
+    </div>
+
+    <script>
+        // --------------------------------------------------------------
+        // Simple delayed start → show the UI after a short pause.
+        // --------------------------------------------------------------
+        window.addEventListener('load', function () {
+            const delayMs = 1200;          // 1.2 seconds
+            const loader = document.getElementById('loader');
+            const app    = document.getElementById('app');
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                app.style.display = 'block';
+                document.getElementById('search').focus();
+            }, delayMs);
+        });
+
+        // --------------------------------------------------------------
+        // Live filtering as the user types.
+        // --------------------------------------------------------------
+        (function () {
+            const input   = document.getElementById('search');
+            const list    = document.getElementById('countryList');
+            const items   = Array.from(list.getElementsByTagName('li'));
+
+            input.addEventListener('input', () => {
+                const term = input.value.trim().toLowerCase();
+
+                items.forEach(li => {
+                    const txt = li.textContent.toLowerCase();
+                    const match = txt.includes(term);
+                    li.classList.toggle('hidden', !match);
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

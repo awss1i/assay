@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FAQ – Frequently Asked Questions</title>
+<style>
+    /* Basic page layout */
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background:#f9f9f9;
+        margin:0;
+        padding:0;
+        color:#333;
+    }
+    .container {
+        max-width:800px;
+        margin:40px auto;
+        padding:20px;
+        background:#fff;
+        border-radius:8px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+        text-align:center;
+        margin-bottom:30px;
+    }
+
+    /* Accordion styles */
+    .accordion-header {
+        width:100%;
+        background:#4CAF50;
+        color:#fff;
+        border:none;
+        outline:none;
+        text-align:left;
+        cursor:pointer;
+        padding:15px;
+        margin:5px 0;
+        font-size:1.1rem;
+        border-radius:5px;
+        transition:background .2s;
+    }
+    .accordion-header:hover,
+    .accordion-header.active {
+        background:#45a049;
+    }
+    .accordion-content {
+        max-height:0;
+        overflow:hidden;
+        background:#f1f1f1;
+        transition:max-height .3s ease;
+        border-radius:0 0 5px 5px;
+        padding:0 15px;
+    }
+    .accordion-content p {
+        margin:15px 0;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Frequently Asked Questions</h1>
+
+    <div class="accordion">
+        <!-- 1 -->
+        <button class="accordion-header">What is this website about?</button>
+        <div class="accordion-content">
+            <p>This website provides answers to common questions about our services, policies, and usage.</p>
+        </div>
+
+        <!-- 2 -->
+        <button class="accordion-header">How can I contact support?</button>
+        <div class="accordion-content">
+            <p>You can reach our support team via the contact form, email, or phone. Details are provided on the Contact page.</p>
+        </div>
+
+        <!-- 3 -->
+        <button class="accordion-header">What payment methods are accepted?</button>
+        <div class="accordion-content">
+            <p>We accept credit cards, debit cards, PayPal, and bank transfers.</p>
+        </div>
+
+        <!-- 4 -->
+        <button class="accordion-header">Is there a refund policy?</button>
+        <div class="accordion-content">
+            <p>Yes, we offer refunds within 30 days of purchase, provided the request meets our terms.</p>
+        </div>
+
+        <!-- 5 -->
+        <button class="accordion-header">Where can I find the terms of service?</button>
+        <div class="accordion-content">
+            <p>The terms of service are located at the bottom of any page under "Legal".</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple accordion: open one panel, close the rest
+    document.addEventListener('DOMContentLoaded', function () {
+        const headers = document.querySelectorAll('.accordion-header');
+
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                // Close any currently open panel (except the one we clicked)
+                const openHeader = document.querySelector('.accordion-header.active');
+                if (openHeader && openHeader !== header) {
+                    openHeader.classList.remove('active');
+                    openHeader.nextElementSibling.style.maxHeight = null;
+                }
+
+                // Toggle the clicked panel
+                const content = header.nextElementSibling;
+                const isOpening = header.classList.toggle('active');
+                if (isOpening) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                } else {
+                    content.style.maxHeight = null;
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

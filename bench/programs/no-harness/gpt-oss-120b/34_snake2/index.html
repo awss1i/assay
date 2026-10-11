@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Snake Game</title>
+<style>
+    body {
+        margin:0;
+        font-family:Arial,Helvetica,sans-serif;
+        background:#111;
+        color:#eee;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-start;
+        height:100vh;
+    }
+    h1 {margin:20px 0 5px;}
+    #info {margin-bottom:10px;}
+    canvas {
+        background:#222;
+        border:2px solid #555;
+    }
+    #overlay {
+        position:absolute;
+        top:0; left:0;
+        width:100%; height:100%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(0,0,0,0.7);
+        color:#fff;
+        font-size:2em;
+        visibility:hidden;
+    }
+</style>
+</head>
+<body>
+<h1>Snake</h1>
+<div id="info">
+    Score: <span id="score">0</span> |
+    High Score: <span id="highScore">0</span>
+</div>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+<div id="overlay">Game Over – Press Space to Restart</div>
+
+<script>
+(() => {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const scoreEl = document.getElementById('score');
+    const highScoreEl = document.getElementById('highScore');
+
+    const cellSize = 20;
+    const cols = canvas.width / cellSize;
+    const rows = canvas.height / cellSize;
+
+    const dirMap = {
+        ArrowUp:    {x:0, y:-1},
+        ArrowDown:  {x:0, y:1},
+        ArrowLeft:  {x:-1, y:0},
+        ArrowRight: {x:1, y:0}
+    };
+    let snake, direction, nextDirection, food, score, highScore, timer, gameOver;
+
+    // --------------------------------------------------------------
+    // Initialise / Reset
+    // --------------------------------------------------------------
+    function init() {
+        snake = [
+            {x: Math.floor(cols/2), y: Math.floor(rows/2)},
+            {x: Math.floor(cols/2)-1, y: Math.floor(rows/2)},
+            {x: Math.floor(cols/2)-2, y: Math.floor(rows/2)}
+        ];
+        direction = {x:1, y:0};
+        nextDirection = direction;
+        food = randomEmptyCell();
+        score = 0;
+        gameOver = false;
+        overlay.style.visibility = 'hidden';
+        scoreEl.textContent = score;
+        highScore = parseInt(localStorage.getItem('snakeHighScore'))||0;
+        highScoreEl.textContent = highScore;
+        clearInterval(timer);
+        timer = setInterval(gameLoop, 100);
+    }
+
+    // --------------------------------------------------------------
+    // Game loop
+    // --------------------------------------------------------------
+    function gameLoop() {
+        // Apply queued direction (prevent reversing)
+        if (!isOpposite(nextDirection, direction)) direction = nextDirection;
+
+        // Compute new head
+        const newHead = {
+            x: snake[0].x + direction.x,
+            y: snake[0].y + direction.y
+        };
+
+        // Wall collision
+        if (newHead.x < 0 || newHead.x >= cols || newHead.y < 0 || newHead.y >= rows) {
+            endGame();
+            return;
+        }
+
+        // Self collision
+        if (snake.some(segment => segment.x===newHead.x && segment.y===newHead.y)) {
+            endGame();
+            return;
+        }
+
+        // Add head
+        snake.unshift(newHead);
+
+        // Food?
+        if (newHead.x===food.x && newHead.y===food.y) {
+            score++;
+            scoreEl.textContent = score;
+            if (score > highScore) {
+                highScore = score;
+                highScoreEl.textContent = highScore;
+                localStorage.setItem('snakeHighScore', highScore);
+            }
+            food = randomEmptyCell();
+        } else {
+            // Remove tail
+            snake.pop();
+        }
+
+        draw();
+    }
+
+    // --------------------------------------------------------------
+    // Drawing
+    // --------------------------------------------------------------
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        // Food
+        ctx.fillStyle = '#e33';
+        ctx.fillRect(food.x*cellSize, food.y*cellSize, cellSize, cellSize);
+
+        // Snake
+        ctx.fillStyle = '#3c3';
+        snake.forEach((seg,i)=>{
+            ctx.fillStyle = i===0 ? '#0f0' : '#3c3';
+            ctx.fillRect(seg.x*cellSize, seg.y*cellSize, cellSize, cellSize);
+        });
+    }
+
+    // --------------------------------------------------------------
+    // Helpers
+    // --------------------------------------------------------------
+    function randomEmptyCell() {
+        let pos;
+        do {
+            pos = {
+                x: Math.floor(Math.random()*cols),
+                y: Math.floor(Math.random()*rows)
+            };
+        } while (snake.some(s=>s.x===pos.x && s.y===pos.y));
+        return pos;
+    }
+
+    function isOpposite(dir1, dir2) {
+        return dir1.x===-dir2.x && dir1.y===-dir2.y;
+    }
+
+    function endGame() {
+        clearInterval(timer);
+        gameOver = true;
+        overlay.style.visibility = 'visible';
+    }
+
+    // --------------------------------------------------------------
+    // Input
+    // --------------------------------------------------------------
+    document.addEventListener('keydown', e=>{
+        if (dirMap[e.key]) {
+            const wanted = dirMap[e.key];
+            if (!isOpposite(wanted, direction)) {
+                nextDirection = wanted;
+            }
+        } else if (gameOver && e.code==='Space') {
+            init();
+        }
+    });
+
+    // --------------------------------------------------------------
+    // Start
+    // --------------------------------------------------------------
+    init();
+})();
+</script>
+</body>
+</html>

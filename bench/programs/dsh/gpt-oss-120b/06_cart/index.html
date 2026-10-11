@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Shopping Cart</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 20px; max-width: 800px;}
+    h1 {text-align: center;}
+    .items, .basket {margin-top: 30px;}
+    .item, .basket-item {display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #ddd;}
+    .item button, .basket-item button {padding: 4px 8px;}
+    .basket {border: 1px solid #ccc; padding: 10px;}
+    .total {font-weight: bold; text-align: right; margin-top: 10px;}
+  </style>
+</head>
+<body>
+  <h1>Shopping Cart Demo</h1>
+  <div class="items">
+    <h2>Products</h2>
+    <div class="item" data-name="Apple" data-price="0.99">
+      <span>Apple - $0.99</span>
+      <button onclick="addToCart('Apple', 0.99)">Add</button>
+    </div>
+    <div class="item" data-name="Banana" data-price="0.59">
+      <span>Banana - $0.59</span>
+      <button onclick="addToCart('Banana', 0.59)">Add</button>
+    </div>
+    <div class="item" data-name="Orange" data-price="0.79">
+      <span>Orange - $0.79</span>
+      <button onclick="addToCart('Orange', 0.79)">Add</button>
+    </div>
+  </div>
+
+  <div class="basket">
+    <h2>Basket</h2>
+    <div id="basket-contents">
+      <p>Your basket is empty.</p>
+    </div>
+    <div class="total" id="total">Total: $0.00</div>
+  </div>
+
+  <script>
+    const cart = {};
+    function addToCart(name, price) {
+      if (!cart[name]) {
+        cart[name] = { qty: 0, price };
+      }
+      cart[name].qty += 1;
+      renderCart();
+    }
+    function removeFromCart(name) {
+      if (cart[name]) {
+        cart[name].qty -= 1;
+        if (cart[name].qty <= 0) delete cart[name];
+        renderCart();
+      }
+    }
+    function renderCart() {
+      const container = document.getElementById('basket-contents');
+      const totalEl = document.getElementById('total');
+      container.innerHTML = '';
+      let total = 0;
+      const keys = Object.keys(cart);
+      if (keys.length === 0) {
+        container.innerHTML = '<p>Your basket is empty.</p>';
+        totalEl.textContent = 'Total: $0.00';
+        return;
+      }
+      keys.forEach(name => {
+        const { qty, price } = cart[name];
+        const lineTotal = qty * price;
+        total += lineTotal;
+        const div = document.createElement('div');
+        div.className = 'basket-item';
+        div.innerHTML = `
+          <span>${name} x ${qty} = $${lineTotal.toFixed(2)}</span>
+          <button onclick="removeFromCart('${name}')">Remove</button>
+        `;
+        container.appendChild(div);
+      });
+      totalEl.textContent = `Total: $${total.toFixed(2)}`;
+    }
+  </script>
+</body>
+</html>

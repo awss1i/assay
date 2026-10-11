@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>16×16 Paint Grid</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .palette {
+      display: flex;
+      gap: 8px;
+    }
+    .color-swatch {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #444;
+      cursor: pointer;
+    }
+    .color-swatch.selected {
+      outline: 3px solid #000;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      gap: 1px;
+    }
+    .cell {
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    button {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>16×16 Paint Grid</h1>
+
+  <div class="palette" id="palette">
+    <div class="color-swatch" style="background:#e74c3c;"></div>
+    <div class="color-swatch" style="background:#f1c40f;"></div>
+    <div class="color-swatch" style="background:#2ecc71;"></div>
+    <div class="color-swatch" style="background:#3498db;"></div>
+    <div class="color-swatch" style="background:#9b59b6;"></div>
+    <div class="color-swatch" style="background:#34495e;"></div>
+    <div class="color-swatch" style="background:#000;"></div>
+    <div class="color-swatch" style="background:#fff; border:2px solid #444;"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <button id="clearBtn">Clear</button>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const palette = document.getElementById('palette');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Create 16×16 cells
+    for (let i = 0; i < 256; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      grid.appendChild(cell);
+    }
+
+    // Default colour
+    let selectedColor = '#000';
+
+    // Palette click handling
+    palette.addEventListener('click', e => {
+      if (!e.target.classList.contains('color-swatch')) return;
+      selectedColor = e.target.style.backgroundColor;
+      // visual selection
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      e.target.classList.add('selected');
+    });
+
+    // Set initial selection
+    const firstSwatch = palette.querySelector('.color-swatch');
+    firstSwatch.classList.add('selected');
+
+    // Paint cells
+    grid.addEventListener('click', e => {
+      if (!e.target.classList.contains('cell')) return;
+      e.target.style.backgroundColor = selectedColor;
+    });
+
+    // Clear grid
+    clearBtn.addEventListener('click', () => {
+      document.querySelectorAll('.cell').forEach(c => c.style.backgroundColor = '');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple SPA with Hash Routing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: #4caf50;
+      color: white;
+      padding: 1rem;
+    }
+    nav a {
+      color: white;
+      margin-right: 1rem;
+      text-decoration: none;
+    }
+    main {
+      flex: 1;
+      padding: 2rem;
+    }
+    .view {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    footer {
+      background: #f1f1f1;
+      text-align: center;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hash‑Router SPA</h1>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+  <main>
+    <section id="home" class="view">
+      <h2>Home</h2>
+      <p>Welcome to the home view. This is the default page.</p>
+    </section>
+    <section id="about" class="view">
+      <h2>About</h2>
+      <p>This page demonstrates a simple single‑page app using the URL hash.</p>
+    </section>
+    <section id="contact" class="view">
+      <h2>Contact</h2>
+      <p>Reach out via <a href="mailto:example@example.com">email</a>.</p>
+    </section>
+  </main>
+  <footer>
+    <small>© 2024 Simple SPA</small>
+  </footer>
+  <script>
+    // Simple hash‑based router
+    const views = document.querySelectorAll('.view');
+    function showView() {
+      const hash = location.hash.replace('#', '') || 'home';
+      views.forEach(v => v.classList.toggle('active', v.id === hash));
+    }
+    // Initial load
+    showView();
+    // Listen for hash changes (back/forward navigation)
+    window.addEventListener('hashchange', showView);
+  </script>
+</body>
+</html>

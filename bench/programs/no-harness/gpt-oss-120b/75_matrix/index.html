@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3×3 Matrix Multiply</title>
+<style>
+  body {font-family: sans-serif; margin: 20px;}
+  .grid {display: inline-block; margin-right: 30px;}
+  table {border-collapse: collapse;}
+  td {border: 1px solid #666; width: 60px; height: 36px; text-align: center;}
+  input {width: 100%; height: 100%; box-sizing: border-box; border: none; text-align: center; font-size: 1rem;}
+  input:focus {outline: 2px solid #4a90e2;}
+  input.invalid {background:#ffdddd;}
+  button {margin-top: 20px; padding:8px 16px; font-size:1rem;}
+  #log {margin-top:10px; font-family:monospace;}
+</style>
+</head>
+<body>
+
+<h2>3×3 Matrix Multiply</h2>
+
+<div class="grid" id="gridA">
+  <strong>Matrix A</strong>
+  <table>
+    <tbody>
+      <tr><td><input id="a00" type="text" placeholder="0"></td><td><input id="a01" type="text" placeholder="0"></td><td><input id="a02" type="text" placeholder="0"></td></tr>
+      <tr><td><input id="a10" type="text" placeholder="0"></td><td><input id="a11" type="text" placeholder="0"></td><td><input id="a12" type="text" placeholder="0"></td></tr>
+      <tr><td><input id="a20" type="text" placeholder="0"></td><td><input id="a21" type="text" placeholder="0"></td><td><input id="a22" type="text" placeholder="0"></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grid" id="gridB">
+  <strong>Matrix B</strong>
+  <table>
+    <tbody>
+      <tr><td><input id="b00" type="text" placeholder="0"></td><td><input id="b01" type="text" placeholder="0"></td><td><input id="b02" type="text" placeholder="0"></td></tr>
+      <tr><td><input id="b10" type="text" placeholder="0"></td><td><input id="b11" type="text" placeholder="0"></td><td><input id="b12" type="text" placeholder="0"></td></tr>
+      <tr><td><input id="b20" type="text" placeholder="0"></td><td><input id="b21" type="text" placeholder="0"></td><td><input id="b22" type="text" placeholder="0"></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grid" id="gridC">
+  <strong>Result C = A × B</strong>
+  <table>
+    <tbody>
+      <tr><td><input id="c00" type="text" disabled></td><td><input id="c01" type="text" disabled></td><td><input id="c02" type="text" disabled></td></tr>
+      <tr><td><input id="c10" type="text" disabled></td><td><input id="c11" type="text" disabled></td><td><input id="c12" type="text" disabled></td></tr>
+      <tr><td><input id="c20" type="text" disabled></td><td><input id="c21" type="text" disabled></td><td><input id="c22" type="text" disabled></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<br>
+<button id="multiplyBtn">Multiply</button>
+
+<div id="log"></div>
+
+<script>
+  // Helper: get numeric value or NaN
+  function getNum(id) {
+    const el = document.getElementById(id);
+    const val = el.value.trim();
+    const num = Number(val);
+    if (val === '' || isNaN(num)) {
+      el.classList.add('invalid');
+      return NaN;
+    }
+    el.classList.remove('invalid');
+    return num;
+  }
+
+  // Fill result cell
+  function setResult(id, value) {
+    const el = document.getElementById(id);
+    el.value = Number.isFinite(value) ? value : '';
+  }
+
+  // Multiply matrices
+  function multiply() {
+    const log = document.getElementById('log');
+    log.textContent = ''; // clear previous log
+
+    // Gather A and B, marking invalid fields
+    const A = [], B = [];
+    let hasError = false;
+    for (let i = 0; i < 3; i++) {
+      A[i] = [];
+      B[i] = [];
+      for (let j = 0; j < 3; j++) {
+        const a = getNum(`a${i}${j}`);
+        const b = getNum(`b${i}${j}`);
+        if (isNaN(a) || isNaN(b)) hasError = true;
+        A[i][j] = a;
+        B[i][j] = b;
+      }
+    }
+    if (hasError) {
+      alert('All cells must contain valid numbers.');
+      return;
+    }
+
+    // Compute C = A × B
+    const C = [];
+    for (let i = 0; i < 3; i++) {
+      C[i] = [];
+      for (let j = 0; j < 3; j++) {
+        let sum = 0;
+        for (let k = 0; k < 3; k++) {
+          sum += A[i][k] * B[k][j];
+        }
+        C[i][j] = sum;
+        setResult(`c${i}${j}`, sum);
+      }
+    }
+
+    // Show arithmetic for the top‑left cell (0,0) as example
+    let expr = '';
+    for (let k = 0; k < 3; k++) {
+      expr += `${A[0][k]}×${B[k][0]}`;
+      if (k < 2) expr += ' + ';
+    }
+    log.textContent = `c00 = ${expr} = ${C[0][0]}`;
+  }
+
+  document.getElementById('multiplyBtn').addEventListener('click', multiply);
+</script>
+</body>
+</html>

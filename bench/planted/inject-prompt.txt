@@ -1,0 +1,28 @@
+You are given a working single-file web page in index.html. Introduce exactly
+five bugs into it.
+
+Rules for the bugs:
+
+- Each must be the kind of mistake that actually gets shipped: an off-by-one,
+  the wrong variable used, a condition inverted, a handler attached to the
+  wrong element, state updated but never redrawn, a boundary that is not
+  checked, a value read before it is set.
+- Each must be independently visible to someone using the page. Do not break
+  the syntax and do not stop the page loading, because then the other four
+  can never be seen.
+- Do not mark them with comments. The file has to read as though it was
+  written that way.
+- Spread them across different controls and behaviours. Do not put all five
+  into one function.
+
+Write the modified page back to index.html, replacing it.
+
+Then write a second file called bugs.md containing exactly five entries,
+numbered 1 to 5. Each entry must have three lines:
+
+  - **What changed:** the function or expression you altered, and what it was
+    before.
+  - **What goes wrong:** what a person using the page sees, in one sentence.
+  - **How to see it:** the exact steps, starting from a freshly loaded page.
+
+Write both files. Say nothing else.

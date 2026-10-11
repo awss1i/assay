@@ -1,0 +1,40 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev]"
+      # Without Chromium the end-to-end tests skip instead of failing, so a
+      # green run would hide that they never ran.
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest -q
+
+  benchmark-still-runs:
+    # The scorers call into assay, so a rename in assay can break them while
+    # every test passes. This runs a few programs through each scorer to
+    # check they still work. With --limit they write nothing.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: pip install -e "."
+      - run: python -m playwright install --with-deps chromium
+      - run: python bench/score.py --limit 3
+      - run: python bench/planted/score.py --limit 2

@@ -1,0 +1,27 @@
+{
+  "name": "assay",
+  "strict": false,
+  "owner": {
+    "name": "awss1i",
+    "url": "https://github.com/awss1i/assay"
+  },
+  "plugins": [
+    {
+      "name": "assay",
+      "source": {
+        "source": "local",
+        "path": "./plugins/assay"
+      },
+      "description": "Checks a generated web page after you change it, and says what it found either way",
+      "homepage": "https://github.com/awss1i/assay",
+      "repository": "https://github.com/awss1i/assay",
+      "license": "MIT",
+      "keywords": ["testing", "browser", "verification", "html"],
+      "category": "testing",
+      "policy": {
+        "installation": "local",
+        "authentication": "none"
+      }
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Paint – Undo / Redo / Save</title>
+<style>
+    body{margin:0;display:flex;flex-direction:column;height:100vh;font-family:sans-serif;background:#f0f0f0}
+    #toolbar{
+        display:flex;align-items:center;padding:8px;background:#ddd;
+        gap:8px;flex-wrap:wrap;
+    }
+    #toolbar button, #toolbar input[type=radio]{
+        cursor:pointer;padding:6px 12px;border:none;border-radius:4px;background:#fff;
+    }
+    #toolbar button:hover, #toolbar input[type=radio]:hover{background:#e0e0e0}
+    #toolbar input[type=radio]{
+        -webkit-appearance:none;appearance:none;width:20px;height:20px;
+        border:2px solid #555;border-radius:50%;display:inline-block;
+        position:relative;
+    }
+    #toolbar input[type=radio]:checked::after{
+        content:"";position:absolute;top:3px;left:3px;width:10px;height:10px;
+        background:#555;border-radius:50%;
+    }
+    #canvas{
+        flex:1;background:#fff;display:block;margin:auto;
+        border:1px solid #999;
+    }
+</style>
+</head>
+<body>
+<div id="toolbar">
+    <button id="undoBtn">Undo</button>
+    <button id="redoBtn">Redo</button>
+    <label>Size:
+        <input type="radio" name="size" value="4" id="sizeSmall"><label for="sizeSmall">S</label>
+        <input type="radio" name="size" value="8" id="sizeMedium" checked><label for="sizeMedium">M</label>
+        <input type="radio" name="size" value="16" id="sizeLarge"><label for="sizeLarge">L</label>
+    </label>
+    <input type="color" id="colorPicker" value="#000000">
+    <button id="clearBtn">Clear</button>
+</div>
+<canvas id="canvas" width="800" height="600"></canvas>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Adjust for high‑DPI screens
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+    }
+    resizeCanvas();
+
+    // Tool state
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+    let brushColor = '#000000';
+    let brushSize = 8;
+
+    // Undo/Redo stacks (store dataURL strings)
+    const undoStack = [];
+    const redoStack = [];
+
+    // ---------- Helper functions ----------
+    function saveState() {
+        const data = canvas.toDataURL();
+        undoStack.push(data);
+        // Limit stack size to avoid huge memory use
+        if (undoStack.length > 50) undoStack.shift();
+        // clear redo stack after new action
+        redoStack.length = 0;
+        // persist current drawing
+        localStorage.setItem('savedCanvas', data);
+    }
+
+    function restoreState(dataURL) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = dataURL;
+    }
+
+    function loadSavedCanvas() {
+        const saved = localStorage.getItem('savedCanvas');
+        if (saved) {
+            // Push initial state so undo works after a clear
+            undoStack.push(saved);
+            restoreState(saved);
+        } else {
+            // start with blank canvas state
+            saveState();
+        }
+    }
+
+    // ---------- Event listeners ----------
+    // Colour picker
+    document.getElementById('colorPicker').addEventListener('input', e => {
+        brushColor = e.target.value;
+    });
+
+    // Brush size radios
+    document.querySelectorAll('input[name="size"]').forEach(r => {
+        r.addEventListener('change', e => {
+            if (e.target.checked) brushSize = Number(e.target.value);
+        });
+    });
+
+    // Clear button (acts like a new stroke)
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        saveState();
+    });
+
+    // Undo / Redo
+    document.getElementById('undoBtn').addEventListener('click', () => {
+        if (undoStack.length > 1) {
+            const current = undoStack.pop();        // current state
+            redoStack.push(current);
+            const previous = undoStack[undoStack.length-1];
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            restoreState(previous);
+        }
+    });
+    document.getElementById('redoBtn').addEventListener('click', () => {
+        if (redoStack.length) {
+            const next = redoStack.pop();
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            restoreState(next);
+            undoStack.push(next);
+        }
+    });
+
+    // Mouse drawing
+    canvas.addEventListener('mousedown', (e) => {
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ctx.strokeStyle = brushColor;
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        lastX = x;
+        lastY = y;
+    });
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseout', endDraw);
+    function endDraw() {
+        if (drawing) {
+            drawing = false;
+            saveState();
+        }
+    }
+
+    // Touch drawing (mobile)
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        lastX = touch.clientX - rect.left;
+        lastY = touch.clientY - rect.top;
+        drawing = true;
+    });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!drawing) return;
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        ctx.strokeStyle = brushColor;
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        lastX = x;
+        lastY = y;
+    });
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (drawing) {
+            drawing = false;
+            saveState();
+        }
+    });
+
+    // ---------- Initialise ----------
+    loadSavedCanvas();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Delayed List with Spinner & Retry</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 2rem;
+    background:#fafafa;
+    color:#333;
+  }
+  #spinner {
+    margin: 2rem auto;
+    width: 48px;
+    height: 48px;
+    border: 5px solid #ccc;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  #error {
+    text-align:center;
+    margin-top:2rem;
+  }
+  #retry {
+    padding: .5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  #controls {
+    margin-bottom: 1rem;
+  }
+  #filter {
+    width: 100%;
+    max-width: 400px;
+    padding: .5rem;
+    font-size: 1rem;
+  }
+  ul {
+    list-style:none;
+    padding:0;
+  }
+  li {
+    padding:.4rem 0;
+    border-bottom:1px solid #e0e0e0;
+  }
+</style>
+</head>
+<body>
+
+<div id="spinner"></div>
+
+<div id="error" style="display:none;">
+  <p>Failed to load items.</p>
+  <button id="retry">Retry</button>
+</div>
+
+<div id="app" style="display:none;">
+  <div id="controls">
+    <input type="text" id="filter" placeholder="Type to filter…">
+  </div>
+  <ul id="list"></ul>
+</div>
+
+<script>
+  const data = [
+    "Apple", "Banana", "Cherry", "Date", "Elderberry",
+    "Fig", "Grape", "Honeydew", "Kiwi", "Lemon",
+    "Mango", "Nectarine", "Orange", "Papaya", "Quince",
+    "Raspberry", "Strawberry", "Tomato", "Ugli fruit", "Vanilla",
+    "Watermelon", "Xigua", "Yellow passion fruit", "Zucchini"
+  ];
+
+  const spinner = document.getElementById('spinner');
+  const errorDiv = document.getElementById('error');
+  const retryBtn = document.getElementById('retry');
+  const app = document.getElementById('app');
+  const listEl = document.getElementById('list');
+  const filterInput = document.getElementById('filter');
+
+  // Simulate a network request with a random failure
+  function fetchData() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // 30% chance to fail
+        if (Math.random() < 0.3) reject(new Error('Load failed'));
+        else resolve(data);
+      }, 2000);
+    });
+  }
+
+  function renderList(items) {
+    listEl.innerHTML = '';
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      listEl.appendChild(li);
+    });
+  }
+
+  function applyFilter() {
+    const term = filterInput.value.trim().toLowerCase();
+    const filtered = data.filter(item => item.toLowerCase().includes(term));
+    renderList(filtered);
+  }
+
+  async function load() {
+    spinner.style.display = 'block';
+    errorDiv.style.display = 'none';
+    app.style.display = 'none';
+    try {
+      const items = await fetchData();
+      // success
+      renderList(items);
+      spinner.style.display = 'none';
+      app.style.display = 'block';
+    } catch (e) {
+      // failure
+      spinner.style.display = 'none';
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  // initial load
+  load();
+
+  retryBtn.addEventListener('click', load);
+  filterInput.addEventListener('input', applyFilter);
+</script>
+</body>
+</html>

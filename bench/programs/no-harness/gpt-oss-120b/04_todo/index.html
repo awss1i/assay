@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+    <style>
+        /* Basic page layout */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            margin: 0 0 .8rem;
+            font-size: 1.8rem;
+            text-align: center;
+            color: #333;
+        }
+        .input-row {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1rem;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: .5rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button.add {
+            padding: .5rem 1rem;
+            font-size: 1rem;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.add:hover { background: #218838; }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .5rem .75rem;
+            border-bottom: 1px solid #eee;
+        }
+        li:nth-child(odd) { background: #fafafa; }
+        .task-text {
+            flex: 1;
+            word-break: break-word;
+        }
+        button.delete {
+            margin-left: .5rem;
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: .25rem .5rem;
+            cursor: pointer;
+        }
+        button.delete:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Todo List</h1>
+        <div class="input-row">
+            <input type="text" id="taskInput" placeholder="Enter a new task">
+            <button class="add" id="addBtn">Add</button>
+        </div>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const taskInput = document.getElementById('taskInput');
+            const addBtn = document.getElementById('addBtn');
+            const taskList = document.getElementById('taskList');
+
+            // Add task when button is clicked or Enter key is pressed
+            const addTask = () => {
+                const text = taskInput.value.trim();
+                if (!text) return;                     // ignore empty entries
+
+                // Create list item
+                const li = document.createElement('li');
+
+                const span = document.createElement('span');
+                span.className = 'task-text';
+                span.textContent = text;
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete';
+                delBtn.textContent = 'Delete';
+                delBtn.addEventListener('click', () => li.remove());
+
+                li.appendChild(span);
+                li.appendChild(delBtn);
+                taskList.appendChild(li);
+
+                taskInput.value = '';
+                taskInput.focus();
+            };
+
+            addBtn.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') addTask();
+            });
+        });
+    </script>
+</body>
+</html>

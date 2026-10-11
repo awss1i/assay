@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Markdown Preview</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; height:100vh;}
+  #editor {flex:1; padding:10px; box-sizing:border-box; border-right:1px solid #ccc; overflow:auto;}
+  #preview {flex:1; padding:10px; box-sizing:border-box; overflow:auto; background:#f9f9f9;}
+  textarea {width:100%; height:calc(100% - 30px); resize:none; border:none; outline:none; font-size:1rem; font-family:inherit;}
+  #wordCount {font-size:0.9rem; color:#555; margin-top:5px;}
+  h1,h2,h3,h4,h5,h6 {margin:0.5em 0;}
+  ul {margin:0.5em 0; padding-left:1.2em;}
+  a {color:#0066cc; text-decoration:none;}
+  a:hover {text-decoration:underline;}
+</style>
+</head>
+<body>
+<div id="editor">
+  <textarea id="mdInput" placeholder="Type markdown here..."></textarea>
+  <div id="wordCount">Words: 0</div>
+</div>
+<div id="preview"></div>
+
+<script>
+(function() {
+  const textarea = document.getElementById('mdInput');
+  const preview = document.getElementById('preview');
+  const wc = document.getElementById('wordCount');
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;')
+              .replace(/</g,'&lt;')
+              .replace(/>/g,'&gt;');
+  }
+
+  function parseMarkdown(md) {
+    const lines = md.split('\n');
+    const out = [];
+    let inList = false;
+
+    lines.forEach(line => {
+      let trimmed = line.trim();
+
+      // Headings
+      const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        out.push(`<h${level}>${inlineParse(headingMatch[2])}</h${level}>`);
+        inList = false;
+        return;
+      }
+
+      // Unordered list items
+      const listMatch = trimmed.match(/^[-*]\s+(.*)$/);
+      if (listMatch) {
+        if (!inList) {
+          out.push('<ul>');
+          inList = true;
+        }
+        out.push(`<li>${inlineParse(listMatch[1])}</li>`);
+        return;
+      } else {
+        if (inList) {
+          out.push('</ul>');
+          inList = false;
+        }
+      }
+
+      // Paragraph (if not empty)
+      if (trimmed) {
+        out.push(`<p>${inlineParse(trimmed)}</p>`);
+      } else {
+        out.push(''); // blank line
+      }
+    });
+
+    if (inList) out.push('</ul>'); // close if file ends with a list
+    return out.join('\n');
+  }
+
+  function inlineParse(text) {
+    let s = escapeHtml(text);
+
+    // Links [text](url)
+    s = s.replace(/\[([^\]]+)]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+    // Bold **text** or __text__
+    s = s.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+
+    // Italic *text* or _text_
+    s = s.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+
+    return s;
+  }
+
+  function update() {
+    const md = textarea.value;
+    preview.innerHTML = parseMarkdown(md);
+    const words = md.trim().split(/\s+/).filter(w=>w.length>0).length;
+    wc.textContent = `Words: ${words}`;
+  }
+
+  textarea.addEventListener('input', update);
+  // Initialise with empty content
+  update();
+})();
+</script>
+</body>
+</html>

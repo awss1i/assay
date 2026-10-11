@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    #new-task {
+      width: 70%;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    #add-btn {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      margin-left: 0.5rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #fff;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .del-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Todo List</h1>
+  <input type="text" id="new-task" placeholder="Enter a new task" />
+  <button id="add-btn">Add</button>
+  <ul id="task-list"></ul>
+  <script>
+    const taskInput = document.getElementById('new-task');
+    const addBtn = document.getElementById('add-btn');
+    const taskList = document.getElementById('task-list');
+
+    // Add task on button click or Enter key
+    addBtn.addEventListener('click', addTask);
+    taskInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') addTask();
+    });
+
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.textContent = text;
+      const del = document.createElement('button');
+      del.textContent = 'Delete';
+      del.className = 'del-btn';
+      del.addEventListener('click', () => li.remove());
+
+      li.appendChild(span);
+      li.appendChild(del);
+      taskList.appendChild(li);
+      taskInput.value = '';
+    }
+  </script>
+</body>
+</html>

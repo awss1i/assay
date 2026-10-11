@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      line-height: 1.5;
+    }
+    .progress {
+      height: 20px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #4caf50;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .question {
+      display: none;
+    }
+    .question.active {
+      display: block;
+    }
+    .options label {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    .navigation button {
+      margin: 0.5rem;
+    }
+    .review {
+      display: none;
+    }
+    .review-item {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quiz</h1>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div id="quizContainer"></div>
+  <div class="navigation" id="navButtons" style="display:none;">
+    <button id="prevBtn">Previous</button>
+    <button id="nextBtn">Next</button>
+  </div>
+  <div class="review" id="reviewContainer"></div>
+
+  <script>
+    // Define quiz data
+    const quiz = [
+      {
+        question: "What is the capital of France?",
+        options: ["Paris", "London", "Berlin", "Madrid"],
+        answer: 0 // index of correct answer
+      },
+      {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Mars", "Jupiter", "Saturn"],
+        answer: 1
+      },
+      {
+        question: "What is 2 + 2?",
+        options: ["3", "4", "5", "22"],
+        answer: 1
+      }
+    ];
+
+    let current = 0; // current question index
+    const userAnswers = new Array(quiz.length).fill(null);
+
+    const quizContainer = document.getElementById('quizContainer');
+    const progressBar = document.getElementById('progressBar');
+    const navButtons = document.getElementById('navButtons');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const reviewContainer = document.getElementById('reviewContainer');
+
+    function renderQuestion() {
+      quizContainer.innerHTML = '';
+      const q = quiz[current];
+      const div = document.createElement('div');
+      div.className = 'question active';
+      const qTitle = document.createElement('h2');
+      qTitle.textContent = `Question ${current + 1}: ${q.question}`;
+      div.appendChild(qTitle);
+      const optDiv = document.createElement('div');
+      optDiv.className = 'options';
+      q.options.forEach((opt, idx) => {
+        const label = document.createElement('label');
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'option';
+        radio.value = idx;
+        if (userAnswers[current] === idx) radio.checked = true;
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(' ' + opt));
+        optDiv.appendChild(label);
+      });
+      div.appendChild(optDiv);
+      quizContainer.appendChild(div);
+
+      // Update navigation visibility
+      navButtons.style.display = 'block';
+      prevBtn.disabled = current === 0;
+      nextBtn.textContent = current === quiz.length - 1 ? 'Finish' : 'Next';
+
+      // Update progress bar
+      const percent = ((current) / quiz.length) * 100;
+      progressBar.style.width = percent + '%';
+
+      // Enable next only when an option is selected
+      updateNextState();
+    }
+
+    function updateNextState() {
+      const selected = document.querySelector('input[name="option"]:checked');
+      nextBtn.disabled = !selected;
+    }
+
+    // Event listeners
+    quizContainer.addEventListener('change', updateNextState);
+    prevBtn.addEventListener('click', () => {
+      // Save current answer
+      saveAnswer();
+      if (current > 0) {
+        current--;
+        renderQuestion();
+      }
+    });
+    nextBtn.addEventListener('click', () => {
+      saveAnswer();
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        // Finish quiz
+        showReview();
+      }
+    });
+
+    function saveAnswer() {
+      const selected = document.querySelector('input[name="option"]:checked');
+      if (selected) {
+        userAnswers[current] = parseInt(selected.value, 10);
+      }
+    }
+
+    function showReview() {
+      // Hide quiz UI
+      quizContainer.style.display = 'none';
+      navButtons.style.display = 'none';
+      progressBar.style.width = '100%';
+
+      // Build review
+      reviewContainer.style.display = 'block';
+      const title = document.createElement('h2');
+      title.textContent = 'Review';
+      reviewContainer.appendChild(title);
+      quiz.forEach((q, idx) => {
+        const item = document.createElement('div');
+        item.className = 'review-item';
+        const qTitle = document.createElement('h3');
+        qTitle.textContent = `Question ${idx + 1}: ${q.question}`;
+        item.appendChild(qTitle);
+        const userAnsIdx = userAnswers[idx];
+        const userAns = userAnsIdx !== null ? q.options[userAnsIdx] : 'No answer';
+        const correctAns = q.options[q.answer];
+        const p = document.createElement('p');
+        p.innerHTML = `Your answer: <strong>${userAns}</strong><br/>Correct answer: <strong>${correctAns}</strong>`;
+        item.appendChild(p);
+        reviewContainer.appendChild(item);
+      });
+    }
+
+    // Initial render
+    renderQuestion();
+  </script>
+</body>
+</html>

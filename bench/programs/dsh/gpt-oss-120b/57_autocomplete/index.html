@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Country Autocomplete</title>
+  <style>
+    body {font-family: sans-serif; margin: 20px;}
+    .autocomplete {
+      position: relative;
+      display: inline-block;
+      width: 300px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    .suggestions {
+      position: absolute;
+      border: 1px solid #ccc;
+      border-top: none;
+      max-height: 150px;
+      overflow-y: auto;
+      background: #fff;
+      width: 100%;
+      z-index: 1000;
+    }
+    .suggestions li {
+      padding: 8px;
+      cursor: pointer;
+    }
+    .suggestions li:hover,
+    .suggestions li.active {
+      background-color: #e9e9e9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Country Autocomplete</h2>
+  <div class="autocomplete">
+    <input type="text" id="countryInput" placeholder="Type a country..." autocomplete="off" />
+    <ul id="suggestionList" class="suggestions" hidden></ul>
+  </div>
+
+  <script>
+    // List of country names (short list for demo; can be extended)
+    const countries = [
+      "Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria","Azerbaijan",
+      "Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia",
+      "Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi",
+      "Cambodia","Cameroon","Canada","Cape Verde","Central African Republic","Chad","Chile","China","Colombia","Comoros",
+      "Congo (Congo-Brazzaville)","Costa Rica","Croatia","Cuba","Cyprus","Czechia (Czech Republic)","Denmark","Djibouti","Dominica","Dominican Republic",
+      "Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini (Swaziland)","Ethiopia","Fiji","Finland","France",
+      "Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+      "Haiti","Holy See","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy",
+      "Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg",
+      "Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar (Burma)",
+      "Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway",
+      "Oman","Pakistan","Palau","Palestine State","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar",
+      "Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria",
+      "Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States of America","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+    ];
+
+    const input = document.getElementById('countryInput');
+    const list = document.getElementById('suggestionList');
+    let selectedIdx = -1; // index of highlighted suggestion
+
+    function closeList() {
+      list.hidden = true;
+      list.innerHTML = '';
+      selectedIdx = -1;
+    }
+
+    function updateList() {
+      const query = input.value.trim().toLowerCase();
+      if (!query) { closeList(); return; }
+      const matches = countries.filter(c => c.toLowerCase().includes(query));
+      if (matches.length === 0) { closeList(); return; }
+      list.innerHTML = '';
+      matches.forEach((c, i) => {
+        const li = document.createElement('li');
+        li.textContent = c;
+        li.addEventListener('mousedown', (e) => {
+          // Use mousedown so selection works before input loses focus
+          e.preventDefault();
+          input.value = c;
+          closeList();
+        });
+        list.appendChild(li);
+      });
+      list.hidden = false;
+    }
+
+    input.addEventListener('input', () => {
+      updateList();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const items = list.querySelectorAll('li');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (items.length === 0) return;
+        selectedIdx = (selectedIdx + 1) % items.length;
+        highlight();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length === 0) return;
+        selectedIdx = (selectedIdx - 1 + items.length) % items.length;
+        highlight();
+      } else if (e.key === 'Enter') {
+        if (selectedIdx >= 0 && items[selectedIdx]) {
+          e.preventDefault();
+          input.value = items[selectedIdx].textContent;
+          closeList();
+        }
+      } else if (e.key === 'Escape') {
+        closeList();
+      }
+    });
+
+    function highlight() {
+      const items = list.querySelectorAll('li');
+      items.forEach((li, idx) => {
+        li.classList.toggle('active', idx === selectedIdx);
+      });
+    }
+
+    // Close the suggestion list when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.autocomplete')) {
+        closeList();
+      }
+    });
+  </script>
+</body>
+</html>

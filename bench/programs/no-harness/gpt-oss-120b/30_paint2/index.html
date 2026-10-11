@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Painter</title>
+<style>
+  body{
+    font-family:Arial,sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin:20px;
+    background:#f0f0f0;
+  }
+  #canvas{
+    border:1px solid #333;
+    image-rendering:pixelated;   /* keep crisp pixels when scaled */
+    cursor:crosshair;
+  }
+  .toolbar{
+    margin:10px 0;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  button, select, input[type=color]{
+    padding:5px 10px;
+    font-size:14px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Pixel Painter</h2>
+
+<div class="toolbar">
+  <label>Color: <input type="color" id="colorPicker" value="#ff0000"></label>
+
+  <select id="toolSelect">
+    <option value="brush">Brush</option>
+    <option value="eraser">Eraser</option>
+    <option value="fill">Fill Bucket</option>
+  </select>
+
+  <button id="undoBtn">Undo</button>
+  <button id="downloadBtn">Download PNG</button>
+</div>
+
+<canvas id="canvas" width="512" height="512"></canvas>
+
+<script>
+(() => {
+  /* ---- Configuration ---- */
+  const GRID = 32;                 // number of cells per side
+  const CANVAS_SIZE = 512;         // canvas pixel size
+  const CELL = CANVAS_SIZE / GRID; // size of one cell in canvas pixels
+  const MAX_UNDO = 10;
+
+  /* ---- State ---- */
+  // flat array of colour strings; empty cells hold '' (white)
+  let pixels = new Array(GRID * GRID).fill('');
+  const undoStack = [];
+
+  /* ---- DOM ---- */
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const colorPicker = document.getElementById('colorPicker');
+  const toolSelect   = document.getElementById('toolSelect');
+  const undoBtn      = document.getElementById('undoBtn');
+  const downloadBtn  = document.getElementById('downloadBtn');
+
+  /* ---- Helper Functions ---- */
+  function idx(x, y) { return y * GRID + x; }
+
+  function drawGrid() {
+    // clear background
+    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    // draw each cell
+    for (let y = 0; y < GRID; y++) {
+      for (let x = 0; x < GRID; x++) {
+        const colour = pixels[idx(x, y)] || '#ffffff';
+        ctx.fillStyle = colour;
+        ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+      }
+    }
+    // draw thin grid lines
+    ctx.strokeStyle = '#bbb';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= GRID; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * CELL, 0);
+      ctx.lineTo(i * CELL, CANVAS_SIZE);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, i * CELL);
+      ctx.lineTo(CANVAS_SIZE, i * CELL);
+      ctx.stroke();
+    }
+  }
+
+  function pushUndo() {
+    // keep a copy of current pixels
+    if (undoStack.length === MAX_UNDO) undoStack.shift();
+    undoStack.push(pixels.slice());
+  }
+
+  function setPixel(x, y, colour) {
+    pixels[idx(x, y)] = colour;
+  }
+
+  function floodFill(startX, startY, targetColour, replacementColour) {
+    if (targetColour === replacementColour) return;
+    const stack = [[startX, startY]];
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      const i = idx(x, y);
+      if (pixels[i] !== targetColour) continue;
+      pixels[i] = replacementColour;
+
+      if (x > 0) stack.push([x - 1, y]);
+      if (x < GRID - 1) stack.push([x + 1, y]);
+      if (y > 0) stack.push([x, y - 1]);
+      if (y < GRID - 1) stack.push([x, y + 1]);
+    }
+  }
+
+  /* ---- Event Handlers ---- */
+  canvas.addEventListener('pointerdown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / CELL);
+    const y = Math.floor((e.clientY - rect.top) / CELL);
+    if (x < 0 || y < 0 || x >= GRID || y >= GRID) return;
+
+    const tool = toolSelect.value;
+    const colour = tool === 'eraser' ? '' : colorPicker.value;
+
+    pushUndo(); // store state before the change
+
+    if (tool === 'brush' || tool === 'eraser') {
+      setPixel(x, y, colour);
+    } else if (tool === 'fill') {
+      const target = pixels[idx(x, y)] || '';
+      floodFill(x, y, target, colour);
+    }
+
+    drawGrid();
+  });
+
+  undoBtn.addEventListener('click', () => {
+    if (!undoStack.length) return;
+    pixels = undoStack.pop();
+    drawGrid();
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'pixel-paint.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  /* ---- Init ---- */
+  drawGrid();
+})();
+</script>
+</body>
+</html>

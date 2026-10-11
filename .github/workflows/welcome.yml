@@ -1,0 +1,34 @@
+name: welcome
+
+# Comments once on a person's first issue or first pull request. Like the
+# labeler, it checks out no code.
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3
+        with:
+          issue_message: >-
+            Thanks for opening your first issue. Issues are for bugs and false
+            alarms, and a false alarm needs the page attached. New features,
+            improvements and fixes come as pull requests. Questions, ideas and
+            general discussion belong in
+            [Discussions](https://github.com/awss1i/assay/discussions).
+            [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
+            has the details.
+          pr_message: >-
+            Thanks for your first pull request here. A change to a rule or to
+            `bench/` needs both benchmarks run, with the numbers before and
+            after in the description.
+            [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
+            says what each kind of change needs.

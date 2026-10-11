@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nested Folder Tree</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 1rem;
+  }
+  ul {
+    list-style: none;
+    padding-left: 1.2rem;
+    margin: 0;
+  }
+  li {
+    line-height: 1.5;
+    cursor: default;
+  }
+  .folder > .label {
+    cursor: pointer;
+    user-select: none;
+  }
+  .folder > .label::before {
+    content: "▸";
+    display: inline-block;
+    width: 1rem;
+    transition: transform .2s;
+  }
+  .folder.expanded > .label::before {
+    transform: rotate(90deg);
+  }
+  .folder.collapsed > ul {
+    display: none;
+  }
+  .counter {
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<div class="counter">Visible rows: <span id="visible-count">0</span></div>
+
+<ul class="tree">
+  <li class="folder expanded">
+    <span class="label">Root</span>
+    <ul>
+      <li class="folder collapsed">
+        <span class="label">Folder A</span>
+        <ul>
+          <li>File A1.txt</li>
+          <li class="folder collapsed">
+            <span class="label">Sub‑Folder A1</span>
+            <ul>
+              <li>File A1a.txt</li>
+              <li>File A1b.txt</li>
+            </ul>
+          </li>
+          <li>File A2.txt</li>
+        </ul>
+      </li>
+      <li class="folder collapsed">
+        <span class="label">Folder B</span>
+        <ul>
+          <li>File B1.txt</li>
+          <li class="folder collapsed">
+            <span class="label">Sub‑Folder B1</span>
+            <ul>
+              <li>File B1a.txt</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>File root.txt</li>
+    </ul>
+  </li>
+</ul>
+
+<script>
+  // Toggle folder expand/collapse
+  document.querySelectorAll('.folder > .label').forEach(label => {
+    label.addEventListener('click', () => {
+      const li = label.parentElement;
+      li.classList.toggle('collapsed');
+      li.classList.toggle('expanded');
+      updateCount();
+    });
+  });
+
+  // Count visible <li> elements (including files and folders)
+  function updateCount() {
+    const allItems = document.querySelectorAll('li');
+    let visible = 0;
+    allItems.forEach(item => {
+      // An element is visible if it and its ancestors are not hidden (display:none)
+      let cur = item;
+      let shown = true;
+      while (cur && cur !== document.body) {
+        const style = getComputedStyle(cur);
+        if (style.display === 'none') {
+          shown = false;
+          break;
+        }
+        cur = cur.parentElement;
+      }
+      if (shown) visible++;
+    });
+    document.getElementById('visible-count').textContent = visible;
+  }
+
+  // Initial count
+  updateCount();
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign‑Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background:#f9f9f9;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            height:100vh;
+            margin:0;
+        }
+        .container {
+            background:#fff;
+            padding:2rem;
+            border-radius:8px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.1);
+            max-width:360px;
+            width:100%;
+        }
+        h2 {
+            margin-top:0;
+            text-align:center;
+        }
+        .field {
+            margin-bottom:1rem;
+        }
+        label {
+            display:block;
+            margin-bottom:.3rem;
+            font-weight:600;
+        }
+        input[type="email"],
+        input[type="password"] {
+            width:100%;
+            padding:.5rem;
+            border:1px solid #ccc;
+            border-radius:4px;
+            box-sizing:border-box;
+            font-size:1rem;
+        }
+        .error {
+            color:#d00;
+            font-size:.875rem;
+            margin-top:.3rem;
+            min-height:1em;
+        }
+        .success {
+            color:#080;
+            font-weight:600;
+            text-align:center;
+            margin-top:1rem;
+        }
+        button {
+            width:100%;
+            padding:.6rem;
+            background:#0066cc;
+            color:#fff;
+            border:none;
+            border-radius:4px;
+            font-size:1rem;
+            cursor:pointer;
+        }
+        button:hover {
+            background:#0055aa;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Sign‑Up</h2>
+    <form id="signupForm" novalidate>
+        <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+            <div class="error" id="emailError"></div>
+        </div>
+
+        <div class="field">
+            <label for="password">Password (min 6 chars)</label>
+            <input type="password" id="password" required minlength="6">
+            <div class="error" id="passwordError"></div>
+        </div>
+
+        <button type="submit">Create Account</button>
+        <div class="success" id="successMessage"></div>
+    </form>
+</div>
+
+<script>
+    (function () {
+        const form = document.getElementById('signupForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const successMessage = document.getElementById('successMessage');
+
+        function showError(el, msg) {
+            el.textContent = msg;
+        }
+
+        function clearError(el) {
+            el.textContent = '';
+        }
+
+        function validateEmail() {
+            const value = emailInput.value.trim();
+            const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!value) {
+                showError(emailError, 'Email is required.');
+                return false;
+            }
+            if (!pattern.test(value)) {
+                showError(emailError, 'Enter a valid email address.');
+                return false;
+            }
+            clearError(emailError);
+            return true;
+        }
+
+        function validatePassword() {
+            const value = passwordInput.value;
+            if (!value) {
+                showError(passwordError, 'Password is required.');
+                return false;
+            }
+            if (value.length < 6) {
+                showError(passwordError, 'Password must be at least 6 characters.');
+                return false;
+            }
+            clearError(passwordError);
+            return true;
+        }
+
+        emailInput.addEventListener('input', validateEmail);
+        passwordInput.addEventListener('input', validatePassword);
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const emailValid = validateEmail();
+            const passwordValid = validatePassword();
+
+            if (emailValid && passwordValid) {
+                successMessage.textContent = '✅ Sign‑up successful!';
+                // Optionally clear the form
+                form.reset();
+            } else {
+                successMessage.textContent = '';
+            }
+        });
+    })();
+</script>
+</body>
+</html>

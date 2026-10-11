@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CSS‑Only Tile Gallery</title>
+<style>
+/* ------------------------------------------------- */
+/* Layout */
+body {margin:0;font-family:sans-serif;background:#111;color:#fff}
+.gallery {
+  display:grid;
+  max-width:1200px;
+  margin:2rem auto;
+  grid-template-columns:repeat(5,1fr);
+  gap:1rem;
+}
+.tile {
+  position:relative;
+  padding-top:100%;               /* square */
+  cursor:pointer;
+  overflow:hidden;
+}
+
+/* -----------------------------------------------------------------
+   Each tile is a colourful square with a unique CSS‑drawn shape.
+   Shapes are created with pseudo‑elements.  No images or external fonts.
+------------------------------------------------------------------- */
+.tile::before,
+.tile::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  transition:transform .3s ease;
+}
+
+/* Tile 1 – a centered circle */
+.tile[data-id="0"]::before{
+  background:#e91e63;
+  border-radius:50%;
+  width:60%;height:60%;
+  top:20%;left:20%;
+}
+
+/* Tile 2 – diagonal lines */
+.tile[data-id="1"]::before{
+  background:linear-gradient(135deg,#ff9800 45%,transparent 45%) 
+              ,linear-gradient(45deg,#ff9800 45%,transparent 45%);
+  background-size:50% 50%;
+}
+
+/* Tile 3 – a triangle */
+.tile[data-id="2"]::before{
+  width:0;height:0;
+  border-left:50% solid transparent;
+  border-right:50% solid transparent;
+  border-bottom:100% solid #4caf50;
+  top:0;left:0;
+}
+
+/* Tile 4 – a plus sign */
+.tile[data-id="3"]::before{
+  background:#2196f3;
+  width:30%;height:100%;
+  left:35%;top:0;
+}
+.tile[data-id="3"]::after{
+  background:#2196f3;
+  width:100%;height:30%;
+  left:0;top:35%;
+}
+
+/* Tile 5 – concentric squares */
+.tile[data-id="4"]::before{
+  background:#9c27b0;
+  inset:10%;
+}
+
+/* Tile 6 – a rhombus */
+.tile[data-id="5"]::before{
+  background:#ff5722;
+  width:70%;height:70%;
+  top:15%;left:15%;
+  transform:rotate(45deg);
+}
+
+/* Tile 7 – a star */
+.tile[data-id="6"]::before{
+  background:#03a9f4;
+  width:60%;height:60%;
+  top:20%;left:20%;
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+}
+
+/* Tile 8 – horizontal bars */
+.tile[data-id="7"]::before{
+  background:repeating-linear-gradient(
+    to bottom,
+    #4caf50,
+    #4caf50 10%,
+    transparent 10%,
+    transparent 20%
+  );
+}
+
+/* Tile 9 – vertical bars */
+.tile[data-id="8"]::before{
+  background:repeating-linear-gradient(
+    to right,
+    #ff9800,
+    #ff9800 10%,
+    transparent 10%,
+    transparent 20%
+  );
+}
+
+/* Tile 10 – a circle with a border */
+.tile[data-id="9"]::before{
+  background:#fff;
+  border-radius:50%;
+  width:60%;height:60%;
+  top:20%;left:20%;
+}
+.tile[data-id="9"]::after{
+  border:5px solid #2196f3;
+  border-radius:50%;
+  width:60%;height:60%;
+  top:20%;left:20%;
+}
+
+/* Tile 11 – a checkerboard */
+.tile[data-id="10"]::before{
+  background:linear-gradient(45deg,#673ab7 25%,transparent 25%,transparent 75%,#673ab7 75%) 
+              ,linear-gradient(45deg,#673ab7 25%,transparent 25%,transparent 75%,#673ab7 75%);
+  background-size:40px 40px;
+  background-position:0 0,20px 20px;
+}
+
+/* Tile 12 – a rotated square */
+.tile[data-id="11"]::before{
+  background:#009688;
+  width:70%;height:70%;
+  top:15%;left:15%;
+  transform:rotate(45deg);
+}
+
+/* Tile 13 – a half‑circle */
+.tile[data-id="12"]::before{
+  background:#e91e63;
+  border-radius:0 0 50% 50%;
+  height:50%;width:100%;
+  bottom:0;left:0;
+}
+
+/* Tile 14 – a cross */
+.tile[data-id="13"]::before{
+  background:#ffeb3b;
+  width:30%;height:100%;
+  left:35%;top:0;
+}
+.tile[data-id="13"]::after{
+  background:#ffeb3b;
+  width:100%;height:30%;
+  left:0;top:35%;
+}
+
+/* Tile 15 – concentric circles */
+.tile[data-id="14"]::before{
+  background:#fff;
+  border-radius:50%;
+  width:80%;height:80%;
+  top:10%;left:10%;
+}
+.tile[data-id="14"]::after{
+  background:#3f51b5;
+  border-radius:50%;
+  width:40%;height:40%;
+  top:30%;left:30%;
+}
+
+/* Tile 16 – diagonal stripe */
+.tile[data-id="15"]::before{
+  background:linear-gradient(135deg,#00bcd4 50%,transparent 50%);
+}
+
+/* Tile 17 – a diamond */
+.tile[data-id="16"]::before{
+  background:#cddc39;
+  width:70%;height:70%;
+  top:15%;left:15%;
+  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+}
+
+/* Tile 18 – a circle with a dot */
+.tile[data-id="17"]::before{
+  background:#ff5722;
+  border-radius:50%;
+  width:60%;height:60%;
+  top:20%;left:20%;
+}
+.tile[data-id="17"]::after{
+  background:#000;
+  border-radius:50%;
+  width:20%;height:20%;
+  top:40%;left:40%;
+}
+
+/* Tile 19 – a radial gradient */
+.tile[data-id="18"]::before{
+  background:radial-gradient(circle at center,#9c27b0,#111);
+}
+
+/* Tile 20 – a patterned background */
+.tile[data-id="19"]::before{
+  background:repeating-conic-gradient(#795548 0deg 30deg,transparent 30deg 60deg);
+}
+
+/* Lightbox overlay */
+#lightbox {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.9);
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+#lightbox .big {
+  width:80vw;
+  height:80vh;
+  max-width:800px;
+  max-height:800px;
+  background:#222;
+  position:relative;
+}
+#lightbox .big::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+}
+</style>
+</head>
+<body>
+
+<div class="gallery">
+  <!-- generate 20 tiles -->
+  <script>
+    // Create tiles dynamically – still pure HTML/JS, no external files
+    const gallery = document.querySelector('.gallery');
+    for(let i=0;i<20;i++){
+      const el = document.createElement('div');
+      el.className='tile';
+      el.dataset.id=i;                     // used for CSS selectors
+      el.dataset.index=i;                  // logical index for JS navigation
+      gallery.appendChild(el);
+    }
+  </script>
+</div>
+
+<div id="lightbox" tabindex="-1">
+  <div class="big"></div>
+</div>
+
+<script>
+/* -------------------------------------------------
+   Lightbox logic
+---------------------------------------------------*/
+const tiles = document.querySelectorAll('.tile');
+const lightbox = document.getElementById('lightbox');
+const big = lightbox.querySelector('.big');
+let current = 0;
+
+function openLB(idx){
+  current = idx;
+  const tile = tiles[current];
+  // copy the computed background of the tile into the lightbox big element
+  const style = window.getComputedStyle(tile,':before');
+  big.style.background = style.background;
+  // some tiles use pseudo‑element ::after for extra graphics
+  const after = window.getComputedStyle(tile,':after');
+  if(after.background && after.background !== 'none'){
+    big.style.backgroundImage = after.backgroundImage;
+  }
+  // If the tile has a complex shape (like clip‑path), copy that too
+  if(style.clipPath && style.clipPath !== 'none'){
+    big.style.clipPath = style.clipPath;
+  }
+  if(after.clipPath && after.clipPath !== 'none'){
+    big.style.clipPath = after.clipPath;
+  }
+  lightbox.style.display = 'flex';
+  lightbox.focus();
+}
+
+function closeLB(){
+  lightbox.style.display = 'none';
+}
+
+/* Click on a tile */
+tiles.forEach((t,i)=>t.addEventListener('click',()=>openLB(i)));
+
+/* Keyboard navigation */
+document.addEventListener('keydown',e=>{
+  if(lightbox.style.display!=='flex') return;
+  if(e.key==='Escape'){
+    closeLB();
+  }else if(e.key==='ArrowRight'){
+    current = (current+1)%tiles.length;
+    openLB(current);
+  }else if(e.key==='ArrowLeft'){
+    current = (current-tiles.length+1)%tiles.length;
+    openLB(current);
+  }
+});
+
+/* Click outside the large image to close */
+lightbox.addEventListener('click',e=>{
+  if(e.target===lightbox) closeLB();
+});
+</script>
+</body>
+</html>

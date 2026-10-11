@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bar/Line Toggle Chart</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:20px;}
+  #chartContainer {border:1px solid #ccc; padding:10px;}
+  #toggleContainer {margin-top:10px;}
+  .empty-msg {font-style: italic; color:#777; text-align:center;}
+</style>
+</head>
+<body>
+<h2>Bar / Line Chart Toggle</h2>
+<div id="chartContainer">
+  <svg id="chart" width="600" height="400"></svg>
+</div>
+<div id="toggleContainer">
+  <label><input type="checkbox" id="toggleBtn"> Show Line Chart</label>
+</div>
+<script>
+(() => {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const chart = document.getElementById('chart');
+  const toggle = document.getElementById('toggleBtn');
+  // Sample data – you can replace this array with any numeric values or an empty array.
+  const data = [12, 5, 8, 15, 7]; // empty dataset example: []
+  const padding = 40; // padding for axes
+  const width = chart.clientWidth;
+  const height = chart.clientHeight;
+
+  function clear() {
+    while (chart.firstChild) chart.removeChild(chart.firstChild);
+  }
+
+  function render() {
+    clear();
+    if (!data || data.length === 0) {
+      const txt = document.createElementNS(svgNS, 'text');
+      txt.setAttribute('x', width/2);
+      txt.setAttribute('y', height/2);
+      txt.setAttribute('class', 'empty-msg');
+      txt.setAttribute('text-anchor', 'middle');
+      txt.textContent = 'No data to display.';
+      chart.appendChild(txt);
+      return;
+    }
+    const maxVal = Math.max(...data);
+    const minVal = Math.min(...data);
+    const yScale = (height - 2*padding) / (maxVal - minVal || 1);
+    const xStep = (width - 2*padding) / (data.length - 1);
+    // Draw axes
+    const axis = document.createElementNS(svgNS, 'g');
+    // X axis
+    const xLine = document.createElementNS(svgNS, 'line');
+    xLine.setAttribute('x1', padding);
+    xLine.setAttribute('y1', height - padding);
+    xLine.setAttribute('x2', width - padding);
+    xLine.setAttribute('y2', height - padding);
+    xLine.setAttribute('stroke', '#000');
+    axis.appendChild(xLine);
+    // Y axis
+    const yLine = document.createElementNS(svgNS, 'line');
+    yLine.setAttribute('x1', padding);
+    yLine.setAttribute('y1', padding);
+    yLine.setAttribute('x2', padding);
+    yLine.setAttribute('y2', height - padding);
+    yLine.setAttribute('stroke', '#000');
+    axis.appendChild(yLine);
+    chart.appendChild(axis);
+    // Plot points
+    const pointsGroup = document.createElementNS(svgNS, 'g');
+    data.forEach((val, i) => {
+      const x = padding + i * xStep;
+      const y = height - padding - (val - minVal) * yScale;
+      // Circle
+      const circ = document.createElementNS(svgNS, 'circle');
+      circ.setAttribute('cx', x);
+      circ.setAttribute('cy', y);
+      circ.setAttribute('r', 4);
+      circ.setAttribute('fill', '#0074D9');
+      pointsGroup.appendChild(circ);
+      // Label
+      const label = document.createElementNS(svgNS, 'text');
+      label.setAttribute('x', x);
+      label.setAttribute('y', y - 6);
+      label.setAttribute('font-size', '12');
+      label.setAttribute('text-anchor', 'middle');
+      label.textContent = val;
+      pointsGroup.appendChild(label);
+    });
+    chart.appendChild(pointsGroup);
+    // Draw bars or line based on toggle
+    if (toggle.checked) {
+      // Line
+      const line = document.createElementNS(svgNS, 'polyline');
+      const pointsStr = data.map((val,i)=>{
+        const x = padding + i * xStep;
+        const y = height - padding - (val - minVal) * yScale;
+        return `${x},${y}`;
+      }).join(' ');
+      line.setAttribute('points', pointsStr);
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', '#FF4136');
+      line.setAttribute('stroke-width', 2);
+      chart.appendChild(line);
+    } else {
+      // Bars
+      data.forEach((val,i)=>{
+        const x = padding + i * xStep - xStep/2 * 0.8;
+        const barWidth = xStep * 0.8;
+        const y = height - padding - (val - minVal) * yScale;
+        const bar = document.createElementNS(svgNS, 'rect');
+        bar.setAttribute('x', x);
+        bar.setAttribute('y', y);
+        bar.setAttribute('width', barWidth);
+        bar.setAttribute('height', (val - minVal) * yScale);
+        bar.setAttribute('fill', '#2ECC40');
+        chart.appendChild(bar);
+      });
+    }
+  }
+  toggle.addEventListener('change', render);
+  render();
+})();
+</script>
+</body>
+</html>

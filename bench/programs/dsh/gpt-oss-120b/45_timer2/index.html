@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Countdown Timer</title>
+<style>
+  body {font-family: Arial, sans-serif; background:#f0f0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0;}
+  .timer {font-size:3rem; margin:20px;}
+  .controls button {margin:5px; padding:10px 20px; font-size:1rem;}
+  .inputs input {width:50px; font-size:1rem; text-align:center;}
+  .message {font-size:1.5rem; color: green; margin-top:10px;}
+</style>
+</head>
+<body>
+  <h1>Countdown Timer</h1>
+  <div class="inputs">
+    <label>Minutes: <input type="number" id="minutes" min="0" value="0"></label>
+    <label>Seconds: <input type="number" id="seconds" min="0" max="59" value="0"></label>
+  </div>
+  <div class="timer" id="display">00:00</div>
+  <div class="controls">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="resumeBtn" disabled>Resume</button>
+    <button id="resetBtn" disabled>Reset</button>
+  </div>
+  <div class="message" id="message"></div>
+
+<script>
+(function(){
+  const minutesInput = document.getElementById('minutes');
+  const secondsInput = document.getElementById('seconds');
+  const display = document.getElementById('display');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const messageEl = document.getElementById('message');
+
+  let totalSeconds = 0;
+  let remaining = 0;
+  let intervalId = null;
+  let initialSeconds = 0; // to restore on reset
+
+  function formatTime(sec){
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = (sec%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  function updateDisplay(){
+    display.textContent = formatTime(remaining);
+  }
+
+  function start(){
+    const mins = parseInt(minutesInput.value,10)||0;
+    const secs = parseInt(secondsInput.value,10)||0;
+    totalSeconds = mins*60 + secs;
+    if(totalSeconds<=0){
+      alert('Please set a time greater than 0.');
+      return;
+    }
+    initialSeconds = totalSeconds;
+    remaining = totalSeconds;
+    updateDisplay();
+    intervalId = setInterval(tick,1000);
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+    resetBtn.disabled = false;
+    minutesInput.disabled = true;
+    secondsInput.disabled = true;
+    messageEl.textContent = '';
+  }
+
+  function tick(){
+    if(remaining>0){
+      remaining--;
+      updateDisplay();
+      if(remaining===0){
+        clearInterval(intervalId);
+        intervalId = null;
+        messageEl.textContent = "Time's up!";
+        // optional alert
+        // alert("Time's up!");
+        pauseBtn.disabled = true;
+        resumeBtn.disabled = true;
+      }
+    }
+  }
+
+  function pause(){
+    if(intervalId){
+      clearInterval(intervalId);
+      intervalId = null;
+      pauseBtn.disabled = true;
+      resumeBtn.disabled = false;
+    }
+  }
+
+  function resume(){
+    if(!intervalId && remaining>0){
+      intervalId = setInterval(tick,1000);
+      pauseBtn.disabled = false;
+      resumeBtn.disabled = true;
+    }
+  }
+
+  function reset(){
+    if(intervalId){
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    remaining = initialSeconds;
+    updateDisplay();
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    resumeBtn.disabled = true;
+    resetBtn.disabled = true;
+    minutesInput.disabled = false;
+    secondsInput.disabled = false;
+    messageEl.textContent = '';
+  }
+
+  startBtn.addEventListener('click', start);
+  pauseBtn.addEventListener('click', pause);
+  resumeBtn.addEventListener('click', resume);
+  resetBtn.addEventListener('click', reset);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resizable Panes</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    user-select: none;
+  }
+  #container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    background:#f0f0f0;
+  }
+  .pane {
+    overflow:auto;
+    padding: 10px;
+    box-sizing: border-box;
+    background:#fff;
+    border:1px solid #ccc;
+    text-align:center;
+    font-size:1.2em;
+  }
+  #divider {
+    width: 6px;
+    background:#888;
+    cursor: col-resize;
+    position: relative;
+  }
+  #divider::after {
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:50%;
+    width:2px;
+    background:#555;
+    transform:translateX(-50%);
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="left" class="pane">Left: 50%</div>
+  <div id="divider"></div>
+  <div id="right" class="pane">Right: 50%</div>
+</div>
+
+<script>
+(() => {
+  const container = document.getElementById('container');
+  const leftPane   = document.getElementById('left');
+  const rightPane  = document.getElementById('right');
+  const divider    = document.getElementById('divider');
+
+  const MIN_PERCENT = 10; // Minimum width for each pane
+
+  let isDragging = false;
+
+  const updateTexts = (leftPct) => {
+    leftPane.textContent   = `Left: ${leftPct.toFixed(1)}%`;
+    rightPane.textContent  = `Right: ${(100 - leftPct).toFixed(1)}%`;
+  };
+
+  const setPaneWidths = (leftPct) => {
+    leftPct = Math.max(MIN_PERCENT, Math.min(100 - MIN_PERCENT, leftPct));
+    leftPane.style.width  = leftPct + '%';
+    rightPane.style.width = (100 - leftPct) + '%';
+    updateTexts(leftPct);
+  };
+
+  divider.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDragging = true;
+    document.body.style.cursor = 'col-resize';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      document.body.style.cursor = 'default';
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const rect = container.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const leftPercent = (offsetX / rect.width) * 100;
+    setPaneWidths(leftPercent);
+  });
+
+  // Initial layout
+  setPaneWidths(50);
+})();
+</script>
+</body>
+</html>

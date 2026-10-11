@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Shape Selector</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 20px;
+    background:#f0f0f0;
+  }
+  canvas {
+    border:1px solid #333;
+    background:#fff;
+    display:block;
+    margin-bottom:15px;
+  }
+  .palette {
+    user-select:none;
+  }
+  .swatch {
+    width:30px;
+    height:30px;
+    display:inline-block;
+    margin:4px;
+    border:2px solid #fff;
+    box-shadow:0 0 2px rgba(0,0,0,0.5);
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="500" height="300"></canvas>
+
+<div class="palette">
+  <div class="swatch" data-color="#ff6666" style="background:#ff6666;"></div>
+  <div class="swatch" data-color="#66ff66" style="background:#66ff66;"></div>
+  <div class="swatch" data-color="#6666ff" style="background:#6666ff;"></div>
+  <div class="swatch" data-color="#ffcc00" style="background:#ffcc00;"></div>
+  <div class="swatch" data-color="#ff00ff" style="background:#ff00ff;"></div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Shape definitions
+  const shapes = [
+    {   // rectangle
+      type: 'rect',
+      x: 50,
+      y: 50,
+      w: 100,
+      h: 80,
+      color: '#ff6666'
+    },
+    {   // circle
+      type: 'circle',
+      cx: 250,
+      cy: 150,
+      r: 50,
+      color: '#66ff66'
+    },
+    {   // triangle (points clockwise)
+      type: 'triangle',
+      points: [
+        {x: 380, y: 250},
+        {x: 320, y: 150},
+        {x: 440, y: 150}
+      ],
+      color: '#6666ff'
+    }
+  ];
+
+  let selectedIndex = null; // no shape selected initially
+
+  // ---------- Drawing ----------
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    shapes.forEach((s, i) => {
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      if (s.type === 'rect') {
+        ctx.rect(s.x, s.y, s.w, s.h);
+      } else if (s.type === 'circle') {
+        ctx.arc(s.cx, s.cy, s.r, 0, Math.PI * 2);
+      } else if (s.type === 'triangle') {
+        const p = s.points;
+        ctx.moveTo(p[0].x, p[0].y);
+        ctx.lineTo(p[1].x, p[1].y);
+        ctx.lineTo(p[2].x, p[2].y);
+        ctx.closePath();
+      }
+      ctx.fill();
+
+      // highlight if selected
+      if (i === selectedIndex) {
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#000';
+        ctx.stroke();
+      }
+    });
+  }
+
+  // ---------- Hit testing ----------
+  function pointInRect(px, py, s) {
+    return px >= s.x && px <= s.x + s.w && py >= s.y && py <= s.y + s.h;
+  }
+  function pointInCircle(px, py, s) {
+    const dx = px - s.cx;
+    const dy = py - s.cy;
+    return dx * dx + dy * dy <= s.r * s.r;
+  }
+  function sign(p1, p2, p3) {
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+  }
+  function pointInTriangle(px, py, s) {
+    const p = {x: px, y: py};
+    const v1 = s.points[0];
+    const v2 = s.points[1];
+    const v3 = s.points[2];
+    const d1 = sign(p, v1, v2);
+    const d2 = sign(p, v2, v3);
+    const d3 = sign(p, v3, v1);
+    const hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    const hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+    return !(hasNeg && hasPos);
+  }
+
+  function getShapeAt(x, y) {
+    // iterate in reverse order so later-drawn shapes are on top
+    for (let i = shapes.length - 1; i >= 0; i--) {
+      const s = shapes[i];
+      let inside = false;
+      if (s.type === 'rect') inside = pointInRect(x, y, s);
+      else if (s.type === 'circle') inside = pointInCircle(x, y, s);
+      else if (s.type === 'triangle') inside = pointInTriangle(x, y, s);
+      if (inside) return i;
+    }
+    return null;
+  }
+
+  // ---------- Event listeners ----------
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const hit = getShapeAt(x, y);
+    if (hit !== null) {
+      selectedIndex = hit;
+      draw();
+    }
+    // clicking empty space leaves the current selection untouched
+  });
+
+  document.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      if (selectedIndex === null) return; // no shape selected
+      const newColor = sw.getAttribute('data-color');
+      shapes[selectedIndex].color = newColor;
+      draw();
+    });
+  });
+
+  // Initial draw
+  draw();
+})();
+</script>
+</body>
+</html>

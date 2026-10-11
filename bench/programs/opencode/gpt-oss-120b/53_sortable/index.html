@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>People Table</title>
+<style>
+  table {
+    border-collapse: collapse;
+    width: 80%;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+  }
+  th, td {
+    border: 1px solid #444;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background: #f0f0f0;
+    user-select: none;
+  }
+  th.sortable {
+    cursor: pointer;
+  }
+  th.sorted-asc::after  { content: " ▲"; }
+  th.sorted-desc::after { content: " ▼"; }
+</style>
+</head>
+<body>
+<h2 style="text-align:center;">People</h2>
+<table id="people">
+  <thead>
+    <tr>
+      <th class="sortable" data-key="name">Name</th>
+      <th class="sortable" data-key="age" data-type="number">Age</th>
+      <th class="sortable" data-key="joined" data-type="date">Joined</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Alice</td>   <td>30</td> <td>2021-03-15</td></tr>
+    <tr><td>Bob</td>     <td>24</td> <td>2020-07-22</td></tr>
+    <tr><td>Charlie</td> <td>28</td> <td>2019-11-03</td></tr>
+    <tr><td>Diana</td>   <td>35</td> <td>2022-01-10</td></tr>
+    <tr><td>Edward</td>  <td>22</td> <td>2021-05-05</td></tr>
+    <tr><td>Fiona</td>   <td>27</td> <td>2020-12-30</td></tr>
+    <tr><td>George</td>  <td>31</td> <td>2019-08-19</td></tr>
+    <tr><td>Hannah</td>  <td>29</td> <td>2022-04-01</td></tr>
+  </tbody>
+</table>
+<script>
+(function(){
+  const table   = document.getElementById('people');
+  const tbody   = table.querySelector('tbody');
+  const headers = table.querySelectorAll('th.sortable');
+  const state   = {};          // remember sort direction per column
+
+  function compare(a, b, type){
+    if (type === 'number') return Number(a) - Number(b);
+    if (type === 'date')   return new Date(a) - new Date(b);
+    return a.localeCompare(b);
+  }
+
+  function sortBy(key){
+    const th   = [...headers].find(h => h.dataset.key === key);
+    const type = th.dataset.type || 'string';
+    const asc  = !(state[key] && state[key].asc);
+    state[key] = { asc };
+
+    // update visual arrows
+    headers.forEach(h => h.classList.remove('sorted-asc','sorted-desc'));
+    th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((r1, r2) => {
+      const c1 = r1.querySelector(`td:nth-child(${th.cellIndex + 1})`).textContent.trim();
+      const c2 = r2.querySelector(`td:nth-child(${th.cellIndex + 1})`).textContent.trim();
+      const cmp = compare(c1, c2, type);
+      return asc ? cmp : -cmp;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+
+  headers.forEach(th => th.addEventListener('click', () => sortBy(th.dataset.key)));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Shopping Cart</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem; background:#f9f9f9; color:#333;}
+  h1 {text-align:center;}
+  table {width:100%; border-collapse:collapse; margin-top:1rem; background:#fff;}
+  th, td {padding:0.5rem; border:1px solid #ddd; text-align:center;}
+  th {background:#f0f0f0;}
+  input[type=number] {width:60px;}
+  .empty {text-align:center; font-size:1.2rem; padding:2rem; display:none;}
+  .promo {margin-top:1rem; text-align:right;}
+  .total {font-weight:bold; font-size:1.2rem;}
+  button {cursor:pointer; padding:0.4rem 0.8rem;}
+</style>
+</head>
+<body>
+<h1>Shopping Cart</h1>
+
+<table id="cart">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Price</th>
+      <th>Qty</th>
+      <th>Subtotal</th>
+      <th>Remove</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr data-price="12.99">
+      <td>Blue T‑Shirt</td>
+      <td>$12.99</td>
+      <td><input type="number" min="0" value="1" class="qty"></td>
+      <td class="sub">$12.99</td>
+      <td><button class="rm">✖</button></td>
+    </tr>
+    <tr data-price="8.50">
+      <td>Red Mug</td>
+      <td>$8.50</td>
+      <td><input type="number" min="0" value="2" class="qty"></td>
+      <td class="sub">$17.00</td>
+      <td><button class="rm">✖</button></td>
+    </tr>
+    <tr data-price="45.00">
+      <td>Leather Notebook</td>
+      <td>$45.00</td>
+      <td><input type="number" min="0" value="1" class="qty"></td>
+      <td class="sub">$45.00</td>
+      <td><button class="rm">✖</button></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="promo">
+  Promo code: <input type="text" id="promo" placeholder="Enter code">
+  <button id="apply">Apply</button>
+  <span id="promo-msg" style="margin-left:0.5rem;color:green;"></span>
+</div>
+
+<p class="total">Total: $<span id="total">75.49</span></p>
+
+<p class="empty" id="empty-msg">Your basket is empty.</p>
+
+<script>
+(() => {
+  const cart = document.getElementById('cart');
+  const totalEl = document.getElementById('total');
+  const promoInput = document.getElementById('promo');
+  const promoMsg = document.getElementById('promo-msg');
+  const applyBtn = document.getElementById('apply');
+  const emptyMsg = document.getElementById('empty-msg');
+
+  let discount = 0; // fraction, e.g. 0.10 for 10%
+
+  const round2 = n => (Math.round(n * 100) / 100).toFixed(2);
+
+  const recalc = () => {
+    let sum = 0;
+    const rows = cart.tBodies[0].rows;
+    for (let r of rows) {
+      const price = parseFloat(r.dataset.price);
+      const qty = Math.max(0, parseInt(r.querySelector('.qty').value) || 0);
+      const sub = price * qty;
+      r.querySelector('.sub').textContent = `$${round2(sub)}`;
+      sum += sub;
+    }
+    const discounted = sum * (1 - discount);
+    totalEl.textContent = round2(discounted);
+    // Show empty message if no rows left
+    emptyMsg.style.display = rows.length === 0 ? '' : 'none';
+  };
+
+  // quantity change
+  cart.addEventListener('input', e => {
+    if (e.target.classList.contains('qty')) recalc();
+  });
+
+  // remove row
+  cart.addEventListener('click', e => {
+    if (e.target.classList.contains('rm')) {
+      const tr = e.target.closest('tr');
+      tr.remove();
+      recalc();
+    }
+  });
+
+  // promo code handling
+  applyBtn.addEventListener('click', () => {
+    const code = promoInput.value.trim().toUpperCase();
+    if (code === 'SAVE10') {
+      discount = 0.10;
+      promoMsg.textContent = '10% discount applied';
+      promoMsg.style.color = 'green';
+    } else {
+      discount = 0;
+      promoMsg.textContent = 'Invalid code';
+      promoMsg.style.color = 'red';
+    }
+    recalc();
+  });
+
+  // initial calculation
+  recalc();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calculator</title>
+<style>
+    body{
+        font-family:Arial,sans-serif;
+        background:#f0f0f0;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        padding:20px;
+    }
+    .calculator{
+        background:#222;
+        padding:15px;
+        border-radius:8px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.3);
+        width:260px;
+    }
+    #display{
+        width:100%;
+        height:45px;
+        font-size:1.8rem;
+        text-align:right;
+        padding:5px 10px;
+        margin-bottom:10px;
+        border:none;
+        border-radius:4px;
+        background:#111;
+        color:#fff;
+    }
+    .buttons{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:5px;
+    }
+    button{
+        font-size:1.2rem;
+        padding:15px;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        background:#444;
+        color:#fff;
+        transition:background .2s;
+    }
+    button:hover{background:#555;}
+    button.operator{background:#ff9500;color:#fff;}
+    button.equal{background:#34c759;color:#fff;grid-column:span 2;}
+    button.clear{background:#ff3b30;color:#fff;}
+    .history{
+        margin-top:20px;
+        width:260px;
+    }
+    .history h3{
+        margin:0 0 5px;
+        font-size:1.1rem;
+    }
+    #historyList{
+        list-style:none;
+        padding:0;
+        margin:0;
+        font-size:0.95rem;
+        line-height:1.4;
+    }
+    #historyList li{
+        background:#fff;
+        padding:4px 8px;
+        margin-bottom:3px;
+        border-radius:3px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+</style>
+</head>
+<body>
+<div class="calculator">
+    <input type="text" id="display" readonly value="0">
+    <div class="buttons">
+        <button class="clear"   data-action="clear">C</button>
+        <button data-action="sign">±</button>
+        <button data-action="percent">%</button>
+        <button class="operator" data-action="operator" data-value="/">÷</button>
+
+        <button data-action="digit" data-value="7">7</button>
+        <button data-action="digit" data-value="8">8</button>
+        <button data-action="digit" data-value="9">9</button>
+        <button class="operator" data-action="operator" data-value="*">×</button>
+
+        <button data-action="digit" data-value="4">4</button>
+        <button data-action="digit" data-value="5">5</button>
+        <button data-action="digit" data-value="6">6</button>
+        <button class="operator" data-action="operator" data-value="-">‑</button>
+
+        <button data-action="digit" data-value="1">1</button>
+        <button data-action="digit" data-value="2">2</button>
+        <button data-action="digit" data-value="3">3</button>
+        <button class="operator" data-action="operator" data-value="+">+</button>
+
+        <button data-action="digit" data-value="0" style="grid-column: span 2;">0</button>
+        <button data-action="dot">.</button>
+        <button class="equal" data-action="equals">=</button>
+    </div>
+</div>
+
+<div class="history">
+    <h3>Last 5 results</h3>
+    <ul id="historyList"></ul>
+</div>
+
+<script>
+(() => {
+    const display = document.getElementById('display');
+    const historyList = document.getElementById('historyList');
+    const maxHistory = 5;
+    let history = [];
+
+    // Holds the current expression as a string (e.g., "12+7")
+    let expr = '';
+    // Flag to know if we just showed a result (so next digit starts new number)
+    let justEvaluated = false;
+
+    const updateDisplay = (value) => {
+        display.value = value;
+    };
+
+    const addToHistory = (result) => {
+        history.unshift(result);
+        if (history.length > maxHistory) history.pop();
+        renderHistory();
+    };
+
+    const renderHistory = () => {
+        historyList.innerHTML = '';
+        history.forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = r;
+            historyList.appendChild(li);
+        });
+    };
+
+    const clearAll = () => {
+        expr = '';
+        justEvaluated = false;
+        updateDisplay('0');
+    };
+
+    const handleDigit = (d) => {
+        if (justEvaluated) {
+            expr = d;
+            justEvaluated = false;
+        } else {
+            // If the current display is "0", replace it, else append
+            if (display.value === '0' && d !== '.') {
+                expr = expr.slice(0, -1) + d;
+            } else {
+                expr += d;
+            }
+        }
+        updateDisplay(expr.replace(/^\+/, '')); // remove leading plus if any
+    };
+
+    const handleOperator = (op) => {
+        if (expr === '' && op === '-') {
+            // allow starting a negative number
+            expr = '-';
+            updateDisplay(expr);
+            return;
+        }
+        // Prevent two operators in a row
+        if (/[+\-*/]$/.test(expr)) {
+            expr = expr.slice(0, -1) + op;
+        } else {
+            expr += op;
+        }
+        justEvaluated = false;
+        updateDisplay(expr);
+    };
+
+    const handleDot = () => {
+        // Prevent multiple dots in the current number
+        const parts = expr.split(/[+\-*/]/);
+        const last = parts[parts.length - 1];
+        if (!last.includes('.')) {
+            expr += '.';
+            updateDisplay(expr);
+        }
+    };
+
+    const handlePercent = () => {
+        // Convert current number to percentage (divide by 100)
+        const parts = expr.split(/[+\-*/]/);
+        const last = parts.pop();
+        if (last === '' || last === '-') return;
+        const num = parseFloat(last);
+        if (isNaN(num)) return;
+        const pct = (num / 100).toString();
+        expr = parts.join('') + pct;
+        updateDisplay(expr);
+    };
+
+    const handleSignFlip = () => {
+        const parts = expr.split(/[+\-*/]/);
+        let last = parts.pop();
+        if (last === '' && parts.length) {
+            // edge: expression ends with operator -> flip sign of next number
+            last = '0';
+        }
+        if (last.startsWith('-')) {
+            last = last.slice(1);
+        } else {
+            last = '-' + last;
+        }
+        expr = parts.join('') + last;
+        updateDisplay(expr);
+    };
+
+    const evaluate = () => {
+        // Remove trailing operator
+        if (/[+\-*/]$/.test(expr)) expr = expr.slice(0, -1);
+        if (expr === '' ) return;
+        try {
+            // Using Function to avoid eval's global scope side‑effects
+            const result = Function(`"use strict";return (${expr})`)();
+            if (result === Infinity || result === -Infinity || isNaN(result)) {
+                updateDisplay('Error');
+            } else {
+                const formatted = Number.isFinite(result) ?
+                    (+result.toFixed(12)).toString().replace(/\.?0+$/,'') :
+                    result;
+                updateDisplay(formatted);
+                addToHistory(`${expr} = ${formatted}`);
+                expr = formatted; // allow chaining
+            }
+        } catch (e) {
+            updateDisplay('Error');
+        }
+        justEvaluated = true;
+    };
+
+    // Button handling
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const action = btn.dataset.action;
+            const value  = btn.dataset.value;
+            switch (action) {
+                case 'digit':   handleDigit(value); break;
+                case 'operator':handleOperator(value); break;
+                case 'dot':     handleDot(); break;
+                case 'clear':   clearAll(); break;
+                case 'equals':  evaluate(); break;
+                case 'percent':handlePercent(); break;
+                case 'sign':    handleSignFlip(); break;
+            }
+        });
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (/\d/.test(key)) {
+            handleDigit(key);
+        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            handleOperator(key);
+        } else if (key === 'Enter' || key === '=') {
+            e.preventDefault();
+            evaluate();
+        } else if (key === 'Backspace') {
+            clearAll();
+        } else if (key === '.' || key === ',') {
+            handleDot();
+        } else if (key === '%') {
+            handlePercent();
+        } else if (key.toLowerCase() === 'c') {
+            clearAll();
+        } else if (key.toLowerCase() === 's') {
+            handleSignFlip();
+        }
+    });
+
+    // Initialize
+    clearAll();
+})();
+</script>
+</body>
+</html>

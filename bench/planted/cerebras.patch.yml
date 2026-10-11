@@ -1,0 +1,16 @@
+- id: llm-pi-ai
+  config:
+    providers:
+      cerebras:
+        displayName: Cerebras
+        apiKeyEnv: CEREBRAS_API_KEY
+        api: openai-completions
+        baseURL: https://api.cerebras.ai/v1
+        models:
+          - id: gpt-oss-120b
+            name: GPT-OSS 120B
+            contextWindow: 131072
+- id: agent-default-model
+  config:
+    provider: cerebras
+    model: gpt-oss-120b

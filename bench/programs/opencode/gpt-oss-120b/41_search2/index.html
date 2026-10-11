@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Country Table</title>
+<style>
+  body {font-family: sans-serif; margin: 2rem;}
+  h1 {margin-bottom: 0.5rem;}
+  #filterBox {padding:0.4rem; width: 300px; margin-bottom: 0.5rem;}
+  table {border-collapse: collapse; width: 100%; max-width: 800px;}
+  th, td {border: 1px solid #999; padding: 0.4rem 0.6rem; text-align: left;}
+  th {cursor:pointer; background:#f0f0f0;}
+  th.sort-asc::after {content:" ▲";}
+  th.sort-desc::after {content:" ▼";}
+  tr:nth-child(even) {background:#fafafa;}
+  #rowCount {margin-top:0.5rem; font-weight: bold;}
+</style>
+</head>
+<body>
+
+<h1>Countries</h1>
+<input type="text" id="filterBox" placeholder="Search…">
+<table id="countryTable">
+  <thead>
+    <tr>
+      <th data-key="name">Country</th>
+      <th data-key="capital">Capital</th>
+      <th data-key="population">Population</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Argentina</td><td>Buenos Aires</td><td>45,376,763</td></tr>
+    <tr><td>Australia</td><td>Canberra</td><td>25,739,263</td></tr>
+    <tr><td>Brazil</td><td>Brasília</td><td>212,559,417</td></tr>
+    <tr><td>Canada</td><td>Ottawa</td><td>37,742,154</td></tr>
+    <tr><td>China</td><td>Beijing</td><td>1,439,323,776</td></tr>
+    <tr><td>Egypt</td><td>Cairo</td><td>102,334,404</td></tr>
+    <tr><td>France</td><td>Paris</td><td>65,273,511</td></tr>
+    <tr><td>Germany</td><td>Berlin</td><td>83,783,942</td></tr>
+    <tr><td>India</td><td>New Delhi</td><td>1,380,004,385</td></tr>
+    <tr><td>Italy</td><td>Rome</td><td>60,461,826</td></tr>
+    <tr><td>Japan</td><td>Tokyo</td><td>126,476,461</td></tr>
+    <tr><td>Mexico</td><td>Mexico City</td><td>128,932,753</td></tr>
+    <tr><td>Nigeria</td><td>Abuja</td><td>206,139,589</td></tr>
+    <tr><td>Russia</td><td>Moscow</td><td>145,934,462</td></tr>
+    <tr><td>South Africa</td><td>Pretoria</td><td>59,308,690</td></tr>
+    <tr><td>South Korea</td><td>Seoul</td><td>51,269,183</td></tr>
+    <tr><td>Spain</td><td>Madrid</td><td>46,754,778</td></tr>
+    <tr><td>Sweden</td><td>Stockholm</td><td>10,099,265</td></tr>
+    <tr><td>United Kingdom</td><td>London</td><td>67,886,011</td></tr>
+    <tr><td>United States</td><td>Washington, D.C.</td><td>331,002,651</td></tr>
+  </tbody>
+</table>
+<div id="rowCount"></div>
+
+<script>
+(() => {
+  const table = document.getElementById('countryTable');
+  const tbody = table.tBodies[0];
+  const filterBox = document.getElementById('filterBox');
+  const rowCount = document.getElementById('rowCount');
+  let sortState = {};
+
+  const updateRowCount = () => {
+    const visibleRows = [...tbody.rows].filter(r => r.style.display !== 'none').length;
+    rowCount.textContent = `${visibleRows} of ${tbody.rows.length} rows shown`;
+  };
+
+  const filterRows = () => {
+    const term = filterBox.value.trim().toLowerCase();
+    for (const row of tbody.rows) {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(term) ? '' : 'none';
+    }
+    updateRowCount();
+  };
+
+  const sortTable = (key, asc) => {
+    const colIndex = [...table.tHead.rows[0].cells].findIndex(th => th.dataset.key === key);
+    const rowsArray = [...tbody.rows].filter(r => r.style.display !== 'none');
+    rowsArray.sort((a, b) => {
+      const aText = a.cells[colIndex].textContent.trim();
+      const bText = b.cells[colIndex].textContent.trim();
+      // Remove commas for numeric comparison
+      const aNum = Number(aText.replace(/,/g, ''));
+      const bNum = Number(bText.replace(/,/g, ''));
+      const compare = isNaN(aNum) ? aText.localeCompare(bText) : aNum - bNum;
+      return asc ? compare : -compare;
+    });
+    // Re‑append rows in new order
+    rowsArray.forEach(r => tbody.appendChild(r));
+  };
+
+  // Header click handler
+  for (const th of table.tHead.rows[0].cells) {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key;
+      const current = sortState[key] || false; // false = asc, true = desc
+      // Reset other headers
+      for (const other of table.tHead.rows[0].cells) {
+        other.classList.remove('sort-asc', 'sort-desc');
+      }
+      th.classList.toggle('sort-asc', !current);
+      th.classList.toggle('sort-desc', current);
+      sortState[key] = !current;
+      sortTable(key, !current);
+    });
+  }
+
+  filterBox.addEventListener('input', filterRows);
+  // Initialize count
+  updateRowCount();
+})();
+</script>
+
+</body>
+</html>

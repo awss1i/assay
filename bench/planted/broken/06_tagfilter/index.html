@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tag Filter Example</title>
+<style>
+  body {font-family: sans-serif; padding: 20px;}
+  .tags {margin-top: 5px;}
+  .tag-btn {display: inline-block; margin: 2px; padding: 4px 8px; border: 1px solid #888; border-radius: 4px; background:#eee; cursor:pointer; font-size:0.9em;}
+  .tag-btn.active {background:#4caf50; color:#fff; border-color:#4caf50;}
+  .item {margin-bottom: 12px; padding:8px; border:1px solid #ccc; border-radius:4px;}
+  .hidden {display:none;}
+  #no-match {font-style: italic; color:#555;}
+</style>
+</head>
+<body>
+<h1>Items with Tags</h1>
+<div id="tag-container"></div>
+<div id="items">
+  <!-- Items will be inserted by script -->
+</div>
+<p id="no-match" class="hidden">No items match the selected tags.</p>
+
+<script>
+// Data: list of items with their tags
+const items = [
+  {text: "Item 1", tags: ["red", "large"]},
+  {text: "Item 2", tags: ["blue", "small"]},
+  {text: "Item 3", tags: ["green", "medium"]},
+  {text: "Item 4", tags: ["red", "small"]},
+  {text: "Item 5", tags: ["blue", "large"]},
+  {text: "Item 6", tags: ["green", "small"]},
+  {text: "Item 7", tags: ["red", "medium"]},
+  {text: "Item 8", tags: ["blue", "medium"]},
+  {text: "Item 9", tags: ["green", "large"]},
+  {text: "Item 10", tags: ["red", "large", "round"]},
+  {text: "Item 11", tags: ["blue", "small", "square"]},
+  {text: "Item 12", tags: ["green", "medium", "round"]}
+];
+
+// Gather all unique tags
+const allTags = Array.from(new Set(items.flatMap(i => i.tags))).sort();
+
+const tagContainer = document.getElementById('tag-container');
+const itemsDiv = document.getElementById('items');
+const noMatchP = document.getElementById('no-match');
+
+let activeTags = new Set();
+
+function renderTagButtons() {
+  allTags.forEach(tag => {
+    const btn = document.createElement('span');
+    btn.textContent = tag;
+    btn.className = 'tag-btn';
+    btn.dataset.tag = tag;
+    btn.addEventListener('click', () => {
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+        btn.classList.remove('active');
+      } else {
+        activeTags.add(tag);
+        btn.classList.add('active');
+        filterItems();
+      }
+    });
+    tagContainer.appendChild(btn);
+  });
+}
+
+function renderItems() {
+  itemsDiv.innerHTML = '';
+  items.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.dataset.idx = idx;
+    const title = document.createElement('div');
+    title.textContent = item.text;
+    const tagDiv = document.createElement('div');
+    tagDiv.className = 'tags';
+    item.tags.forEach(t => {
+      const span = document.createElement('span');
+      span.textContent = item.text;
+      span.style.marginRight = '6px';
+      tagDiv.appendChild(span);
+    });
+    div.appendChild(title);
+    div.appendChild(tagDiv);
+    itemsDiv.appendChild(div);
+  });
+}
+
+function filterItems() {
+  const children = itemsDiv.children;
+  let anyVisible = false;
+  for (let i = 0; i < children.length - 1; i++) {
+    const el = children[i];
+    const idx = el.dataset.idx;
+    const itemTags = items[idx].tags;
+    // item matches if all activeTags are present in itemTags
+    const matches = itemTags.every(t => activeTags.has(t));
+    if (matches) {
+      el.classList.remove('hidden');
+      anyVisible = true;
+    } else {
+      el.classList.add('hidden');
+    }
+  }
+  noMatchP.classList.toggle('hidden', !anyVisible);
+}
+
+// Initialize
+renderTagButtons();
+renderItems();
+</script>
+</body>
+</html>

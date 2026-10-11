@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three‑Step Form</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 2rem;}
+        .step {display: none;}
+        .step.active {display: block;}
+        .navigation {margin-top: 1rem;}
+        button {padding: 0.5rem 1rem; margin-right: 0.5rem;}
+        .error {color: red; font-size: 0.9em;}
+        label {display: block; margin-top: 0.5rem;}
+        input, textarea {width: 100%; max-width: 400px; padding: 0.4rem;}
+        textarea {height: 80px;}
+        .summary {border: 1px solid #ccc; padding: 1rem;}
+    </style>
+</head>
+<body>
+    <h2>Three‑Step Form</h2>
+    <form id="multiStepForm">
+        <!-- Step 1 -->
+        <section class="step" id="step1">
+            <h3>Step 1: Personal Info</h3>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <span class="error" id="err-name"></span>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <span class="error" id="err-email"></span>
+        </section>
+        <!-- Step 2 -->
+        <section class="step" id="step2">
+            <h3>Step 2: Details</h3>
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" min="0" required>
+            <span class="error" id="err-age"></span>
+            <label for="bio">Short Bio:</label>
+            <textarea id="bio" name="bio" required></textarea>
+            <span class="error" id="err-bio"></span>
+        </section>
+        <!-- Step 3 – Summary -->
+        <section class="step" id="step3">
+            <h3>Step 3: Review & Submit</h3>
+            <div class="summary" id="summary"></div>
+            <button type="button" id="editBtn">Edit</button>
+            <button type="submit" id="submitBtn">Submit</button>
+        </section>
+        <div class="navigation">
+            <button type="button" id="prevBtn">Previous</button>
+            <button type="button" id="nextBtn">Next</button>
+        </div>
+    </form>
+
+    <script>
+        const form = document.getElementById('multiStepForm');
+        const steps = Array.from(document.querySelectorAll('.step'));
+        let current = 0;
+
+        function showStep(index) {
+            steps.forEach((s, i) => s.classList.toggle('active', i === index));
+            document.getElementById('prevBtn').style.display = index === 0 ? 'none' : 'inline-block';
+            document.getElementById('nextBtn').style.display = index === steps.length - 1 ? 'none' : 'inline-block';
+        }
+
+        function validateStep(index) {
+            const step = steps[index];
+            let valid = true;
+            // Clear previous errors
+            step.querySelectorAll('.error').forEach(e => e.textContent = '');
+            // Simple validation: required fields are not empty
+            step.querySelectorAll('input, textarea').forEach(el => {
+                if (el.hasAttribute('required') && !el.value.trim()) {
+                    valid = false;
+                    const err = document.getElementById('err-' + el.id);
+                    if (err) err.textContent = 'Required';
+                }
+                // Extra email format check
+                if (el.type === 'email' && el.value) {
+                    const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                    if (!re.test(el.value)) {
+                        valid = false;
+                        const err = document.getElementById('err-' + el.id);
+                        if (err) err.textContent = 'Invalid email';
+                    }
+                }
+            });
+            return valid;
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (!validateStep(current)) return;
+            current++;
+            if (current === steps.length - 1) {
+                // Populate summary
+                const summaryDiv = document.getElementById('summary');
+                const formData = new FormData(form);
+                let html = '<h4>Review your input</h4>';
+                html += '<ul>';
+                for (const [name, value] of formData.entries()) {
+                    html += `<li><strong>${name}:</strong> <span contenteditable="true" data-name="${name}">${value}</span></li>`;
+                }
+                html += '</ul>';
+                summaryDiv.innerHTML = html;
+            }
+            showStep(current);
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (current > 0) {
+                current--;
+                showStep(current);
+            }
+        });
+
+        document.getElementById('editBtn').addEventListener('click', () => {
+            // Return to first step for editing
+            current = 0;
+            showStep(current);
+        });
+
+        // When submission occurs, copy edited summary back to form fields
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Update form values from editable spans
+            const spans = document.querySelectorAll('#summary span[contenteditable]');
+            spans.forEach(span => {
+                const name = span.dataset.name;
+                const input = form.querySelector(`[name="${name}"]`);
+                if (input) input.value = span.textContent.trim();
+            });
+            // For demo purpose, just alert data
+            const data = new FormData(form);
+            let result = '';
+            for (const [k, v] of data.entries()) {
+                result += `${k}: ${v}\n`;
+            }
+            alert('Form submitted!\n' + result);
+        });
+
+        // Initial display
+        showStep(current);
+    </script>
+</body>
+</html>

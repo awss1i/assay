@@ -1,0 +1,21 @@
+# One line per finding. Every planted bug gets a `found` or a `missed`, in
+# the order bugs.md numbers them, and every flag assay raised on this program
+# gets a line saying what it is.
+#
+#   <n> found <key> | <note>     this flag is planted bug n showing itself
+#   <n> missed <note>            planted bug n was not flagged
+#   other <key> | <note>         this flag is something else
+#
+# A key is `rule@what the case did`, exactly as `assay --json` prints it. It
+# names the finding rather than its position in the plan, so it stays true
+# when the plan changes. A bug may be found by more than one key.
+#
+# A bug is *found* when at least one failing case is caused by it. That is a
+# judgement: assay reports an act and a measurement, and whether that
+# measurement is this bug showing itself is what a person has to decide.
+
+1 missed the swatch recolours when a slider moves, and that it is the wrong colour is a value judgement
+2 missed moving Blue recolours the swatch, so it answered, and the number beside it is a value
+3 missed moving Red changes nothing else, but a slider only has to survive being moved
+4 missed the swatch recolours, so the page changed, and a Hex field stuck at #000000 is a value
+5 missed the copy is not observable from the page

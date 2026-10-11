@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3×3 Matrix Multiply</title>
+<style>
+  body {font-family: sans-serif; margin: 2rem;}
+  .grid {border-collapse: collapse; margin: 1rem;}
+  .grid td {border: 1px solid #333; width: 60px; height: 60px;}
+  .grid input {
+    width: 100%; height: 100%;
+    border: none; text-align: center;
+    font-size: 1.2rem;
+    box-sizing: border-box;
+  }
+  .grid input:disabled {background:#f0f0f0; color:#555;}
+  #result {margin-top:1rem; font-weight: bold;}
+  button {padding:0.5rem 1rem; font-size:1rem;}
+</style>
+</head>
+<body>
+
+<h2>Matrix A</h2>
+<table class="grid" id="gridA">
+  <tbody>
+    <tr><td><input type="number" step="any"></td><td><input type="number" step="any"></td><td><input type="number" step="any"></td></tr>
+    <tr><td><input type="number" step="any"></td><td><input type="number" step="any"></td><td><input type="number" step="any"></td></tr>
+    <tr><td><input type="number" step="any"></td><td><input type="number" step="any"></td><td><input type="number" step="any"></td></tr>
+  </tbody>
+</table>
+
+<h2>Matrix B</h2>
+<table class="grid" id="gridB">
+  <tbody>
+    <tr><td><input type="number" step="any"></td><td><input type="number" step="any"></td><td><input type="number" step="any"></td></tr>
+    <tr><td><input type="number" step="any"></td><td><input type="number" step="any"></td><td><input type="number" step="any"></td></tr>
+    <tr><td><input type="number" step="any"></td><td><input type="number" step="any"></td><td><input type="number" step="any"></td></tr>
+  </tbody>
+</table>
+
+<button id="multiply">Multiply</button>
+
+<h2>Result (A × B)</h2>
+<table class="grid" id="gridC">
+  <tbody>
+    <tr><td><input type="number" disabled></td><td><input type="number" disabled></td><td><input type="number" disabled></td></tr>
+    <tr><td><input type="number" disabled></td><td><input type="number" disabled></td><td><input type="number" disabled></td></tr>
+    <tr><td><input type="number" disabled></td><td><input type="number" disabled></td><td><input type="number" disabled></td></tr>
+  </tbody>
+</table>
+
+<div id="result"></div>
+
+<script>
+document.getElementById('multiply').addEventListener('click', () => {
+  const aCells = Array.from(document.querySelectorAll('#gridA input'));
+  const bCells = Array.from(document.querySelectorAll('#gridB input'));
+  const cCells = Array.from(document.querySelectorAll('#gridC input'));
+
+  for (let i = 0; i < 9; i++) {
+    const aVal = parseFloat(aCells[i].value);
+    const bVal = parseFloat(bCells[i].value);
+
+    if (isNaN(aVal) || isNaN(bVal)) {
+      alert('All cells must contain numeric values.');
+      return;
+    }
+
+    const product = aVal * bVal;
+    cCells[i].value = product;
+
+    // Show arithmetic for the first cell only
+    if (i === 0) {
+      document.getElementById('result').textContent =
+        `${aVal} × ${bVal} = ${product}`;
+    }
+  }
+});
+</script>
+
+</body>
+</html>

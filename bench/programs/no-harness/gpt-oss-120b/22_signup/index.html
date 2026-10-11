@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign‑up Form</title>
+<style>
+    body{
+        font-family:Arial,sans-serif;
+        background:#f5f5f5;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-height:100vh;
+        margin:0;
+    }
+    .container{
+        background:#fff;
+        padding:2rem;
+        border-radius:8px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.1);
+        width:320px;
+    }
+    h1{
+        margin-top:0;
+        font-size:1.5rem;
+        text-align:center;
+    }
+    label{
+        display:block;
+        margin-top:1rem;
+        font-weight:bold;
+    }
+    input{
+        width:100%;
+        padding:.5rem;
+        margin-top:.3rem;
+        border:1px solid #ccc;
+        border-radius:4px;
+        font-size:1rem;
+        box-sizing:border-box;
+    }
+    .error{
+        color:#d00;
+        font-size:.85rem;
+        margin-top:.2rem;
+        visibility:hidden;
+    }
+    .error.visible{
+        visibility:visible;
+    }
+    button{
+        margin-top:1.5rem;
+        width:100%;
+        padding:.6rem;
+        font-size:1rem;
+        background:#0069d9;
+        color:#fff;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+    }
+    button:hover{
+        background:#0053aa;
+    }
+    #success{
+        display:none;
+        text-align:center;
+        color:#155724;
+        background:#d4edda;
+        border:1px solid #c3e6cb;
+        padding:1rem;
+        border-radius:4px;
+        margin-top:1rem;
+    }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('signupForm');
+    const emailInput = form.email;
+    const pwdInput = form.password;
+    const emailError = document.getElementById('emailError');
+    const pwdError = document.getElementById('pwdError');
+    const successBox = document.getElementById('success');
+
+    function validateEmail(value) {
+        // Simple RFC‑5322‑ish email regex
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(value);
+    }
+
+    function validatePassword(value) {
+        // At least 8 characters, at least one letter and one number
+        return /[A-Za-z]/.test(value) && /\d/.test(value) && value.length >= 8;
+    }
+
+    function showError(el, msg) {
+        el.textContent = msg;
+        el.classList.add('visible');
+    }
+
+    function hideError(el) {
+        el.textContent = '';
+        el.classList.remove('visible');
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault(); // stop actual submission
+
+        let valid = true;
+
+        // ---- Email ----
+        if (!emailInput.value.trim()) {
+            showError(emailError, 'Email is required.');
+            valid = false;
+        } else if (!validateEmail(emailInput.value.trim())) {
+            showError(emailError, 'Please enter a valid email address.');
+            valid = false;
+        } else {
+            hideError(emailError);
+        }
+
+        // ---- Password ----
+        if (!pwdInput.value) {
+            showError(pwdError, 'Password is required.');
+            valid = false;
+        } else if (!validatePassword(pwdInput.value)) {
+            showError(pwdError, 'Password must be at least 8 characters, include a letter and a number.');
+            valid = false;
+        } else {
+            hideError(pwdError);
+        }
+
+        // ---- Success ----
+        if (valid) {
+            form.style.display = 'none';
+            successBox.style.display = 'block';
+        }
+    });
+
+    // Optional: live validation while typing
+    emailInput.addEventListener('input', () => hideError(emailError));
+    pwdInput.addEventListener('input', () => hideError(pwdError));
+});
+</script>
+</head>
+<body>
+<div class="container">
+    <h1>Create Account</h1>
+    <form id="signupForm" novalidate>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required>
+        <div id="emailError" class="error"></div>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" autocomplete="new-password" required>
+        <div id="pwdError" class="error"></div>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <div id="success">
+        🎉 Success! Your account has been created.
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tetris</title>
+<style>
+  body { margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background:#111; color:#fff; font-family:Arial, sans-serif; }
+  #game { border:2px solid #555; background:#000; }
+  #score { position:absolute; top:10px; left:10px; font-size:20px; }
+</style>
+</head>
+<body>
+<div id="score">Score: 0</div>
+<canvas id="game" width="240" height="480"></canvas>
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const COLS = 10, ROWS = 20, BLOCK_SIZE = 24;
+  const colors = [null,'cyan','blue','orange','yellow','green','purple','red'];
+  // Tetromino shapes (I,J,L,O,S,T,Z) in 4x4 matrix form
+  const shapes = {
+    I: [
+      [0,0,0,0],
+      [1,1,1,1],
+      [0,0,0,0],
+      [0,0,0,0]
+    ],
+    J: [
+      [2,0,0],
+      [2,2,2],
+      [0,0,0]
+    ],
+    L: [
+      [0,0,3],
+      [3,3,3],
+      [0,0,0]
+    ],
+    O: [
+      [4,4],
+      [4,4]
+    ],
+    S: [
+      [0,5,5],
+      [5,5,0],
+      [0,0,0]
+    ],
+    T: [
+      [0,6,0],
+      [6,6,6],
+      [0,0,0]
+    ],
+    Z: [
+      [7,7,0],
+      [0,7,7],
+      [0,0,0]
+    ]
+  };
+  const tetrominoes = Object.keys(shapes);
+  let board = Array.from({length: ROWS},()=>Array(COLS).fill(0));
+  let current = null;
+  let dropCounter = 0, dropInterval = 800;
+  let lastTime = 0;
+  let score = 0;
+  const scoreElement = document.getElementById('score');
+
+  function createPiece(type){
+    const shape = shapes[type];
+    return {matrix: shape, pos:{x: Math.floor(COLS/2)-Math.ceil(shape[0].length/2), y:0}, type};
+  }
+
+  function drawMatrix(matrix, offset){
+    matrix.forEach((row,y)=>{
+      row.forEach((value,x)=>{
+        if(value!==0){
+          ctx.fillStyle = colors[value];
+          ctx.fillRect((x+offset.x)*BLOCK_SIZE,(y+offset.y)*BLOCK_SIZE,BLOCK_SIZE-1,BLOCK_SIZE-1);
+        }
+      });
+    });
+  }
+
+  function draw(){
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    drawMatrix(board,{x:0,y:0});
+    if(current) drawMatrix(current.matrix,current.pos);
+  }
+
+  function merge(){
+    current.matrix.forEach((row,y)=>{
+      row.forEach((value,x)=>{
+        if(value!==0){
+          board[y+current.pos.y][x+current.pos.x]=value;
+        }
+      });
+    });
+  }
+
+  function collide(board,matrix,pos){
+    for(let y=0; y<matrix.length; ++y){
+      for(let x=0; x<matrix[y].length; ++x){
+        if(matrix[y][x]!==0){
+          const boardY = y+pos.y;
+          const boardX = x+pos.x;
+          if(boardY<0 || boardY>=ROWS || boardX<0 || boardX>=COLS || board[boardY][boardX]!==0){
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  function rotate(matrix, dir){
+    // transpose
+    for(let y=0; y<matrix.length; ++y){
+      for(let x=0; x<y; ++x){
+        [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+      }
+    }
+    // reverse rows for dir >0, reverse cols for dir <0
+    if(dir>0){
+      matrix.forEach(row=>row.reverse());
+    } else {
+      matrix.reverse();
+    }
+  }
+
+  function playerRotate(dir){
+    const pos = current.pos.x;
+    let offset = 1;
+    rotate(current.matrix, dir);
+    while(collide(board,current.matrix,current.pos)){
+      current.pos.x += offset;
+      offset = -(offset + (offset>0?1:-1));
+      if(offset> current.matrix[0].length){
+        rotate(current.matrix, -dir);
+        current.pos.x = pos;
+        return;
+      }
+    }
+  }
+
+  function playerDrop(){
+    current.pos.y++;
+    if(collide(board,current.matrix,current.pos)){
+      current.pos.y--;
+      merge();
+      playerReset();
+      sweepLines();
+    }
+    dropCounter = 0;
+  }
+
+  function playerMove(dir){
+    current.pos.x += dir;
+    if(collide(board,current.matrix,current.pos)){
+      current.pos.x -= dir;
+    }
+  }
+
+  function sweepLines(){
+    let lines = 0;
+    outer: for(let y=ROWS-1; y>=0; --y){
+      for(let x=0; x<COLS; ++x){
+        if(board[y][x]===0) continue outer;
+      }
+      const row = board.splice(y,1)[0];
+      board.unshift(Array(COLS).fill(0));
+      ++lines;
+      ++y; // check same row again after shift
+    }
+    if(lines>0){
+      score += lines*100;
+      scoreElement.textContent = 'Score: '+score;
+    }
+  }
+
+  function playerReset(){
+    const type = tetrominoes[Math.floor(Math.random()*tetrominoes.length)];
+    current = createPiece(type);
+    if(collide(board,current.matrix,current.pos)){
+      board = Array.from({length: ROWS},()=>Array(COLS).fill(0));
+      score = 0;
+      scoreElement.textContent = 'Score: 0';
+    }
+  }
+
+  function update(time=0){
+    const deltaTime = time - lastTime;
+    lastTime = time;
+    dropCounter += deltaTime;
+    if(dropCounter > dropInterval){
+      playerDrop();
+    }
+    draw();
+    requestAnimationFrame(update);
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(!current) return;
+    if(e.key==='ArrowLeft') playerMove(-1);
+    else if(e.key==='ArrowRight') playerMove(1);
+    else if(e.key==='ArrowDown') playerDrop();
+    else if(e.key==='ArrowUp') playerRotate(1);
+    else if(e.key==='KeyZ') playerRotate(-1);
+  });
+
+  playerReset();
+  update();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Bouncing Balls</title>
+<style>
+  body { margin:0; display:flex; flex-direction:column; align-items:center; background:#f0f0f0; font-family:sans-serif; }
+  canvas { background:#fff; border:1px solid #ccc; }
+  .controls { margin:10px; }
+  button { margin:0 5px; padding:5px 10px; }
+</style>
+</head>
+<body>
+  <h1>Bouncing Balls</h1>
+  <div class="controls">
+    <button id="addBtn">Add Ball</button>
+    <button id="removeBtn">Remove Ball</button>
+    <button id="pauseBtn">Pause</button>
+  </div>
+  <canvas id="canvas" width="600" height="400"></canvas>
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const balls = [];
+  let paused = false;
+
+  class Ball {
+    constructor() {
+      this.r = Math.random() * 15 + 5;
+      this.x = Math.random() * (canvas.width - 2 * this.r) + this.r;
+      this.y = Math.random() * (canvas.height - 2 * this.r) + this.r;
+      this.vx = (Math.random() - 0.5) * 4;
+      this.vy = (Math.random() - 0.5) * 4;
+      this.color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      // Bounce off walls
+      if (this.x - this.r < 0) { this.x = this.r; this.vx = -this.vx; }
+      if (this.x + this.r > canvas.width) { this.x = canvas.width - this.r; this.vx = -this.vx; }
+      if (this.y - this.r < 0) { this.y = this.r; this.vy = -this.vy; }
+      if (this.y + this.r > canvas.height) { this.y = canvas.height - this.r; this.vy = -this.vy; }
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    }
+  }
+
+  function addBall() {
+    balls.push(new Ball());
+  }
+  function removeBall() {
+    balls.pop();
+  }
+  function togglePause() {
+    paused = !paused;
+    document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+  }
+
+  document.getElementById('addBtn').addEventListener('click', addBall);
+  document.getElementById('removeBtn').addEventListener('click', removeBall);
+  document.getElementById('pauseBtn').addEventListener('click', togglePause);
+
+  // start with a few balls
+  for (let i = 0; i < 5; i++) addBall();
+
+  function loop() {
+    if (!paused) {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for (const b of balls) {
+        b.update();
+        b.draw();
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

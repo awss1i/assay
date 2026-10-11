@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Generator</title>
+<style>
+    body{
+        font-family:system-ui, sans-serif;
+        background:#f4f4f9;
+        margin:0;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+    }
+    .container{
+        background:#fff;
+        padding:2rem;
+        border-radius:8px;
+        box-shadow:0 4px 12px rgba(0,0,0,.1);
+        width:320px;
+        max-width:100%;
+    }
+    h1{
+        margin:0 0 1rem;
+        font-size:1.5rem;
+        text-align:center;
+    }
+    .row{
+        margin-bottom:1rem;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+    }
+    .row label{
+        flex:1;
+        margin-right:.5rem;
+    }
+    .row input[type="range"]{
+        flex:2;
+    }
+    .options{
+        display:flex;
+        flex-direction:column;
+        gap:.5rem;
+        margin-bottom:1rem;
+    }
+    .output{
+        width:100%;
+        padding:.5rem;
+        font-size:1rem;
+        text-align:center;
+        letter-spacing:.05em;
+        border:1px solid #ccc;
+        border-radius:4px;
+        background:#fafafa;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+    button{
+        flex:1;
+        padding:.6rem 0;
+        font-size:1rem;
+        margin:0 .3rem;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        transition:background .2s;
+    }
+    .btn-generate{
+        background:#4caf50;
+        color:#fff;
+    }
+    .btn-generate:hover{
+        background:#45a047;
+    }
+    .btn-copy{
+        background:#2196f3;
+        color:#fff;
+    }
+    .btn-copy:hover{
+        background:#1976d2;
+    }
+    .buttons{
+        display:flex;
+        justify-content:center;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Password Generator</h1>
+
+    <div class="row">
+        <label for="length">Length: <span id="lenVal">12</span></label>
+        <input type="range" id="length" min="4" max="32" value="12">
+    </div>
+
+    <div class="options">
+        <label><input type="checkbox" id="includeDigits" checked> Include digits (0‑9)</label>
+        <label><input type="checkbox" id="includeSymbols" checked> Include symbols (!@#$…)</label>
+    </div>
+
+    <input type="text" id="result" class="output" readonly placeholder="Your password will appear here">
+
+    <div class="buttons">
+        <button class="btn-generate" id="generateBtn">Generate</button>
+        <button class="btn-copy" id="copyBtn">Copy</button>
+    </div>
+</div>
+
+<script>
+(() => {
+    const lengthSlider = document.getElementById('length');
+    const lenVal = document.getElementById('lenVal');
+    const includeDigits = document.getElementById('includeDigits');
+    const includeSymbols = document.getElementById('includeSymbols');
+    const result = document.getElementById('result');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    // Update displayed length when slider moves
+    lengthSlider.addEventListener('input', () => {
+        lenVal.textContent = lengthSlider.value;
+    });
+
+    function getRandomChar(pool) {
+        const idx = Math.floor(Math.random() * pool.length);
+        return pool.charAt(idx);
+    }
+
+    function generatePassword() {
+        const length = +lengthSlider.value;
+        const chars = [];
+
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const digits = '0123456789';
+        const symbols = '!@#$%^&*()-_=+[]{}|;:,.<>?/~`';
+
+        // always include lower+upper for better entropy
+        let pool = lower + upper;
+        if (includeDigits.checked)  pool += digits;
+        if (includeSymbols.checked) pool += symbols;
+
+        // Guard against empty pool (should never happen)
+        if (!pool) return '';
+
+        // Ensure at least one char from each selected category
+        if (includeDigits.checked)  chars.push(getRandomChar(digits));
+        if (includeSymbols.checked) chars.push(getRandomChar(symbols));
+        chars.push(getRandomChar(lower));
+        chars.push(getRandomChar(upper));
+
+        // Fill the rest
+        while (chars.length < length) {
+            chars.push(getRandomChar(pool));
+        }
+
+        // Shuffle (Fisher–Yates)
+        for (let i = chars.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [chars[i], chars[j]] = [chars[j], chars[i]];
+        }
+
+        return chars.slice(0, length).join('');
+    }
+
+    generateBtn.addEventListener('click', () => {
+        const pwd = generatePassword();
+        result.value = pwd;
+    });
+
+    copyBtn.addEventListener('click', async () => {
+        const pwd = result.value;
+        if (!pwd) return;
+        try {
+            await navigator.clipboard.writeText(pwd);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+        } catch (e) {
+            // Fallback for older browsers
+            result.select();
+            document.execCommand('copy');
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+        }
+    });
+
+    // Initial generation so the field isn’t empty
+    result.value = generatePassword();
+})();
+</script>
+
+</body>
+</html>

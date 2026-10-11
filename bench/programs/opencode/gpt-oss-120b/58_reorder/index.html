@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Draggable List Demo</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 2rem;
+    line-height: 1.5;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    max-width: 300px;
+  }
+  li {
+    padding: 0.6rem 1rem;
+    margin: 0.3rem 0;
+    background: #f0f0f0;
+    border: 1px solid #999;
+    cursor: move;
+    user-select: none;
+  }
+  li.dragging {
+    opacity: 0.5;
+    background: #d0d0d0;
+  }
+  .placeholder {
+    height: 2.4rem;
+    margin: 0.3rem 0;
+    border: 2px dashed #777;
+    background: #fafafa;
+  }
+  #orderDisplay {
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h2>Drag the rows to reorder them</h2>
+<ul id="draggableList">
+  <li data-index="1">Item 1</li>
+  <li data-index="2">Item 2</li>
+  <li data-index="3">Item 3</li>
+  <li data-index="4">Item 4</li>
+  <li data-index="5">Item 5</li>
+  <li data-index="6">Item 6</li>
+</ul>
+
+<p>Current order: <span id="orderDisplay">1 2 3 4 5 6</span></p>
+
+<script>
+  (function () {
+    const list = document.getElementById('draggableList');
+    const orderDisplay = document.getElementById('orderDisplay');
+    let dragSrcEl = null;
+    let placeholder = document.createElement('li');
+    placeholder.className = 'placeholder';
+
+    function updateOrderDisplay() {
+      const order = Array.from(list.children)
+        .filter(li => li !== placeholder)
+        .map(li => li.textContent.trim().replace('Item ', ''))
+        .join(' ');
+      orderDisplay.textContent = order;
+    }
+
+    function handleDragStart(e) {
+      dragSrcEl = this;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', this.innerHTML);
+      this.classList.add('dragging');
+    }
+
+    function handleDragEnd() {
+      this.classList.remove('dragging');
+      placeholder && placeholder.remove();
+      updateOrderDisplay();
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) e.preventDefault(); // Allows drop
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDragEnter() {
+      if (this !== dragSrcEl && !placeholder.parentNode) {
+        list.insertBefore(placeholder, this);
+      }
+    }
+
+    function handleDrop(e) {
+      if (e.stopPropagation) e.stopPropagation(); // stops the browser from redirecting.
+      if (dragSrcEl !== this) {
+        // Insert the dragged element at the placeholder position
+        list.insertBefore(dragSrcEl, placeholder);
+      }
+      return false;
+    }
+
+    // Attach events
+    const items = list.querySelectorAll('li');
+    items.forEach(function (item) {
+      item.setAttribute('draggable', true);
+      item.addEventListener('dragstart', handleDragStart, false);
+      item.addEventListener('dragenter', handleDragEnter, false);
+      item.addEventListener('dragover', handleDragOver, false);
+      item.addEventListener('dragleave', function () {}, false);
+      item.addEventListener('drop', handleDrop, false);
+      item.addEventListener('dragend', handleDragEnd, false);
+    });
+
+    // Initial display
+    updateOrderDisplay();
+  })();
+</script>
+</body>
+</html>

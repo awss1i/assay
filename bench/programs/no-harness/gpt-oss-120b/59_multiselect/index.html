@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Selectable List</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 2rem;
+    user-select: none;
+  }
+  h1 { margin-bottom: .5rem; }
+  #counter { margin-top: 1rem; font-weight: bold; }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 200px;
+    border: 1px solid #ccc;
+  }
+  li {
+    padding: .4rem .6rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+  }
+  li:last-child { border-bottom: none; }
+  li.selected {
+    background: #0066cc;
+    color: #fff;
+  }
+  li:hover:not(.selected) { background:#f0f0f0; }
+</style>
+</head>
+<body>
+
+<h1>Selectable List</h1>
+
+<ul id="list">
+  <li data-index="0">Item 1</li>
+  <li data-index="1">Item 2</li>
+  <li data-index="2">Item 3</li>
+  <li data-index="3">Item 4</li>
+  <li data-index="4">Item 5</li>
+  <li data-index="5">Item 6</li>
+  <li data-index="6">Item 7</li>
+  <li data-index="7">Item 8</li>
+  <li data-index="8">Item 9</li>
+  <li data-index="9">Item 10</li>
+</ul>
+
+<div id="counter">Selected: 0</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const list = document.getElementById('list');
+  const items = Array.from(list.querySelectorAll('li'));
+  const counter = document.getElementById('counter');
+
+  const selected = new Set();          // stores indices of selected items
+  let lastSelectedIdx = null;          // index of the most recent click (used for shift)
+
+  function updateUI() {
+    items.forEach((li, i) => {
+      li.classList.toggle('selected', selected.has(i));
+    });
+    counter.textContent = `Selected: ${selected.size}`;
+  }
+
+  function selectRange(fromIdx, toIdx) {
+    const start = Math.min(fromIdx, toIdx);
+    const end   = Math.max(fromIdx, toIdx);
+    for (let i = start; i <= end; i++) {
+      selected.add(i);
+    }
+  }
+
+  list.addEventListener('click', function (e) {
+    const li = e.target.closest('li');
+    if (!li) return; // clicked outside a list item
+
+    const idx = Number(li.dataset.index);
+    const ctrl = e.ctrlKey || e.metaKey; // metaKey for macOS Cmd
+
+    if (e.shiftKey) {
+      // SHIFT+CLICK: extend selection from last selected to this one
+      if (lastSelectedIdx === null) {
+        // no previous anchor – treat as normal click
+        selected.clear();
+        selected.add(idx);
+        lastSelectedIdx = idx;
+      } else {
+        selectRange(lastSelectedIdx, idx);
+      }
+    } else if (ctrl) {
+      // CTRL/CMD+CLICK: toggle this item
+      if (selected.has(idx)) {
+        selected.delete(idx);
+      } else {
+        selected.add(idx);
+      }
+      lastSelectedIdx = idx;
+    } else {
+      // Plain click: clear all and select only this item
+      selected.clear();
+      selected.add(idx);
+      lastSelectedIdx = idx;
+    }
+
+    updateUI();
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Painter</title>
+<style>
+  body {font-family: sans-serif; margin:20px; background:#f0f0f0;}
+  #toolbar {margin-bottom:10px; display:flex; gap:10px; align-items:center;}
+  canvas {border:1px solid #333; image-rendering:pixelated; cursor:crosshair;}
+  button {padding:5px 10px;}
+</style>
+</head>
+<body>
+  <div id="toolbar">
+    <label>Color: <input type="color" id="colorPicker" value="#ff0000"></label>
+    <button id="eraserBtn">Eraser</button>
+    <button id="fillBtn">Fill</button>
+    <button id="undoBtn">Undo</button>
+    <button id="downloadBtn">Download PNG</button>
+  </div>
+  <canvas id="canvas" width="200" height="200"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const pixelSize = 4; // each logical pixel will be drawn as 4x4 actual pixels for visibility
+  const logicalWidth = canvas.width;
+  const logicalHeight = canvas.height;
+  // scale canvas for crisp pixel art
+  canvas.style.width = (logicalWidth * pixelSize) + 'px';
+  canvas.style.height = (logicalHeight * pixelSize) + 'px';
+  ctx.scale(pixelSize, pixelSize);
+
+  // initialize with white background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+
+  let drawing = false;
+  let currentColor = '#ff0000';
+  let mode = 'draw'; // draw | erase | fill
+
+  const colorPicker = document.getElementById('colorPicker');
+  const eraserBtn = document.getElementById('eraserBtn');
+  const fillBtn = document.getElementById('fillBtn');
+  const undoBtn = document.getElementById('undoBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  const undoStack = [];
+  const MAX_UNDO = 10;
+
+  function pushUndo(){
+    // store a copy of the current image data
+    const img = ctx.getImageData(0,0,logicalWidth,logicalHeight);
+    undoStack.push(img);
+    if(undoStack.length>MAX_UNDO) undoStack.shift();
+  }
+
+  function getMousePos(e){
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / pixelSize);
+    const y = Math.floor((e.clientY - rect.top) / pixelSize);
+    return {x, y};
+  }
+
+  function setPixel(x,y,color){
+    ctx.fillStyle = color;
+    ctx.fillRect(x,y,1,1);
+  }
+
+  function drawPixel(x,y){
+    const col = mode==='erase' ? '#ffffff' : currentColor;
+    setPixel(x,y,col);
+  }
+
+  canvas.addEventListener('mousedown', (e)=>{
+    const {x,y}=getMousePos(e);
+    if(mode==='fill'){
+      pushUndo();
+      floodFill(x,y, mode==='erase'? '#ffffff' : currentColor);
+    } else {
+      drawing = true;
+      pushUndo();
+      drawPixel(x,y);
+    }
+  });
+
+  canvas.addEventListener('mousemove', (e)=>{
+    if(!drawing) return;
+    const {x,y}=getMousePos(e);
+    drawPixel(x,y);
+  });
+
+  window.addEventListener('mouseup', ()=>{ drawing = false; });
+
+  // UI handlers
+  colorPicker.addEventListener('input', (e)=>{ currentColor = e.target.value; mode='draw'; });
+  eraserBtn.addEventListener('click', ()=>{ mode='erase'; });
+  fillBtn.addEventListener('click', ()=>{ mode='fill'; });
+  undoBtn.addEventListener('click', ()=>{
+    if(undoStack.length===0) return;
+    const img = undoStack.pop();
+    ctx.putImageData(img,0,0);
+  });
+  downloadBtn.addEventListener('click', ()=>{
+    const link = document.createElement('a');
+    link.download = 'pixel-paint.png';
+    // convert to actual pixel size PNG
+    const temp = document.createElement('canvas');
+    temp.width = logicalWidth;
+    temp.height = logicalHeight;
+    const tctx = temp.getContext('2d');
+    tctx.drawImage(canvas,0,0);
+    link.href = temp.toDataURL();
+    link.click();
+  });
+
+  // Flood fill implementation (4‑directional)
+  function floodFill(startX,startY,fillColor){
+    const img = ctx.getImageData(0,0,logicalWidth,logicalHeight);
+    const data = img.data;
+    const targetIdx = (startY*logicalWidth + startX)*4;
+    const targetColor = [data[targetIdx], data[targetIdx+1], data[targetIdx+2], data[targetIdx+3]];
+    const fillRGB = hexToRgba(fillColor);
+    // If target color already matches fill color, abort
+    if(equalsColor(targetColor, fillRGB)) return;
+    const stack = [[startX,startY]];
+    while(stack.length){
+      const [x,y] = stack.pop();
+      const idx = (y*logicalWidth + x)*4;
+      if(!inBounds(x,y) || !equalsColor([data[idx],data[idx+1],data[idx+2],data[idx+3]], targetColor)) continue;
+      // set pixel
+      data[idx] = fillRGB[0];
+      data[idx+1] = fillRGB[1];
+      data[idx+2] = fillRGB[2];
+      data[idx+3] = fillRGB[3];
+      stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  function inBounds(x,y){ return x>=0 && y>=0 && x<logicalWidth && y<logicalHeight; }
+  function equalsColor(a,b){ return a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2]&&a[3]===b[3]; }
+  function hexToRgba(hex){
+    let h = hex.replace('#','');
+    if(h.length===3){ h = h.split('').map(c=>c+c).join(''); }
+    const num = parseInt(h,16);
+    return [(num>>16)&255,(num>>8)&255,num&255,255];
+  }
+})();
+</script>
+</body>
+</html>

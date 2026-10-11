@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Branching Questionnaire</title>
+<style>
+    body {font-family: Arial, sans-serif; margin: 20px; background:#f5f5f5;}
+    #container {background:#fff; padding:20px; border-radius:8px; max-width:600px; margin:auto; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+    .question {font-size:1.2em; margin-bottom:10px;}
+    .answers button {margin-right:10px; padding:8px 16px; font-size:1em;}
+    #backBtn {margin-top:10px;}
+    #summary {font-weight: bold;}
+</style>
+</head>
+<body>
+<div id="container">
+    <div id="questionArea"></div>
+    <button id="backBtn" style="display:none;">Back</button>
+    <div id="summary" style="display:none; margin-top:20px;"></div>
+</div>
+
+<script>
+// Define the questionnaire tree. Each node has a question and optional next nodes for yes/no.
+const questionnaire = {
+    "q1": {question: "Do you like coffee?", yes: "q2", no: "q3"},
+    "q2": {question: "Do you prefer it hot?", yes: "q4", no: "q5"},
+    "q3": {question: "Do you like tea?", yes: "q6", no: "q7"},
+    "q4": {question: "Do you add sugar?", yes: null, no: null}, // leaf
+    "q5": {question: "Do you add milk?", yes: null, no: null}, // leaf
+    "q6": {question: "Do you add lemon?", yes: null, no: null}, // leaf
+    "q7": {question: "Do you drink water?", yes: null, no: null}  // leaf
+};
+
+let currentId = null;
+let history = [];
+
+const questionArea = document.getElementById('questionArea');
+const backBtn = document.getElementById('backBtn');
+const summaryDiv = document.getElementById('summary');
+
+function renderQuestion(id) {
+    const node = questionnaire[id];
+    if (!node) return;
+    currentId = id;
+    questionArea.innerHTML = `
+        <div class="question">${node.question}</div>
+        <div class="answers">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>`;
+    document.getElementById('yesBtn').onclick = () => answer('Yes');
+    document.getElementById('noBtn').onclick = () => answer('No');
+    backBtn.style.display = history.length ? 'inline-block' : 'none';
+}
+
+function answer(ans) {
+    const node = questionnaire[currentId];
+    // Record step
+    history.push({question: node.question, answer: ans});
+    const nextId = ans === 'Yes' ? node.yes : node.no;
+    if (nextId) {
+        renderQuestion(nextId);
+    } else {
+        // End of path
+        showSummary();
+    }
+}
+
+function showSummary() {
+    questionArea.style.display = 'none';
+    backBtn.style.display = 'none';
+    const lines = history.map((h,i)=> `${i+1}. ${h.question} → ${h.answer}`);
+    summaryDiv.innerHTML = `<div>You have completed the questionnaire. Path taken:</div><pre>${lines.join('\n')}</pre>`;
+    summaryDiv.style.display = 'block';
+}
+
+backBtn.onclick = () => {
+    // Hide summary if visible
+    summaryDiv.style.display = 'none';
+    questionArea.style.display = 'block';
+    if (!history.length) return;
+    // Remove last step
+    history.pop();
+    // Determine where to go back: if history empty, start over
+    if (history.length === 0) {
+        // reset UI
+        summaryDiv.style.display = 'none';
+        questionArea.style.display = 'block';
+        renderQuestion('q1');
+    } else {
+        // Find the last node we were at based on previous answer
+        const last = history[history.length-1];
+        // Find node id that has this question
+        const id = Object.keys(questionnaire).find(k=>questionnaire[k].question===last.question);
+        // Determine which branch we came from (yes/no) to get the next node we should be at
+        const node = questionnaire[id];
+        const nextId = last.answer === 'Yes' ? node.yes : node.no;
+        // Set up UI to show that next question again (the one after the answer we just removed)
+        if (nextId) {
+            renderQuestion(nextId);
+        } else {
+            // It was a leaf; show the previous question again
+            renderQuestion(id);
+        }
+    }
+};
+
+// Start the questionnaire
+renderQuestion('q1');
+</script>
+</body>
+</html>

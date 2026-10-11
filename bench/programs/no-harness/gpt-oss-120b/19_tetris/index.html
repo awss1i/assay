@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tetris</title>
+<style>
+  body {
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    background:#111;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    user-select:none;
+    height:100vh;
+    justify-content:center;
+  }
+  #game {
+    border:2px solid #555;
+    background:#000;
+    image-rendering:pixelated;
+  }
+  #score {
+    margin-top:10px;
+    font-size:1.2rem;
+  }
+  #gameover {
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,0,0.8);
+    padding:20px 40px;
+    border:2px solid #fff;
+    color:#fff;
+    font-size:2rem;
+    display:none;
+  }
+</style>
+</head>
+<body>
+<canvas id="game" width="300" height="600"></canvas>
+<div id="score">Score: 0</div>
+<div id="gameover">Game Over</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const COLS = 10, ROWS = 20, BLOCK = 30; // size of each block in px
+  const SCORE_EACH_LINE = 100;
+  const dropRates = [1000, 800, 600, 400, 250]; // speed up as level increases
+  let board = createBoard();
+  let current, nextDrop, intervalId;
+  let score = 0;
+  let level = 0;
+  let gameOver = false;
+
+  // ----------------------------------------------------------------------
+  // Tetromino definitions – each shape has 4 rotation states (4x4 matrix)
+  // ----------------------------------------------------------------------
+  const TETROMINOS = {
+    I: {
+      color: '#00f0f0',
+      shape: [
+        [[0,0,0,0],
+         [1,1,1,1],
+         [0,0,0,0],
+         [0,0,0,0]],
+        [[0,0,1,0],
+         [0,0,1,0],
+         [0,0,1,0],
+         [0,0,1,0]],
+        [[0,0,0,0],
+         [0,0,0,0],
+         [1,1,1,1],
+         [0,0,0,0]],
+        [[0,1,0,0],
+         [0,1,0,0],
+         [0,1,0,0],
+         [0,1,0,0]]
+      ]
+    },
+    J: {
+      color: '#0000f0',
+      shape: [
+        [[1,0,0],
+         [1,1,1],
+         [0,0,0]],
+        [[0,1,1],
+         [0,1,0],
+         [0,1,0]],
+        [[0,0,0],
+         [1,1,1],
+         [0,0,1]],
+        [[0,1,0],
+         [0,1,0],
+         [1,1,0]]
+      ]
+    },
+    L: {
+      color: '#f0a000',
+      shape: [
+        [[0,0,1],
+         [1,1,1],
+         [0,0,0]],
+        [[0,1,0],
+         [0,1,0],
+         [0,1,1]],
+        [[0,0,0],
+         [1,1,1],
+         [1,0,0]],
+        [[1,1,0],
+         [0,1,0],
+         [0,1,0]]
+      ]
+    },
+    O: {
+      color: '#f0f000',
+      shape: [
+        [[0,1,1,0],
+         [0,1,1,0],
+         [0,0,0,0],
+         [0,0,0,0]],
+        // O never rotates – duplicates
+        [[0,1,1,0],
+         [0,1,1,0],
+         [0,0,0,0],
+         [0,0,0,0]],
+        [[0,1,1,0],
+         [0,1,1,0],
+         [0,0,0,0],
+         [0,0,0,0]],
+        [[0,1,1,0],
+         [0,1,1,0],
+         [0,0,0,0],
+         [0,0,0,0]]
+      ]
+    },
+    S: {
+      color: '#00f000',
+      shape: [
+        [[0,1,1],
+         [1,1,0],
+         [0,0,0]],
+        [[0,1,0],
+         [0,1,1],
+         [0,0,1]],
+        [[0,0,0],
+         [0,1,1],
+         [1,1,0]],
+        [[1,0,0],
+         [1,1,0],
+         [0,1,0]]
+      ]
+    },
+    T: {
+      color: '#a000f0',
+      shape: [
+        [[0,1,0],
+         [1,1,1],
+         [0,0,0]],
+        [[0,1,0],
+         [0,1,1],
+         [0,1,0]],
+        [[0,0,0],
+         [1,1,1],
+         [0,1,0]],
+        [[0,1,0],
+         [1,1,0],
+         [0,1,0]]
+      ]
+    },
+    Z: {
+      color: '#f00000',
+      shape: [
+        [[1,1,0],
+         [0,1,1],
+         [0,0,0]],
+        [[0,0,1],
+         [0,1,1],
+         [0,1,0]],
+        [[0,0,0],
+         [1,1,0],
+         [0,1,1]],
+        [[0,1,0],
+         [1,1,0],
+         [1,0,0]]
+      ]
+    }
+  };
+  const tetrominoList = Object.keys(TETROMINOS);
+
+  // ----------------------------------------------------------------------
+  // Board helpers
+  // ----------------------------------------------------------------------
+  function createBoard() {
+    const b = [];
+    for (let r = 0; r < ROWS; r++) {
+      b.push(new Array(COLS).fill(0));
+    }
+    return b;
+  }
+
+  function drawCell(x, y, color) {
+    if (color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+    } else {
+      ctx.clearRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+    }
+  }
+
+  function drawBoard() {
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        drawCell(x, y, board[y][x]);
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // Piece handling
+  // ----------------------------------------------------------------------
+  function newPiece() {
+    const type = tetrominoList[Math.floor(Math.random() * tetrominoList.length)];
+    const tet = TETROMINOS[type];
+    return {
+      x: Math.floor(COLS / 2) - 2,
+      y: -2,
+      type,
+      rotation: 0,
+      color: tet.color,
+      shape: tet.shape
+    };
+  }
+
+  function getMatrix(piece) {
+    return piece.shape[piece.rotation];
+  }
+
+  function collides(piece, offsetX = 0, offsetY = 0, rot = piece.rotation) {
+    const mat = piece.shape[rot];
+    for (let r = 0; r < mat.length; r++) {
+      for (let c = 0; c < mat[r].length; c++) {
+        if (mat[r][c]) {
+          const newX = piece.x + c + offsetX;
+          const newY = piece.y + r + offsetY;
+          if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+          if (newY >= 0 && board[newY][newX]) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function merge(piece) {
+    const mat = getMatrix(piece);
+    for (let r = 0; r < mat.length; r++) {
+      for (let c = 0; c < mat[r].length; c++) {
+        if (mat[r][c]) {
+          const y = piece.y + r;
+          const x = piece.x + c;
+          if (y >= 0) board[y][x] = piece.color;
+        }
+      }
+    }
+  }
+
+  function clearLines() {
+    let lines = 0;
+    for (let y = ROWS - 1; y >= 0; y--) {
+      if (board[y].every(v => v !== 0)) {
+        board.splice(y, 1);
+        board.unshift(new Array(COLS).fill(0));
+        lines++;
+        y++; // re‑check same row after shifting
+      }
+    }
+    if (lines) {
+      score += lines * SCORE_EACH_LINE;
+      level = Math.min(dropRates.length - 1, Math.floor(score / 500));
+      document.getElementById('score').textContent = 'Score: ' + score;
+    }
+  }
+
+  // ----------------------------------------------------------------------
+  // Game loop
+  // ----------------------------------------------------------------------
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBoard();
+
+    // draw current piece
+    const mat = getMatrix(current);
+    for (let r = 0; r < mat.length; r++) {
+      for (let c = 0; c < mat[r].length; c++) {
+        if (mat[r][c]) {
+          const x = current.x + c;
+          const y = current.y + r;
+          if (y >= 0) drawCell(x, y, current.color);
+        }
+      }
+    }
+  }
+
+  function drop() {
+    if (!current) return;
+    if (!collides(current, 0, 1)) {
+      current.y++;
+    } else {
+      // lock piece
+      merge(current);
+      clearLines();
+      // spawn new
+      current = newPiece();
+      if (collides(current)) {
+        // game over
+        clearInterval(intervalId);
+        gameOver = true;
+        document.getElementById('gameover').style.display = 'block';
+      }
+    }
+    draw();
+  }
+
+  function startGame() {
+    board = createBoard();
+    current = newPiece();
+    score = 0;
+    level = 0;
+    gameOver = false;
+    document.getElementById('score').textContent = 'Score: 0';
+    document.getElementById('gameover').style.display = 'none';
+    draw();
+    clearInterval(intervalId);
+    intervalId = setInterval(drop, dropRates[level]);
+  }
+
+  // ----------------------------------------------------------------------
+  // Input
+  // ----------------------------------------------------------------------
+  document.addEventListener('keydown', e => {
+    if (gameOver) return;
+    switch (e.key) {
+      case 'ArrowLeft':
+        if (!collides(current, -1, 0)) current.x--;
+        break;
+      case 'ArrowRight':
+        if (!collides(current, 1, 0)) current.x++;
+        break;
+      case 'ArrowDown':
+        if (!collides(current, 0, 1)) current.y++;
+        break;
+      case 'ArrowUp':
+        const nextRot = (current.rotation + 1) % 4;
+        if (!collides(current, 0, 0, nextRot)) current.rotation = nextRot;
+        break;
+      case ' ':
+        // hard drop
+        while (!collides(current, 0, 1)) current.y++;
+        drop(); // lock immediately
+        break;
+      case 'Enter':
+        // restart on Enter after game‑over
+        if (gameOver) startGame();
+        break;
+    }
+    draw();
+    e.preventDefault();
+  });
+
+  // ----------------------------------------------------------------------
+  // Init
+  // ----------------------------------------------------------------------
+  startGame();
+})();
+</script>
+</body>
+</html>

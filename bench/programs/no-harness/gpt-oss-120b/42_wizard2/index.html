@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three‑Step Form Wizard</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;margin:0;padding:0;}
+  .container {max-width:600px;margin:40px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+  h2 {margin-top:0;}
+  .step {display:none;}
+  .step.active {display:block;}
+  .nav-btns {margin-top:20px;display:flex;justify-content:space-between;}
+  button {padding:8px 16px;border:none;border-radius:4px;background:#0069d9;color:#fff;cursor:pointer;}
+  button:disabled {background:#aaa;cursor:not-allowed;}
+  button:hover:not(:disabled) {background:#0053aa;}
+  .summary-item {margin:6px 0;}
+  .summary-item span {font-weight:bold;}
+  input, textarea, select {width:100%;padding:6px;margin-top:4px;border:1px solid #ccc;border-radius:4px;}
+  .error {border-color:#e74c3c;}
+</style>
+</head>
+<body>
+<div class="container">
+  <form id="wizardForm" novalidate>
+    <!-- STEP 1 -->
+    <div class="step" data-step="0">
+      <h2>Step 1 – Personal Details</h2>
+      <label>
+        Full Name *
+        <input type="text" name="fullName" required placeholder="John Doe">
+      </label>
+      <label>
+        Email *
+        <input type="email" name="email" required placeholder="you@example.com">
+      </label>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" data-step="1">
+      <h2>Step 2 – Address</h2>
+      <label>
+        Street *
+        <input type="text" name="street" required placeholder="123 Main St">
+      </label>
+      <label>
+        City *
+        <input type="text" name="city" required placeholder="Anytown">
+      </label>
+      <label>
+        ZIP Code *
+        <input type="text" name="zip" required pattern="\\d{5}" placeholder="12345">
+      </label>
+    </div>
+
+    <!-- STEP 3 – Review -->
+    <div class="step" data-step="2">
+      <h2>Step 3 – Review & Submit</h2>
+      <div id="summary"></div>
+      <button type="button" id="editBtn">Edit Information</button>
+    </div>
+
+    <div class="nav-btns">
+      <button type="button" id="prevBtn">Previous</button>
+      <button type="button" id="nextBtn">Next</button>
+      <button type="submit" id="submitBtn" style="display:none;">Submit</button>
+    </div>
+  </form>
+</div>
+
+<script>
+(function(){
+  const form = document.getElementById('wizardForm');
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const editBtn = document.getElementById('editBtn');
+  const summaryDiv = document.getElementById('summary');
+  let current = 0;
+
+  function showStep(idx){
+    steps.forEach((s,i)=>s.classList.toggle('active', i===idx));
+    prevBtn.style.display = idx===0 ? 'none' : 'inline-block';
+    nextBtn.style.display = idx===steps.length-1 ? 'none' : 'inline-block';
+    submitBtn.style.display = idx===steps.length-1 ? 'inline-block' : 'none';
+    if(idx===steps.length-1) buildSummary();
+  }
+
+  function buildSummary(){
+    const data = new FormData(form);
+    const html = `
+      <div class="summary-item"><span>Full Name:</span> ${escapeHTML(data.get('fullName'))}</div>
+      <div class="summary-item"><span>Email:</span> ${escapeHTML(data.get('email'))}</div>
+      <div class="summary-item"><span>Street:</span> ${escapeHTML(data.get('street'))}</div>
+      <div class="summary-item"><span>City:</span> ${escapeHTML(data.get('city'))}</div>
+      <div class="summary-item"><span>ZIP Code:</span> ${escapeHTML(data.get('zip'))}</div>
+    `;
+    summaryDiv.innerHTML = html;
+  }
+
+  function escapeHTML(str){
+    return String(str||'').replace(/[&<>"']/g, function(m){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+
+  function validateCurrent(){
+    const inputs = steps[current].querySelectorAll('input, select, textarea');
+    for(let el of inputs){
+      if(!el.checkValidity()){
+        el.reportValidity();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  nextBtn.addEventListener('click', ()=>{
+    if(!validateCurrent()) return;
+    if(current < steps.length-1){
+      current++;
+      showStep(current);
+    }
+  });
+
+  prevBtn.addEventListener('click', ()=>{
+    if(current>0){
+      current--;
+      showStep(current);
+    }
+  });
+
+  editBtn.addEventListener('click', ()=>{
+    current = 0;
+    showStep(current);
+  });
+
+  // final submit – demonstration only
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    alert('Form submitted!\\n' + JSON.stringify(Object.fromEntries(new FormData(form)), null, 2));
+  });
+
+  // initialise
+  showStep(current);
+})();
+</script>
+</body>
+</html>

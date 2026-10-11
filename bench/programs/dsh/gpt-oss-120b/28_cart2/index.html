@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Simple Shopping Cart</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  h1 {margin-bottom: 10px;}
+  table {width: 100%; border-collapse: collapse; margin-bottom: 20px;}
+  th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+  th {background: #f4f4f4;}
+  .right {text-align: right;}
+  .empty {font-style: italic; color: #777;}
+  .promo {margin-top: 10px;}
+  .total {font-weight: bold; font-size: 1.2em;}
+  .remove-btn {cursor: pointer; color: red;}
+</style>
+</head>
+<body>
+<h1>Shopping Cart</h1>
+<table id="cart-table">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Price</th>
+      <th>Qty</th>
+      <th>Subtotal</th>
+      <th>Remove</th>
+    </tr>
+  </thead>
+  <tbody id="cart-body">
+    <!-- Items will be inserted here -->
+  </tbody>
+</table>
+<p id="empty-msg" class="empty" style="display:none;">Your basket is empty.</p>
+<div class="promo">
+  <label for="promo">Promo code:</label>
+  <input type="text" id="promo" placeholder="Enter code" />
+  <button id="apply-promo">Apply</button>
+  <span id="promo-msg" style="color:green; margin-left:10px;"></span>
+</div>
+<p class="right total">Total: $<span id="total">0.00</span></p>
+
+<script>
+// Sample cart data
+let cart = [
+  {id: 1, name: "Apple", price: 0.99, qty: 2},
+  {id: 2, name: "Bread", price: 2.49, qty: 1},
+  {id: 3, name: "Milk", price: 1.79, qty: 3}
+];
+let promoApplied = false;
+const promoCode = "SAVE10";
+
+function formatMoney(num) {
+  return num.toFixed(2);
+}
+
+function renderCart() {
+  const tbody = document.getElementById('cart-body');
+  tbody.innerHTML = '';
+  cart.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = item.id;
+    tr.innerHTML = `
+      <td>${item.name}</td>
+      <td>$${formatMoney(item.price)}</td>
+      <td><input type="number" min="0" value="${item.qty}" style="width:60px;" class="qty-input" data-id="${item.id}"/></td>
+      <td class="right subtotal">$${formatMoney(item.price * item.qty)}</td>
+      <td class="right"><span class="remove-btn" data-id="${item.id}">✖</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateTotal();
+  checkEmpty();
+}
+
+function updateTotal() {
+  let total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  if (promoApplied) {
+    total = total * 0.90; // 10% off
+  }
+  document.getElementById('total').textContent = formatMoney(total);
+}
+
+function checkEmpty() {
+  const emptyMsg = document.getElementById('empty-msg');
+  const table = document.getElementById('cart-table');
+  if (cart.length === 0) {
+    emptyMsg.style.display = '';
+    table.style.display = 'none';
+  } else {
+    emptyMsg.style.display = 'none';
+    table.style.display = '';
+  }
+}
+
+// Event delegation for qty changes
+document.getElementById('cart-body').addEventListener('input', function(e) {
+  if (e.target.classList.contains('qty-input')) {
+    const id = Number(e.target.dataset.id);
+    const newQty = Number(e.target.value);
+    const item = cart.find(i => i.id === id);
+    if (item) {
+      item.qty = newQty;
+      // Update subtotal cell
+      const row = e.target.closest('tr');
+      row.querySelector('.subtotal').textContent = '$' + formatMoney(item.price * item.qty);
+      updateTotal();
+    }
+  }
+});
+
+// Remove item
+document.getElementById('cart-body').addEventListener('click', function(e) {
+  if (e.target.classList.contains('remove-btn')) {
+    const id = Number(e.target.dataset.id);
+    cart = cart.filter(i => i.id !== id);
+    renderCart();
+  }
+});
+
+// Promo code handling
+document.getElementById('apply-promo').addEventListener('click', function() {
+  const input = document.getElementById('promo').value.trim();
+  const msg = document.getElementById('promo-msg');
+  if (promoApplied) {
+    msg.style.color = 'orange';
+    msg.textContent = 'Promo already applied.';
+    return;
+  }
+  if (input === promoCode) {
+    promoApplied = true;
+    updateTotal();
+    msg.style.color = 'green';
+    msg.textContent = 'Promo applied! 10% off.';
+  } else {
+    msg.style.color = 'red';
+    msg.textContent = 'Invalid promo code.';
+  }
+});
+
+// Initial render
+renderCart();
+</script>
+</body>
+</html>

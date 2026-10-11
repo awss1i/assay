@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Tetris</title>
+<style>
+  body {font-family: sans-serif; background:#222; color:#eee; display:flex; flex-direction:column; align-items:center; margin:0; height:100vh;}
+  #game {display:flex; gap:20px; margin-top:20px;}
+  canvas {background:#111; image-rendering:pixelated;}
+  #info {display:flex; flex-direction:column; gap:5px;}
+  button {padding:5px 10px; cursor:pointer;}
+</style>
+</head>
+<body>
+<h1>Tetris</h1>
+<div id="game">
+  <canvas id="board" width="200" height="400"></canvas>
+  <div id="info">
+    <canvas id="preview" width="80" height="80"></canvas>
+    <div>Score: <span id="score">0</span></div>
+    <div>Level: <span id="level">0</span></div>
+    <button id="pauseBtn">Pause</button>
+  </div>
+</div>
+<script>
+// ----- constants -----
+const COLS = 10, ROWS = 20, BLOCK_SIZE = 20;
+const previewSize = 4;
+const COLORS = [null,'cyan','blue','orange','yellow','green','purple','red'];
+// Tetromino shapes (I, J, L, O, S, T, Z) as 4x4 matrices
+const SHAPES = [
+  [],
+  [
+    [0,0,0,0],
+    [1,1,1,1],
+    [0,0,0,0],
+    [0,0,0,0]
+  ],
+  [
+    [2,0,0],
+    [2,2,2],
+    [0,0,0]
+  ],
+  [
+    [0,3,0],
+    [3,3,3],
+    [0,0,0]
+  ],
+  [
+    [4,4],
+    [4,4]
+  ],
+  [
+    [0,5,5],
+    [5,5,0],
+    [0,0,0]
+  ],
+  [
+    [0,6,0],
+    [6,6,6],
+    [0,0,0]
+  ],
+  [
+    [7,7,0],
+    [0,7,7],
+    [0,0,0]
+  ]
+];
+
+// ----- board -----
+let board = Array.from({length: ROWS},()=>Array(COLS).fill(0));
+
+// ----- state -----
+let current = null; // {shape, x, y, type}
+let next = null;   // same structure for preview
+let score = 0, level = 0, lines = 0;
+let dropInterval = 800; // ms, decreases with level
+let dropTimer = null;
+let paused = false;
+
+// ----- canvas -----
+const boardCanvas = document.getElementById('board');
+const ctx = boardCanvas.getContext('2d');
+const previewCanvas = document.getElementById('preview');
+const pctx = previewCanvas.getContext('2d');
+
+function drawCell(ctx, x, y, type){
+  if(type===0) return;
+  ctx.fillStyle = COLORS[type];
+  ctx.fillRect(x*BLOCK_SIZE, y*BLOCK_SIZE, BLOCK_SIZE-1, BLOCK_SIZE-1);
+}
+
+function drawBoard(){
+  ctx.clearRect(0,0,boardCanvas.width,boardCanvas.height);
+  for(let y=0;y<ROWS;y++){
+    for(let x=0;x<COLS;x++){
+      drawCell(ctx,x,y,board[y][x]);
+    }
+  }
+  // draw current piece
+  if(current){
+    current.shape.forEach((row,dy)=>{
+      row.forEach((val,dx)=>{
+        if(val){
+          drawCell(ctx,current.x+dx,current.y+dy,val);
+        }
+      });
+    });
+  }
+}
+
+function drawPreview(){
+  const size = BLOCK_SIZE*previewSize;
+  pctx.clearRect(0,0,size,size);
+  if(!next) return;
+  next.shape.forEach((row,dy)=>{
+    row.forEach((val,dx)=>{
+      if(val){
+        pctx.fillStyle = COLORS[val];
+        pctx.fillRect(dx*BLOCK_SIZE, dy*BLOCK_SIZE, BLOCK_SIZE-1, BLOCK_SIZE-1);
+      }
+    });
+  });
+}
+
+// ----- piece handling -----
+function randomPiece(){
+  const type = Math.floor(Math.random()*7)+1; // 1-7
+  const shape = SHAPES[type];
+  // normalize shape to 4x4 for rotation convenience
+  const normalized = [];
+  for(let y=0;y<4;y++){
+    normalized[y]=[];
+    for(let x=0;x<4;x++){
+      normalized[y][x]= shape[y] && shape[y][x] ? type : 0;
+    }
+  }
+  return {type, shape: normalized, x: Math.floor(COLS/2)-2, y: -2};
+}
+
+function rotate(piece){
+  const newShape = piece.shape[0].map((_,i)=>piece.shape.map(row=>row[i]).reverse());
+  const oldX = piece.x, oldY = piece.y;
+  piece.shape = newShape;
+  if(!valid(piece)) {piece.x = oldX; piece.y = oldY; piece.shape = newShape.map(row=>row.map(v=>v));}
+}
+
+function valid(piece){
+  for(let y=0;y<piece.shape.length;y++){
+    for(let x=0;x<piece.shape[y].length;x++){
+      if(piece.shape[y][x]){
+        const nx = piece.x + x;
+        const ny = piece.y + y;
+        if(nx<0||nx>=COLS||ny>=ROWS) return false;
+        if(ny>=0 && board[ny][nx]) return false;
+      }
+    }
+  }
+  return true;
+}
+
+function lockPiece(){
+  current.shape.forEach((row,dy)=>{
+    row.forEach((val,dx)=>{
+      if(val){
+        const ny = current.y+dy;
+        const nx = current.x+dx;
+        if(ny>=0) board[ny][nx]=val;
+      }
+    });
+  });
+  clearLines();
+  spawn();
+}
+
+function clearLines(){
+  let cleared = 0;
+  for(let y=ROWS-1; y>=0; y--){
+    if(board[y].every(v=>v!==0)){
+      board.splice(y,1);
+      board.unshift(Array(COLS).fill(0));
+      cleared++;
+      y++; // recheck same row after shift
+    }
+  }
+  if(cleared){
+    lines += cleared;
+    score += (cleared===1?100:cleared===2?300:cleared===3?500:800);
+    if(lines >= (level+1)*10){
+      level++;
+      dropInterval = Math.max(100, 800 - level*100);
+    }
+    document.getElementById('score').textContent = score;
+    document.getElementById('level').textContent = level;
+  }
+}
+
+function spawn(){
+  current = next;
+  current.x = Math.floor(COLS/2)-2;
+  current.y = -2;
+  next = randomPiece();
+  drawPreview();
+  if(!valid(current)){
+    // game over
+    alert('Game Over');
+    resetGame();
+  }
+}
+
+function resetGame(){
+  board = Array.from({length: ROWS},()=>Array(COLS).fill(0));
+  score=0; level=0; lines=0; dropInterval=800;
+  document.getElementById('score').textContent=score;
+  document.getElementById('level').textContent=level;
+  next = randomPiece();
+  spawn();
+}
+
+function move(dx){
+  if(!current) return;
+  current.x+=dx;
+  if(!valid(current)) current.x-=dx;
+}
+function softDrop(){
+  if(!current) return;
+  current.y++;
+  if(!valid(current)){
+    current.y--;
+    lockPiece();
+  }
+}
+function hardDrop(){
+  if(!current) return;
+  while(true){
+    current.y++;
+    if(!valid(current)){
+      current.y--;
+      lockPiece();
+      break;
+    }
+  }
+}
+function rotateCurrent(){
+  if(!current) return;
+  const oldShape = current.shape.map(r=>r.slice());
+  const newShape = current.shape[0].map((_,i)=>current.shape.map(row=>row[i]).reverse());
+  current.shape = newShape;
+  if(!valid(current)) current.shape = oldShape;
+}
+
+function startDrop(){
+  if(dropTimer) clearInterval(dropTimer);
+  dropTimer = setInterval(()=>{ if(!paused) softDrop(); }, dropInterval);
+}
+
+document.addEventListener('keydown',e=>{
+  if(paused) return;
+  switch(e.key){
+    case 'ArrowLeft': move(-1); break;
+    case 'ArrowRight': move(1); break;
+    case 'ArrowDown': softDrop(); break;
+    case 'ArrowUp': rotateCurrent(); break;
+    case ' ': hardDrop(); break;
+  }
+  drawBoard();
+});
+
+document.getElementById('pauseBtn').addEventListener('click',()=>{
+  paused = !paused;
+  document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+});
+
+function gameLoop(){
+  drawBoard();
+  requestAnimationFrame(gameLoop);
+}
+
+// init
+next = randomPiece();
+spawn();
+startDrop();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>

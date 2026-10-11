@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Freehand Drawing Canvas</title>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        font-family: sans-serif;
+        background: #f0f0f0;
+    }
+    #toolbar {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255,255,255,0.9);
+        padding: 8px 12px;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+    }
+    #toolbar label {
+        font-size: 0.9rem;
+        user-select: none;
+    }
+    #clearBtn {
+        cursor: pointer;
+        background: #d9534f;
+        color: #fff;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 0.9rem;
+    }
+    #clearBtn:hover {
+        background: #c9302c;
+    }
+    canvas {
+        display: block;          /* removes extra whitespace */
+        background: #fff;
+        cursor: crosshair;
+    }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+    <label for="colorPicker">Colour</label>
+    <input type="color" id="colorPicker" value="#000000">
+
+    <label for="sizePicker">Size</label>
+    <input type="range" id="sizePicker" min="1" max="30" value="5">
+
+    <button id="clearBtn">Clear</button>
+</div>
+
+<canvas id="drawCanvas"></canvas>
+
+<script>
+(() => {
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas to fill the window
+    function resizeCanvas() {
+        // Preserve drawing on resize
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.putImageData(imgData, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // UI elements
+    const colorPicker = document.getElementById('colorPicker');
+    const sizePicker = document.getElementById('sizePicker');
+    const clearBtn   = document.getElementById('clearBtn');
+
+    // Drawing state
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        drawing = true;
+        const pos = getMousePos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (!drawing) return;
+        const pos = getMousePos(e);
+        ctx.strokeStyle = colorPicker.value;
+        ctx.lineWidth   = sizePicker.value;
+        ctx.lineCap     = 'round';
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+    });
+
+    // Stop drawing on mouseup / mouseleave
+    ['mouseup', 'mouseleave'].forEach(evt => {
+        canvas.addEventListener(evt, () => drawing = false);
+    });
+
+    // Touch support (optional but nice)
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // prevent scrolling while drawing
+        const touch = e.touches[0];
+        const pos = getMousePos(touch);
+        drawing = true;
+        lastX = pos.x;
+        lastY = pos.y;
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!drawing) return;
+        const touch = e.touches[0];
+        const pos = getMousePos(touch);
+        ctx.strokeStyle = colorPicker.value;
+        ctx.lineWidth   = sizePicker.value;
+        ctx.lineCap     = 'round';
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+    });
+
+    canvas.addEventListener('touchend', () => drawing = false);
+    canvas.addEventListener('touchcancel', () => drawing = false);
+
+    // Clear button
+    clearBtn.addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+})();
+</script>
+
+</body>
+</html>

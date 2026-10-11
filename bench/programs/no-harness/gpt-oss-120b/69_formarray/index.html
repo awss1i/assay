@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Person Form</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 2rem;
+    background: #f9f9f9;
+  }
+  h1 { margin-bottom: .5rem; }
+  #controls { margin-bottom: 1rem; }
+  #peopleContainer .person-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .4rem;
+    padding: .4rem;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:4px;
+  }
+  .person-row input[type="text"] {
+    flex: 2;
+  }
+  .person-row input[type="number"] {
+    flex: 1;
+    max-width: 5rem;
+  }
+  .person-row button.remove {
+    flex: 0;
+    background:#e74c3c;
+    color:#fff;
+    border:none;
+    border-radius:3px;
+    padding:.2rem .6rem;
+    cursor:pointer;
+  }
+  .person-row button.remove:hover { background:#c0392b; }
+  #addBtn {
+    background:#2ecc71;
+    color:#fff;
+    border:none;
+    border-radius:3px;
+    padding:.4rem .8rem;
+    cursor:pointer;
+  }
+  #addBtn:hover { background:#27ae60; }
+  #summary {
+    margin-top: 1rem;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<h1>Add Person</h1>
+<div id="controls">
+  <button type="button" id="addBtn">Add Person</button>
+</div>
+<form id="peopleForm" autocomplete="off">
+  <div id="peopleContainer"></div>
+</form>
+<p id="summary">No persons added.</p>
+
+<script>
+(function() {
+  const container = document.getElementById('peopleContainer');
+  const addBtn = document.getElementById('addBtn');
+  const summary = document.getElementById('summary');
+
+  // Add a new person row
+  function addPerson() {
+    const row = document.createElement('div');
+    row.className = 'person-row';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Name';
+    nameInput.className = 'name';
+
+    const ageInput = document.createElement('input');
+    ageInput.type = 'number';
+    ageInput.placeholder = 'Age';
+    ageInput.min = '0';
+    ageInput.className = 'age';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove';
+    removeBtn.textContent = 'Remove';
+
+    // Event listeners
+    nameInput.addEventListener('input', updateSummary);
+    ageInput.addEventListener('input', updateSummary);
+    removeBtn.addEventListener('click', () => {
+      row.remove();
+      updateSummary();
+    });
+
+    // Assemble row
+    row.appendChild(nameInput);
+    row.appendChild(ageInput);
+    row.appendChild(removeBtn);
+    container.appendChild(row);
+    nameInput.focus();
+  }
+
+  // Update the summary line based on filled rows
+  function updateSummary() {
+    const rows = container.querySelectorAll('.person-row');
+    const people = [];
+
+    rows.forEach(r => {
+      const name = r.querySelector('.name').value.trim();
+      const age = r.querySelector('.age').value.trim();
+      if (name && age) {
+        people.push(`${name} (${age})`);
+      }
+    });
+
+    if (people.length) {
+      summary.textContent = 'Persons: ' + people.join(', ');
+    } else {
+      summary.textContent = 'No persons added.';
+    }
+  }
+
+  // Prevent form submission (page reload) when Enter is pressed
+  document.getElementById('peopleForm').addEventListener('submit', e => e.preventDefault());
+
+  // Initial bind
+  addBtn.addEventListener('click', addPerson);
+})();
+</script>
+</body>
+</html>

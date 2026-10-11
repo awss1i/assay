@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sticky Notes Board</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #toolbar {
+    width: 100%;
+    background: #4a90e2;
+    color: white;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  #addBtn {
+    background: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #board {
+    width: 90%;
+    max-width: 800px;
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .note {
+    background: #fffb8f;
+    width: 200px;
+    min-height: 150px;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+  }
+  .note textarea {
+    flex: 1;
+    border: none;
+    resize: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+  }
+  .deleteBtn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+    padding: 0;
+  }
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <button id="addBtn">Add Note</button>
+</div>
+<div id="board"></div>
+
+<script>
+  const board = document.getElementById('board');
+  const addBtn = document.getElementById('addBtn');
+
+  function createNote() {
+    const note = document.createElement('div');
+    note.className = 'note';
+    const del = document.createElement('button');
+    del.className = 'deleteBtn';
+    del.textContent = '×';
+    del.onclick = () => note.remove();
+    const area = document.createElement('textarea');
+    area.placeholder = 'Type your note...';
+    note.appendChild(del);
+    note.appendChild(area);
+    board.appendChild(note);
+  }
+
+  addBtn.addEventListener('click', createNote);
+</script>
+</body>
+</html>

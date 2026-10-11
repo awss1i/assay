@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic‑Tac‑Toe (Unbeatable AI)</title>
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+    user-select: none;
+  }
+  h1 { margin-bottom: 5px; }
+  #score { margin-bottom: 15px; font-size: 1.2em; }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+  }
+  .cell {
+    width: 100px;
+    height: 100px;
+    background:#fafafa;
+    border:2px solid #333;
+    font-size:64px;
+    line-height:1;
+    text-align:center;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .cell.disabled {
+    background:#e0e0e0;
+    cursor:default;
+  }
+  #message { margin-top:10px; font-weight:bold; }
+  button {
+    margin-top:15px;
+    padding:8px 16px;
+    font-size:1em;
+  }
+</style>
+</head>
+<body>
+<h1>Tic‑Tac‑Toe</h1>
+<div id="score">You: 0 | Computer: 0 | Draws: 0</div>
+<div id="board"></div>
+<div id="message"></div>
+<button id="resetBtn">New Game</button>
+
+<script>
+(() => {
+  const boardEl   = document.getElementById('board');
+  const messageEl = document.getElementById('message');
+  const scoreEl   = document.getElementById('score');
+  const resetBtn  = document.getElementById('resetBtn');
+
+  let board = Array(9).fill(null);
+  const PLAYER   = 'X';   // human
+  const COMPUTER = 'O';   // AI
+  let gameOver = false;
+
+  const scores = { player:0, computer:0, draws:0 };
+
+  const WIN_LINES = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+
+  // ---------- UI ----------
+  function drawBoard() {
+    boardEl.innerHTML = '';
+    board = Array(9).fill(null);
+    gameOver = false;
+    messageEl.textContent = '';
+
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.idx = i;
+      cell.addEventListener('click', onCellClick);
+      boardEl.appendChild(cell);
+    }
+  }
+
+  function onCellClick(e) {
+    if (gameOver) return;
+    const idx = e.target.dataset.idx;
+    if (board[idx]) return;               // already taken
+
+    makeMove(idx, PLAYER);
+    if (checkWin(board, PLAYER)) {
+      endGame('You win!');
+      scores.player++;
+    } else if (isTie()) {
+      endGame('Draw!');
+      scores.draws++;
+    } else {
+      // computer turn
+      const best = minimax(board, COMPUTER);
+      makeMove(best.index, COMPUTER);
+      if (checkWin(board, COMPUTER)) {
+        endGame('Computer wins!');
+        scores.computer++;
+      } else if (isTie()) {
+        endGame('Draw!');
+        scores.draws++;
+      }
+    }
+    updateScore();
+  }
+
+  function makeMove(idx, symbol) {
+    board[idx] = symbol;
+    const cell = boardEl.children[idx];
+    cell.textContent = symbol;
+    cell.classList.add('disabled');
+    cell.removeEventListener('click', onCellClick);
+  }
+
+  function endGame(msg) {
+    gameOver = true;
+    messageEl.textContent = msg;
+    // lock any remaining cells
+    for (let i = 0; i < 9; i++) {
+      const cell = boardEl.children[i];
+      cell.classList.add('disabled');
+      cell.removeEventListener('click', onCellClick);
+    }
+  }
+
+  function updateScore() {
+    scoreEl.textContent = `You: ${scores.player} | Computer: ${scores.computer} | Draws: ${scores.draws}`;
+  }
+
+  // ---------- Game Logic ----------
+  function checkWin(b, sym) {
+    return WIN_LINES.some(line => line.every(i => b[i] === sym));
+  }
+
+  function isTie() {
+    return board.every(v => v !== null);
+  }
+
+  // Minimax – returns {score, index}
+  function minimax(newBoard, curPlayer) {
+    const avail = newBoard.map((v,i)=> v===null? i : null).filter(v=>v!==null);
+
+    // terminal states
+    if (checkWin(newBoard, PLAYER))   return {score: -10};
+    if (checkWin(newBoard, COMPUTER)) return {score:  10};
+    if (avail.length === 0)           return {score:   0};
+
+    const moves = [];
+
+    for (const idx of avail) {
+      const move = {index: idx};
+      newBoard[idx] = curPlayer;
+
+      if (curPlayer === COMPUTER) {
+        const result = minimax(newBoard, PLAYER);
+        move.score = result.score;
+      } else {
+        const result = minimax(newBoard, COMPUTER);
+        move.score = result.score;
+      }
+
+      newBoard[idx] = null;          // undo
+      moves.push(move);
+    }
+
+    // pick best move
+    let bestMove;
+    if (curPlayer === COMPUTER) {
+      let bestScore = -Infinity;
+      for (const m of moves) {
+        if (m.score > bestScore) {
+          bestScore = m.score;
+          bestMove = m;
+        }
+      }
+    } else {
+      let bestScore = Infinity;
+      for (const m of moves) {
+        if (m.score < bestScore) {
+          bestScore = m.score;
+          bestMove = m;
+        }
+      }
+    }
+    return bestMove;
+  }
+
+  // ---------- Event ----------
+  resetBtn.addEventListener('click', drawBoard);
+  drawBoard();               // first game
+})();
+</script>
+</body>
+</html>

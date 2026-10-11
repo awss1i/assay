@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RGB Color Mixer</title>
+<style>
+  body {font-family:Arial,Helvetica,sans-serif; margin:20px;}
+  .slider {margin:10px 0;}
+  .color-swatch {
+    width: 150px;
+    height: 150px;
+    border: 1px solid #000;
+    margin-top: 10px;
+  }
+  .output {margin-top:10px;}
+  input[readonly] {width:120px;}
+</style>
+</head>
+<body>
+<h2>RGB Color Mixer</h2>
+<div class="slider">
+  <label for="red">Red: <span id="redVal">0</span></label><br>
+  <input type="range" id="red" min="0" max="255" value="0">
+</div>
+<div class="slider">
+  <label for="green">Green: <span id="greenVal">0</span></label><br>
+  <input type="range" id="green" min="0" max="255" value="0">
+</div>
+<div class="slider">
+  <label for="blue">Blue: <span id="blueVal">0</span></label><br>
+  <input type="range" id="blue" min="0" max="255" value="0">
+</div>
+<div class="output">
+  <div class="color-swatch" id="swatch"></div>
+  <p>Hex: <input type="text" id="hexCode" readonly value="#000000"></p>
+  <button id="copyBtn">Copy</button>
+</div>
+<script>
+  const red = document.getElementById('red');
+  const green = document.getElementById('green');
+  const blue = document.getElementById('blue');
+  const redVal = document.getElementById('redVal');
+  const greenVal = document.getElementById('greenVal');
+  const blueVal = document.getElementById('blueVal');
+  const swatch = document.getElementById('swatch');
+  const hexCode = document.getElementById('hexCode');
+  const copyBtn = document.getElementById('copyBtn');
+
+  function componentToHex(c) {
+    const hex = c.toString(16);
+    return hex.length == 1 ? '0' + hex : hex;
+  }
+
+  function updateColor() {
+    const r = parseInt(red.value);
+    const g = parseInt(green.value);
+    const b = parseInt(blue.value);
+    const hex = `#${componentToHex(r)}${componentToHex(g)}${componentToHex(b)}`.toUpperCase();
+    swatch.style.backgroundColor = hex;
+    hexCode.value = hex;
+    redVal.textContent = r;
+    greenVal.textContent = g;
+    blueVal.textContent = b;
+  }
+
+  red.addEventListener('input', updateColor);
+  green.addEventListener('input', updateColor);
+  blue.addEventListener('input', updateColor);
+
+  copyBtn.addEventListener('click', () => {
+    hexCode.select();
+    document.execCommand('copy');
+  });
+
+  // Initialize
+  updateColor();
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Breakout – 3 Lives</title>
+<style>
+  body { margin:0; background:#111; color:#fff; font-family:sans-serif; overflow:hidden;}
+  #gameCanvas { display:block; margin:0 auto; background:#222; }
+  #hud { position:absolute; top:10px; left:50%; transform:translateX(-50%);
+         color:#fff; font-size:18px; user-select:none; }
+</style>
+</head>
+<body>
+<div id="hud">Score: <span id="score">0</span> &nbsp; Lives: <span id="lives">3</span></div>
+<canvas id="gameCanvas" width="480" height="320"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const HUD = {
+    scoreEl: document.getElementById('score'),
+    livesEl: document.getElementById('lives')
+  };
+
+  // Game parameters
+  const paddle = { height:10, width:75, speed:7 };
+  const ball = { radius:7, speed:4 };
+  const brick = {
+    rows:5,
+    cols:8,
+    width:50,
+    height:15,
+    padding:5,
+    offsetTop:30,
+    offsetLeft:30,
+    // point values per row (top row highest)
+    points: [5,4,3,2,1]
+  };
+  let score = 0, lives = 3;
+  let rightPressed = false, leftPressed = false;
+
+  // Player objects
+  const player = {
+    x:(canvas.width-paddle.width)/2,
+    y:canvas.height-paddle.height-2,
+    width:paddle.width,
+    height:paddle.height
+  };
+
+  const ballObj = {
+    x:canvas.width/2,
+    y:canvas.height-30,
+    dx:ball.speed,
+    dy:-ball.speed,
+    radius:ball.radius
+  };
+
+  // Build bricks
+  const bricks = [];
+  for(let r=0; r<brick.rows; r++) {
+    bricks[r] = [];
+    for(let c=0; c<brick.cols; c++) {
+      const brickX = c*(brick.width+brick.padding) + brick.offsetLeft;
+      const brickY = r*(brick.height+brick.padding) + brick.offsetTop;
+      bricks[r][c] = { x:brickX, y:brickY, status:1, points:brick.points[r] };
+    }
+  }
+
+  // Input handling
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Right' || e.key === 'ArrowRight') rightPressed = true;
+    else if(e.key === 'Left' || e.key === 'ArrowLeft') leftPressed = true;
+  });
+  document.addEventListener('keyup', e => {
+    if(e.key === 'Right' || e.key === 'ArrowRight') rightPressed = false;
+    else if(e.key === 'Left' || e.key === 'ArrowLeft') leftPressed = false;
+  });
+  // Mouse/touch control
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    player.x = Math.min(Math.max(relativeX - player.width/2, 0), canvas.width-player.width);
+  });
+
+  // Core functions
+  function drawPaddle() {
+    ctx.fillStyle = '#0095DD';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+  }
+
+  function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ballObj.x, ballObj.y, ballObj.radius, 0, Math.PI*2);
+    ctx.fillStyle = '#FFFA';
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawBricks() {
+    for(let r=0; r<brick.rows; r++) {
+      for(let c=0; c<brick.cols; c++) {
+        const b = bricks[r][c];
+        if(b.status) {
+          ctx.fillStyle = `hsl(${r*30},70%,60%)`;
+          ctx.fillRect(b.x, b.y, brick.width, brick.height);
+        }
+      }
+    }
+  }
+
+  function collisionDetection() {
+    // Brick collisions
+    for(let r=0; r<brick.rows; r++) {
+      for(let c=0; c<brick.cols; c++) {
+        const b = bricks[r][c];
+        if(b.status) {
+          if(
+            ballObj.x > b.x && ballObj.x < b.x+brick.width &&
+            ballObj.y > b.y && ballObj.y < b.y+brick.height
+          ) {
+            ballObj.dy = -ballObj.dy;
+            b.status = 0;
+            score += b.points;
+            HUD.scoreEl.textContent = score;
+            // win check
+            if(isWin()) {
+              showMessage('YOU WIN! 🎉');
+            }
+          }
+        }
+      }
+    }
+
+    // Wall collisions
+    if(ballObj.x + ballObj.dx > canvas.width-ballObj.radius || ballObj.x + ballObj.dx < ballObj.radius) {
+      ballObj.dx = -ballObj.dx;
+    }
+    if(ballObj.y + ballObj.dy < ballObj.radius) {
+      ballObj.dy = -ballObj.dy;
+    } else if(ballObj.y + ballObj.dy > canvas.height-ballObj.radius) {
+      // Paddle collision
+      if(ballObj.x > player.x && ballObj.x < player.x+player.width) {
+        // Calculate offset from paddle centre (-0.5 .. 0.5)
+        const offset = (ballObj.x - (player.x + player.width/2)) / (player.width/2);
+        const angle = offset * Math.PI/3; // max 60deg deviation
+        const speed = Math.hypot(ballObj.dx, ballObj.dy);
+        ballObj.dx = speed * Math.sin(angle);
+        ballObj.dy = -Math.abs(speed * Math.cos(angle));
+      } else {
+        // Missed paddle
+        lives--;
+        HUD.livesEl.textContent = lives;
+        if(!lives) {
+          showMessage('GAME OVER');
+        } else {
+          resetBall();
+        }
+      }
+    }
+  }
+
+  function isWin() {
+    return bricks.flat().every(b => b.status===0);
+  }
+
+  function resetBall() {
+    ballObj.x = canvas.width/2;
+    ballObj.y = canvas.height-30;
+    ballObj.dx = ball.speed;
+    ballObj.dy = -ball.speed;
+    player.x = (canvas.width-paddle.width)/2;
+  }
+
+  function showMessage(msg) {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = '24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(msg, canvas.width/2, canvas.height/2);
+    cancelAnimationFrame(animationId);
+  }
+
+  function update() {
+    if(rightPressed && player.x < canvas.width-player.width) {
+      player.x += paddle.speed;
+    } else if(leftPressed && player.x > 0) {
+      player.x -= paddle.speed;
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawBricks();
+    drawPaddle();
+    drawBall();
+    collisionDetection();
+    update();
+  }
+
+  let animationId;
+  function loop() {
+    draw();
+    animationId = requestAnimationFrame(loop);
+  }
+
+  // Start the game
+  loop();
+})();
+</script>
+</body>
+</html>

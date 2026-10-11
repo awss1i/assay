@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Expense Tracker</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  h1 {margin-bottom: 5px;}
+  #budgetSection, #addSection {margin-bottom: 15px;}
+  input[type=text], input[type=number] {padding:5px; margin-right:5px;}
+  button {padding:5px 10px;}
+  table {width:100%; border-collapse: collapse; margin-top:10px;}
+  th, td {border:1px solid #ccc; padding:8px; text-align:left;}
+  .deleteBtn {background-color:#e74c3c; color:#fff; border:none; cursor:pointer;}
+  .deleteBtn:hover {background-color:#c0392b;}
+  #summary {margin-top:15px; font-weight:bold;}
+</style>
+</head>
+<body>
+<h1>Expense Tracker</h1>
+<div id="budgetSection">
+  <label>Budget: </label>
+  <input type="number" id="budgetInput" placeholder="Enter budget" step="0.01" min="0" />
+</div>
+<div id="addSection">
+  <input type="text" id="descInput" placeholder="Expense description" />
+  <input type="number" id="amtInput" placeholder="Amount" step="0.01" min="0" />
+  <button id="addBtn">Add Expense</button>
+</div>
+<table id="expensesTable">
+  <thead>
+    <tr><th>Description</th><th>Amount</th><th>Action</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<div id="summary">
+  <div>Total: $<span id="total">0.00</span></div>
+  <div>Remaining Budget: $<span id="remaining">0.00</span></div>
+</div>
+<script>
+  (function(){
+    const budgetInput = document.getElementById('budgetInput');
+    const descInput = document.getElementById('descInput');
+    const amtInput = document.getElementById('amtInput');
+    const addBtn = document.getElementById('addBtn');
+    const tbody = document.querySelector('#expensesTable tbody');
+    const totalSpan = document.getElementById('total');
+    const remainingSpan = document.getElementById('remaining');
+    let total = 0;
+    function updateTotals(){
+      totalSpan.textContent = total.toFixed(2);
+      const budget = parseFloat(budgetInput.value) || 0;
+      const remaining = budget - total;
+      remainingSpan.textContent = remaining.toFixed(2);
+    }
+    addBtn.addEventListener('click',()=>{
+      const desc = descInput.value.trim();
+      const amt = parseFloat(amtInput.value);
+      if(!desc || isNaN(amt) || amt<0) return;
+      const tr = document.createElement('tr');
+      const tdDesc = document.createElement('td');
+      tdDesc.textContent = desc;
+      const tdAmt = document.createElement('td');
+      tdAmt.textContent = amt.toFixed(2);
+      const tdAction = document.createElement('td');
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.className = 'deleteBtn';
+      delBtn.addEventListener('click',()=>{
+        tbody.removeChild(tr);
+        total -= amt;
+        updateTotals();
+      });
+      tdAction.appendChild(delBtn);
+      tr.appendChild(tdDesc);
+      tr.appendChild(tdAmt);
+      tr.appendChild(tdAction);
+      tbody.appendChild(tr);
+      total += amt;
+      updateTotals();
+      descInput.value='';
+      amtInput.value='';
+    });
+    // Update remaining when budget changes
+    budgetInput.addEventListener('input', updateTotals);
+  })();
+</script>
+</body>
+</html>

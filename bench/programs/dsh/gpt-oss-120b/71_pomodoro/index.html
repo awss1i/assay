@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Pomodoro Timer</title>
+<style>
+  body {font-family: Arial, sans-serif; text-align: center; padding: 2rem; background:#f0f0f0;}
+  #timer {font-size: 4rem; margin: 1rem;}
+  #mode {font-size: 1.5rem; margin: .5rem;}
+  #rounds {font-size: 1.2rem; margin: .5rem;}
+  button {font-size: 1rem; margin: .5rem; padding: .5rem 1rem;}
+</style>
+</head>
+<body>
+<h1>Pomodoro Timer</h1>
+<div id="mode">Ready</div>
+<div id="timer">25:00</div>
+<div id="rounds">Completed Rounds: 0</div>
+<button id="startBtn">Start</button>
+<button id="pauseBtn" disabled>Pause</button>
+<button id="skipBtn" disabled>Skip</button>
+<script>
+(function(){
+  const WORK_SEC = 25*60;
+  const BREAK_SEC = 5*60;
+  let remaining = WORK_SEC;
+  let intervalId = null;
+  let mode = 'work'; // 'work' or 'break'
+  let completedRounds = 0;
+
+  const modeEl = document.getElementById('mode');
+  const timerEl = document.getElementById('timer');
+  const roundsEl = document.getElementById('rounds');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const skipBtn = document.getElementById('skipBtn');
+
+  function format(sec){
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = (sec%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  function updateDisplay(){
+    timerEl.textContent = format(remaining);
+    modeEl.textContent = mode === 'work' ? 'Work' : 'Break';
+    roundsEl.textContent = `Completed Rounds: ${completedRounds}`;
+  }
+
+  function switchMode(){
+    if(mode==='work'){
+      completedRounds++;
+      mode='break';
+      remaining = BREAK_SEC;
+    } else {
+      mode='work';
+      remaining = WORK_SEC;
+    }
+    updateDisplay();
+  }
+
+  function tick(){
+    if(remaining>0){
+      remaining--;
+      updateDisplay();
+    } else {
+      clearInterval(intervalId);
+      intervalId = null;
+      switchMode();
+      startTimer(); // auto‑start next period
+    }
+  }
+
+  function startTimer(){
+    if(intervalId) return; // already running
+    intervalId = setInterval(tick, 1000);
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+    skipBtn.disabled = false;
+  }
+
+  function pauseTimer(){
+    if(intervalId){
+      clearInterval(intervalId);
+      intervalId = null;
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+    }
+  }
+
+  function skipTimer(){
+    if(intervalId){
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    switchMode();
+    startTimer();
+  }
+
+  startBtn.addEventListener('click', startTimer);
+  pauseBtn.addEventListener('click', pauseTimer);
+  skipBtn.addEventListener('click', skipTimer);
+
+  // initialise display
+  updateDisplay();
+})();
+</script>
+</body>
+</html>

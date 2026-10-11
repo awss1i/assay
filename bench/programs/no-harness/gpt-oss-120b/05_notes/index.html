@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sticky‑Notes Board</title>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        font-family: sans-serif;
+        background:#f0f0f0;
+        overflow:hidden;
+    }
+    #toolbar {
+        padding: 8px;
+        background:#fff;
+        box-shadow:0 2px 5px rgba(0,0,0,0.1);
+        display:flex;
+        justify-content:center;
+    }
+    #addBtn{
+        padding:6px 12px;
+        background:#27ae60;
+        color:#fff;
+        border:none;
+        border-radius:4px;
+        cursor:pointer;
+        font-size:14px;
+    }
+    #addBtn:hover{background:#2ecc71;}
+    #board{
+        position:relative;
+        width:100%;
+        height:calc(100% - 48px); /* toolbar height */
+        overflow:auto;
+    }
+    .note{
+        position:absolute;
+        width:200px;
+        min-height:150px;
+        background:#fffb88;
+        box-shadow:2px 2px 6px rgba(0,0,0,0.3);
+        border-radius:8px;
+        padding:5px;
+        cursor:move;
+        user-select:none;
+    }
+    .note-header{
+        display:flex;
+        justify-content:flex-end;
+    }
+    .delete-btn{
+        background:#e74c3c;
+        border:none;
+        color:#fff;
+        width:20px;
+        height:20px;
+        line-height:18px;
+        text-align:center;
+        font-weight:bold;
+        border-radius:3px;
+        cursor:pointer;
+        padding:0;
+    }
+    .delete-btn:hover{background:#c0392b;}
+    .content{
+        width:100%;
+        height:calc(100% - 30px);
+        padding:4px;
+        box-sizing:border-box;
+        outline:none;
+        overflow:auto;
+    }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+    <button id="addBtn">Add Note</button>
+</div>
+
+<div id="board"></div>
+
+<script>
+(() => {
+    const board = document.getElementById('board');
+    const addBtn = document.getElementById('addBtn');
+
+    // ---------- Create a new note ----------
+    function addNote() {
+        const note = document.createElement('div');
+        note.className = 'note';
+
+        // header with delete button
+        const header = document.createElement('div');
+        header.className = 'note-header';
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.innerHTML = '&times;';
+        delBtn.onclick = () => note.remove();
+        header.appendChild(delBtn);
+
+        // editable content area
+        const content = document.createElement('div');
+        content.className = 'content';
+        content.contentEditable = true;
+        content.innerHTML = 'Type your note...';
+
+        note.appendChild(header);
+        note.appendChild(content);
+        board.appendChild(note);
+
+        // place it at a random position inside the board
+        const boardRect = board.getBoundingClientRect();
+        const maxLeft = boardRect.width - 220; // width + margin
+        const maxTop  = boardRect.height - 170; // height + margin
+        const left = Math.random() * Math.max(0, maxLeft);
+        const top  = Math.random() * Math.max(0, maxTop);
+        note.style.left = left + 'px';
+        note.style.top  = top  + 'px';
+
+        makeDraggable(note, header);
+    }
+
+    // ---------- Simple dragging ----------
+    function makeDraggable(note, handle) {
+        let offsetX, offsetY;
+
+        const onMouseDown = e => {
+            e.preventDefault();
+            offsetX = e.clientX - note.offsetLeft;
+            offsetY = e.clientY - note.offsetTop;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
+
+        const onMouseMove = e => {
+            const newLeft = e.clientX - offsetX;
+            const newTop  = e.clientY - offsetY;
+            // keep note inside the board
+            const boardRect = board.getBoundingClientRect();
+            const maxLeft = boardRect.width - note.offsetWidth;
+            const maxTop  = boardRect.height - note.offsetHeight;
+            note.style.left = Math.min(Math.max(0, newLeft), maxLeft) + 'px';
+            note.style.top  = Math.min(Math.max(0, newTop), maxTop) + 'px';
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        handle.addEventListener('mousedown', onMouseDown);
+    }
+
+    // ---------- Hook up the button ----------
+    addBtn.addEventListener('click', addNote);
+})();
+</script>
+
+</body>
+</html>

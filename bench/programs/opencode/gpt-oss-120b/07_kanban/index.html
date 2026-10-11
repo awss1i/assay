@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kanban Board</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+    }
+    .board {
+      display: flex;
+      height: 100vh;
+      gap: 10px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .column {
+      flex: 1;
+      background: #e2e4e6;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    .column h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.2em;
+    }
+    .cards {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .card {
+      background: white;
+      border-radius: 3px;
+      padding: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card button {
+      background: #5aac44;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+    .addBtn {
+      margin-top: 5px;
+      background: #0079bf;
+      color: white;
+      border: none;
+      padding: 6px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <div class="column" data-index="0">
+      <h2>To Do</h2>
+      <div class="cards" id="col-0"></div>
+      <button class="addBtn" onclick="addCard(0)">Add Card</button>
+    </div>
+    <div class="column" data-index="1">
+      <h2>In Progress</h2>
+      <div class="cards" id="col-1"></div>
+      <button class="addBtn" onclick="addCard(1)">Add Card</button>
+    </div>
+    <div class="column" data-index="2">
+      <h2>Done</h2>
+      <div class="cards" id="col-2"></div>
+      <!-- No add button for the last column, optional -->
+    </div>
+  </div>
+  <script>
+    function addCard(colIdx) {
+      const text = prompt('Card text:');
+      if (!text) return;
+      const card = document.createElement('div');
+      card.className = 'card';
+      const span = document.createElement('span');
+      span.textContent = text;
+      card.appendChild(span);
+
+      if (colIdx < 2) {
+        const btn = document.createElement('button');
+        btn.textContent = '→';
+        btn.title = 'Move Right';
+        btn.onclick = () => moveRight(card, colIdx);
+        card.appendChild(btn);
+      }
+
+      document.getElementById('col-' + colIdx).appendChild(card);
+    }
+
+    function moveRight(card, fromIdx) {
+      const toIdx = fromIdx + 1;
+      // Remove move button if moving into last column
+      if (toIdx === 2) {
+        const btn = card.querySelector('button');
+        if (btn) btn.remove();
+      } else {
+        // Update onclick to move further right
+        const btn = card.querySelector('button');
+        btn.onclick = () => moveRight(card, toIdx);
+      }
+      document.getElementById('col-' + toIdx).appendChild(card);
+    }
+  </script>
+</body>
+</html>

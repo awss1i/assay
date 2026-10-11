@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard – CSS Charts</title>
+<style>
+  body { font-family: sans-serif; margin: 1rem; background:#f5f5f5; }
+  h1 { text-align:center; }
+  .controls { text-align:center; margin-bottom:1rem; }
+  .charts { display:flex; gap:1rem; justify-content:center; }
+  .chart { flex:1; max-width:300px; background:#fff; padding:0.5rem; border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+  .chart-title { text-align:center; font-weight:bold; margin-bottom:0.5rem; }
+  .bars { display:flex; align-items:flex-end; height:150px; border-left:1px solid #bbb; border-bottom:1px solid #bbb; }
+  .bar { flex:1; margin:0 1px; background:#4a90e2; transition:height 0.3s;}
+  .bar:nth-child(odd){background:#50e3c2;}
+  .axis { font-size:0.75rem; color:#555; text-align:center; margin-top:0.25rem; }
+  .total { text-align:center; margin-top:1rem; font-size:1.2rem; }
+</style>
+</head>
+<body>
+
+<h1>Simple Dashboard</h1>
+
+<div class="controls">
+  <label>From <input type="date" id="start"></label>
+  <label>To   <input type="date" id="end"></label>
+</div>
+
+<div class="charts">
+  <div class="chart" id="chart1">
+    <div class="chart-title">Sales</div>
+    <div class="bars"></div>
+  </div>
+  <div class="chart" id="chart2">
+    <div class="chart-title">Visitors</div>
+    <div class="bars"></div>
+  </div>
+  <div class="chart" id="chart3">
+    <div class="chart-title">Revenue</div>
+    <div class="bars"></div>
+  </div>
+</div>
+
+<div class="total">Total of visible range: <span id="total">0</span></div>
+
+<script>
+/* ------- data generation ------- */
+function generateDates(start, count) {
+  const dates = [];
+  const d = new Date(start);
+  for (let i = 0; i < count; i++) {
+    dates.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
+// Fixed start date for demo data
+const DATA_START = '2024-01-01';
+const DAY_COUNT = 30;                // 30 days of data
+const dates = generateDates(DATA_START, DAY_COUNT);
+
+// Random data for three series
+const series = {
+  sales:   dates.map(() => Math.round(Math.random()*100+20)),
+  visitors:dates.map(() => Math.round(Math.random()*200+50)),
+  revenue: dates.map(() => Math.round(Math.random()*500+100))
+};
+
+/* ------- DOM helpers ------- */
+const startInput = document.getElementById('start');
+const endInput   = document.getElementById('end');
+const totalSpan  = document.getElementById('total');
+const charts = {
+  chart1: { container: document.querySelector('#chart1 .bars'), values: series.sales },
+  chart2: { container: document.querySelector('#chart2 .bars'), values: series.visitors },
+  chart3: { container: document.querySelector('#chart3 .bars'), values: series.revenue }
+};
+
+/* ------- initialise date inputs ------- */
+startInput.value = dates[0].toISOString().slice(0,10);
+endInput.value   = dates[dates.length-1].toISOString().slice(0,10);
+
+/* ------- chart rendering ------- */
+function render() {
+  const start = new Date(startInput.value);
+  const end   = new Date(endInput.value);
+  if (isNaN(start) || isNaN(end) || start > end) return;
+
+  // Determine indexes that fall within range
+  const indices = dates.reduce((arr, d, i) => {
+    if (d >= start && d <= end) arr.push(i);
+    return arr;
+  }, []);
+
+  // find max across filtered data for scaling
+  let globalMax = 0;
+  for (const key in charts) {
+    const vals = charts[key].values;
+    const max = Math.max(...indices.map(i=>vals[i]));
+    if (max>globalMax) globalMax = max;
+  }
+  if (globalMax===0) globalMax=1; // avoid div‑by‑zero
+
+  // render each chart
+  let total = 0;
+  for (const key in charts) {
+    const {container, values} = charts[key];
+    container.innerHTML = '';
+    indices.forEach(i=>{
+      const val = values[i];
+      const heightPct = (val / globalMax) * 100;
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = heightPct + '%';
+      container.appendChild(bar);
+      total += val;
+    });
+  }
+  totalSpan.textContent = total;
+}
+
+/* ------- event listeners ------- */
+startInput.addEventListener('change', render);
+endInput.addEventListener('change', render);
+
+/* ------- initial draw ------- */
+render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Signup Wizard</title>
+<style>
+  body {font-family: Arial, sans-serif; margin:0; padding:0; display:flex; flex-direction:column; align-items:center; background:#f5f5f5;}
+  .wizard {background:#fff; padding:20px; max-width:400px; width:100%; margin-top:40px; box-shadow:0 2px 8px rgba(0,0,0,0.1); border-radius:8px;}
+  .step {display:none;}
+  .step.active {display:block;}
+  .buttons {margin-top:20px; display:flex; justify-content:space-between;}
+  button {padding:8px 16px; border:none; border-radius:4px; background:#007bff; color:#fff; cursor:pointer; font-size:14px;}
+  button:disabled {background:#aaa; cursor:default;}
+  .progress {height:8px; background:#ddd; border-radius:4px; overflow:hidden; margin-bottom:20px;}
+  .progress .fill {height:100%; width:0%; background:#28a745; transition:width 0.3s;}
+</style>
+</head>
+<body>
+<div class="wizard">
+  <div class="progress"><div class="fill"></div></div>
+  <div class="step" id="step1">
+    <h2>Step 1: Personal Info</h2>
+    <label>Name:<br><input type="text" id="name" placeholder="Your name"/></label>
+  </div>
+  <div class="step" id="step2">
+    <h2>Step 2: Account Details</h2>
+    <label>Email:<br><input type="email" id="email" placeholder="you@example.com"/></label>
+  </div>
+  <div class="step" id="step3">
+    <h2>Step 3: Confirmation</h2>
+    <p>Review your information and click Submit.</p>
+    <div id="review"></div>
+    <button id="submitBtn">Submit</button>
+  </div>
+  <div class="buttons">
+    <button id="backBtn">Back</button>
+    <button id="nextBtn">Next</button>
+  </div>
+</div>
+<script>
+  const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
+  let current = 0;
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const progressFill = document.querySelector('.progress .fill');
+  const reviewDiv = document.getElementById('review');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function showStep(index) {
+    steps.forEach((s,i)=>{s.classList.toggle('active', i===index);});
+    backBtn.disabled = index===0;
+    nextBtn.style.display = index===steps.length-1 ? 'none' : 'inline-block';
+    backBtn.style.display = index===0 ? 'none' : 'inline-block';
+    progressFill.style.width = ((index)/(steps.length-1))*100 + '%';
+    if(index===steps.length-1) { // last step
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      reviewDiv.innerHTML = `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p>`;
+    }
+  }
+
+  backBtn.addEventListener('click',()=>{ if(current>0){ current--; showStep(current);} });
+  nextBtn.addEventListener('click',()=>{ if(current<steps.length-1){ current++; showStep(current);} });
+  submitBtn.addEventListener('click',()=>{ alert('Submitted!'); });
+
+  // Initialize
+  showStep(current);
+</script>
+</body>
+</html>

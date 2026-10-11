@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Paginated List (47 items)</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 2rem;}
+  h1 {text-align: center;}
+  #list {list-style: none; padding: 0; max-width: 400px; margin: 1rem auto;}
+  #list li {padding: 0.5rem 1rem; border-bottom: 1px solid #ddd;}
+  .nav {display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;}
+  button {padding: 0.5rem 1rem; font-size: 1rem;}
+  button:disabled {opacity: 0.5; cursor: not-allowed;}
+  #pageInfo {text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: #555;}
+</style>
+</head>
+<body>
+<h1>Paginated List</h1>
+<ul id="list"></ul>
+
+<div class="nav">
+  <button id="prevBtn">Previous</button>
+  <button id="nextBtn">Next</button>
+</div>
+<div id="pageInfo"></div>
+
+<script>
+  // ----- Data -------------------------------------------------
+  const totalItems = 47;
+  const itemsPerPage = 10;
+  const items = Array.from({length: totalItems},
+    (_, i) => `Item ${i + 1}`);
+
+  // ----- State ------------------------------------------------
+  let currentPage = 1;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // ----- DOM references ----------------------------------------
+  const listEl = document.getElementById('list');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const pageInfo = document.getElementById('pageInfo');
+
+  // ----- Rendering ---------------------------------------------
+  function renderPage(page) {
+    // Clamp page number
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    currentPage = page;
+
+    // Determine slice of items for this page
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+    const pageItems = items.slice(startIdx, endIdx);
+
+    // Populate list
+    listEl.innerHTML = '';
+    for (const it of pageItems) {
+      const li = document.createElement('li');
+      li.textContent = it;
+      listEl.appendChild(li);
+    }
+
+    // Update navigation & info
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+  }
+
+  // ----- Event listeners ----------------------------------------
+  prevBtn.addEventListener('click', () => renderPage(currentPage - 1));
+  nextBtn.addEventListener('click', () => renderPage(currentPage + 1));
+
+  // ----- Initial render -----------------------------------------
+  renderPage(1);
+</script>
+</body>
+</html>

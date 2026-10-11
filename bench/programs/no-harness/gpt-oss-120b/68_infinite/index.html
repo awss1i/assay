@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Infinite Scroll Demo</title>
+<style>
+    html, body {
+        margin:0;
+        padding:0;
+        font-family:Arial,Helvetica,sans-serif;
+        background:#fafafa;
+    }
+    #container {
+        max-width:600px;
+        margin:auto;
+        padding:20px;
+    }
+    h2 {
+        text-align:center;
+        margin-bottom:20px;
+    }
+    .row {
+        background:#e0e0e0;
+        margin:6px 0;
+        padding:12px;
+        border-radius:4px;
+        box-shadow:0 1px 2px rgba(0,0,0,0.1);
+    }
+    #message {
+        text-align:center;
+        color:#777;
+        margin-top:20px;
+        font-style:italic;
+    }
+    /* sentinel is invisible but takes up space */
+    #sentinel { height:1px; }
+</style>
+</head>
+<body>
+<div id="container">
+    <h2>Scroll down to load more</h2>
+    <div id="list"></div>
+    <div id="message"></div>
+    <div id="sentinel"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const list      = document.getElementById('list');
+    const message   = document.getElementById('message');
+    const sentinel  = document.getElementById('sentinel');
+
+    const BATCH_SIZE = 20;
+    const MAX_ITEMS  = 60;
+    let loadedCount  = 0;
+
+    // Append a batch of rows
+    function loadMore() {
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < BATCH_SIZE && loadedCount < MAX_ITEMS; i++) {
+            loadedCount++;
+            const div = document.createElement('div');
+            div.className = 'row';
+            div.textContent = `Item #${loadedCount}`;
+            frag.appendChild(div);
+        }
+        list.appendChild(frag);
+
+        // If we reached the limit, show final message and stop observing
+        if (loadedCount >= MAX_ITEMS) {
+            message.textContent = 'There is no more to load.';
+            observer.unobserve(sentinel);
+        }
+    }
+
+    // Initial load
+    loadMore();
+
+    // IntersectionObserver to detect when user scrolls near the bottom
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && loadedCount < MAX_ITEMS) {
+                loadMore();
+            }
+        });
+    }, {
+        rootMargin: '0px 0px 200px 0px' // trigger a bit before hitting the bottom
+    });
+
+    observer.observe(sentinel);
+});
+</script>
+</body>
+</html>

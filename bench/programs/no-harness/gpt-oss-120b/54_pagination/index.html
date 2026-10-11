@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pagination Demo – 47 Items</title>
+<style>
+    body {
+        font-family: sans-serif;
+        margin: 2rem;
+        background: #f9f9f9;
+        color: #333;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    #list {
+        list-style: none;
+        padding: 0;
+        max-width: 600px;
+        margin: 0 auto 1.5rem auto;
+    }
+    #list li {
+        background: #fff;
+        margin: .3rem 0;
+        padding: .6rem 1rem;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    }
+    .nav {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    .nav button {
+        font-size: 1rem;
+        padding: .5rem 1rem;
+        margin: 0 .5rem;
+        border: 1px solid #666;
+        background: #e0e0e0;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .nav button:disabled {
+        opacity: .5;
+        cursor: default;
+    }
+    #pageInfo {
+        display: inline-block;
+        margin-left: 1rem;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<h1>List of 47 Items</h1>
+
+<ul id="list"></ul>
+
+<div class="nav">
+    <button id="prevBtn">Previous</button>
+    <button id="nextBtn">Next</button>
+    <span id="pageInfo"></span>
+</div>
+
+<script>
+(() => {
+    const TOTAL_ITEMS = 47;
+    const ITEMS_PER_PAGE = 10;
+    const items = Array.from({length: TOTAL_ITEMS}, (_, i) => `Item ${i + 1}`);
+
+    const listEl = document.getElementById('list');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    const totalPages = Math.ceil(TOTAL_ITEMS / ITEMS_PER_PAGE);
+    let currentPage = 1; // 1‑based
+
+    function renderPage(page) {
+        // Clamp page to valid range
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+
+        // Determine slice of items to show
+        const startIdx = (page - 1) * ITEMS_PER_PAGE;
+        const endIdx = Math.min(startIdx + ITEMS_PER_PAGE, TOTAL_ITEMS);
+        const pageItems = items.slice(startIdx, endIdx);
+
+        // Render list
+        listEl.innerHTML = '';
+        for (const txt of pageItems) {
+            const li = document.createElement('li');
+            li.textContent = txt;
+            listEl.appendChild(li);
+        }
+
+        // Update navigation UI
+        prevBtn.disabled = page === 1;
+        nextBtn.disabled = page === totalPages;
+        pageInfo.textContent = `Page ${page} of ${totalPages}`;
+    }
+
+    // Event listeners
+    prevBtn.addEventListener('click', () => renderPage(currentPage - 1));
+    nextBtn.addEventListener('click', () => renderPage(currentPage + 1));
+
+    // Initial render
+    renderPage(1);
+})();
+</script>
+
+</body>
+</html>

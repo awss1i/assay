@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Freehand Drawing Canvas</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; display:flex; flex-direction:column; height:100vh;}
+    #toolbar {background:#f0f0f0; padding:10px; display:flex; align-items:center; gap:10px;}
+    #canvas {flex:1; border:1px solid #ccc; cursor:crosshair;}
+    #colorPicker, #sizePicker {margin:0;}
+    button {padding:5px 10px;}
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <label>Color: <input type="color" id="colorPicker" value="#000000"></label>
+    <label>Size: <input type="range" id="sizePicker" min="1" max="50" value="5"></label>
+    <button id="clearBtn">Clear</button>
+  </div>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const sizePicker = document.getElementById('sizePicker');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Resize canvas to fill remaining space
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - document.getElementById('toolbar').offsetHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function startDraw(e) {
+      drawing = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = e.clientX - rect.left;
+      lastY = e.clientY - rect.top;
+    }
+    function draw(e) {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      ctx.strokeStyle = colorPicker.value;
+      ctx.lineWidth = sizePicker.value;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      lastX = x;
+      lastY = y;
+    }
+    function stopDraw() { drawing = false; }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+
+    clearBtn.addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  </script>
+</body>
+</html>

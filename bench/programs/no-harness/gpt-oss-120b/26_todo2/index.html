@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Todo List</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background:#f5f5f5;
+        margin:0;
+        display:flex;
+        justify-content:center;
+        padding-top:2rem;
+    }
+    .todo-app {
+        background:#fff;
+        width:350px;
+        border-radius:5px;
+        box-shadow:0 2px 8px rgba(0,0,0,.2);
+        padding:1rem;
+    }
+    h1 {
+        text-align:center;
+        font-size:1.5rem;
+        margin:0 0 .5rem;
+    }
+    input.new-task {
+        width:100%;
+        padding:.5rem;
+        font-size:1rem;
+        border:1px solid #ccc;
+        border-radius:3px;
+        box-sizing:border-box;
+    }
+    ul.todo-list {
+        list-style:none;
+        padding:0;
+        margin:1rem 0;
+        max-height:300px;
+        overflow-y:auto;
+    }
+    li.todo-item {
+        display:flex;
+        align-items:center;
+        padding:.4rem .2rem;
+        border-bottom:1px solid #eee;
+    }
+    li.todo-item:last-child {border-bottom:none;}
+    li.todo-item.done label {
+        text-decoration:line-through;
+        color:#777;
+    }
+    li.todo-item label {
+        flex:1;
+        cursor:pointer;
+    }
+    li.todo-item input.edit {
+        flex:1;
+        font-size:1rem;
+        padding:.2rem;
+        border:1px solid #999;
+    }
+    .filters, .footer {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-size:.9rem;
+    }
+    .filters button {
+        background:none;
+        border:none;
+        padding:.2rem .5rem;
+        cursor:pointer;
+    }
+    .filters button.active {
+        border-bottom:2px solid #000;
+    }
+    .clear-completed {
+        background:none;
+        border:none;
+        color:#d00;
+        cursor:pointer;
+    }
+</style>
+</head>
+<body>
+<div class="todo-app">
+    <h1>Todo List</h1>
+    <input class="new-task" type="text" placeholder="What needs to be done?" autocomplete="off">
+    <ul class="todo-list"></ul>
+    <div class="footer">
+        <span class="left-count">0 items left</span>
+        <div class="filters">
+            <button data-filter="all" class="active">All</button>
+            <button data-filter="active">Active</button>
+            <button data-filter="done">Done</button>
+        </div>
+        <button class="clear-completed">Clear completed</button>
+    </div>
+</div>
+
+<script>
+(() => {
+    const state = {
+        items: [],          // {id, text, done}
+        filter: 'all'       // all | active | done
+    };
+    const $newTask = document.querySelector('.new-task');
+    const $list = document.querySelector('.todo-list');
+    const $leftCount = document.querySelector('.left-count');
+    const $filterButtons = document.querySelectorAll('.filters button');
+    const $clearBtn = document.querySelector('.clear-completed');
+
+    // --- Helpers -------------------------------------------------
+    const save = () => localStorage.setItem('todo-items', JSON.stringify(state.items));
+    const load = () => {
+        const data = JSON.parse(localStorage.getItem('todo-items')||'[]');
+        state.items = data;
+    };
+    const uuid = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+    const render = () => {
+        // filter list
+        const filtered = state.items.filter(item => {
+            if(state.filter==='all') return true;
+            if(state.filter==='active') return !item.done;
+            if(state.filter==='done') return item.done;
+        });
+        // clear UL
+        $list.innerHTML = '';
+        // populate
+        filtered.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'todo-item' + (item.done ? ' done' : '');
+            li.dataset.id = item.id;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.done;
+            checkbox.style.marginRight = '0.5rem';
+            checkbox.addEventListener('change', () => {
+                item.done = checkbox.checked;
+                save();
+                render();
+            });
+
+            const label = document.createElement('label');
+            label.textContent = item.text;
+            label.addEventListener('dblclick', () => startRename(item, label));
+
+            li.appendChild(checkbox);
+            li.appendChild(label);
+            $list.appendChild(li);
+        });
+
+        // left count
+        const left = state.items.filter(i=>!i.done).length;
+        $leftCount.textContent = `${left} item${left!==1?'s':''} left`;
+
+        // filter button active class
+        $filterButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter===state.filter);
+        });
+    };
+
+    const startRename = (item, labelElem) => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'edit';
+        input.value = item.text;
+        const li = labelElem.parentNode;
+        li.replaceChild(input, labelElem);
+        input.focus();
+        const finish = () => {
+            const newVal = input.value.trim();
+            if(newVal) item.text = newVal;
+            li.replaceChild(labelElem, input);
+            labelElem.textContent = item.text;
+            save();
+        };
+        input.addEventListener('blur', finish);
+        input.addEventListener('keydown', e => {
+            if(e.key === 'Enter') {
+                input.blur();
+            } else if(e.key === 'Escape') {
+                input.value = item.text;
+                input.blur();
+            }
+        });
+    };
+
+    // --- Adding new tasks ----------------------------------------
+    $newTask.addEventListener('keydown', e => {
+        if(e.key !== 'Enter') return;
+        const txt = $newTask.value.trim();
+        if(!txt) return;
+        state.items.push({id: uuid(), text: txt, done: false});
+        $newTask.value = '';
+        save();
+        render();
+    });
+
+    // --- Filter tabs ---------------------------------------------
+    $filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.filter = btn.dataset.filter;
+            render();
+        });
+    });
+
+    // --- Clear completed -----------------------------------------
+    $clearBtn.addEventListener('click', () => {
+        state.items = state.items.filter(i => !i.done);
+        save();
+        render();
+    });
+
+    // Initial load
+    load();
+    render();
+})();
+</script>
+</body>
+</html>

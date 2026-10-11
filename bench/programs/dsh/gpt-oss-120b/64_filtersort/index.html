@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Filterable & Sortable Table</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  #search {margin-bottom: 10px; padding: 5px; width: 300px;}
+  table {border-collapse: collapse; width: 100%;}
+  th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+  th {cursor: pointer; background: #f0f0f0;}
+  th.sorted-asc::after {content: " ▲";}
+  th.sorted-desc::after {content: " ▼";}
+</style>
+</head>
+<body>
+<h2>Filterable & Sortable Table</h2>
+<input type="text" id="search" placeholder="Search..." />
+<table>
+  <thead>
+    <tr>
+      <th data-index="0">Name</th>
+      <th data-index="1">Age</th>
+      <th data-index="2">Country</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+<script>
+(() => {
+  const data = [
+    ["Alice", "30", "USA"],
+    ["Bob", "25", "Canada"],
+    ["Charlie", "35", "UK"],
+    ["Diana", "28", "Australia"],
+    ["Eve", "22", "Germany"],
+    ["Frank", "40", "France"],
+    ["Grace", "27", "Spain"],
+    ["Heidi", "33", "Switzerland"],
+    ["Ivan", "31", "Russia"],
+    ["Judy", "29", "Japan"]
+  ];
+
+  let sortCol = null; // column index
+  let sortDir = 1; // 1 = asc, -1 = desc
+  let filterText = "";
+
+  const tbody = document.getElementById('tbody');
+  const searchInput = document.getElementById('search');
+  const headers = document.querySelectorAll('th[data-index]');
+
+  const render = () => {
+    tbody.innerHTML = '';
+    const lower = filterText.toLowerCase();
+    for (const row of data) {
+      if (filterText) {
+        const match = row.some(cell => cell.toLowerCase().includes(lower));
+        if (!match) continue;
+      }
+      const tr = document.createElement('tr');
+      for (const cell of row) {
+        const td = document.createElement('td');
+        td.textContent = cell;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+  };
+
+  const sortBy = (col) => {
+    if (sortCol === col) {
+      sortDir = -sortDir; // toggle direction
+    } else {
+      sortCol = col;
+      sortDir = 1;
+    }
+    data.sort((a, b) => {
+      const av = a[col];
+      const bv = b[col];
+      // numeric sort if both are numbers
+      const aNum = parseFloat(av);
+      const bNum = parseFloat(bv);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return (aNum - bNum) * sortDir;
+      }
+      return av.localeCompare(bv) * sortDir;
+    });
+    // update header classes
+    headers.forEach(h => h.classList.remove('sorted-asc','sorted-desc'));
+    const hdr = headers[col];
+    hdr.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+    render();
+  };
+
+  // Attach header click listeners
+  headers.forEach(h => {
+    h.addEventListener('click', () => sortBy(parseInt(h.dataset.index)));
+  });
+
+  // Search input handler
+  searchInput.addEventListener('input', () => {
+    filterText = searchInput.value.trim();
+    render();
+  });
+
+  // Initial render
+  render();
+})();
+</script>
+</body>
+</html>

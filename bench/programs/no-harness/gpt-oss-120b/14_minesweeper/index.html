@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>9×9 Minesweeper</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background:#fafafa;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        margin-top:30px;
+    }
+    h1 { margin:0 0 10px; }
+    #board {
+        display:grid;
+        grid-template-columns: repeat(9, 40px);
+        grid-template-rows: repeat(9, 40px);
+        gap:2px;
+        user-select:none;
+    }
+    .cell {
+        width:40px; height:40px;
+        background:#c0c0c0;
+        border:1px solid #777;
+        box-sizing:border-box;
+        text-align:center;
+        line-height:38px;
+        font-size:20px;
+        cursor:pointer;
+    }
+    .cell.revealed {
+        background:#e0e0e0;
+        border:1px solid #999;
+        cursor:default;
+    }
+    .cell.mine {
+        background:#ff6666;
+        color:#fff;
+    }
+    .cell.flag {
+        background:#ffd966;
+        color:#000;
+    }
+    #msg {
+        margin-top:10px;
+        font-weight:bold;
+    }
+    button {
+        margin-top:15px;
+        padding:5px 12px;
+        font-size:14px;
+    }
+</style>
+</head>
+<body>
+<h1>9×9 Minesweeper</h1>
+<div id="board"></div>
+<div id="msg"></div>
+<button id="restart">Restart</button>
+
+<script>
+(() => {
+    const ROWS = 9, COLS = 9, MINES = 10;
+    const boardEl = document.getElementById('board');
+    const msgEl = document.getElementById('msg');
+    const restartBtn = document.getElementById('restart');
+
+    let board = [];          // array of cell objects
+    let gameOver = false;
+
+    // ----- Utility -----
+    function idx(r, c) { return r * COLS + c; }
+    function inBounds(r, c) { return r >= 0 && r < ROWS && c >= 0 && c < COLS; }
+
+    // ----- Setup -----
+    function init() {
+        board = [];
+        gameOver = false;
+        msgEl.textContent = '';
+        boardEl.innerHTML = '';
+        // create empty cells
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                board.push({ mine:false, count:0, revealed:false, flagged:false });
+            }
+        }
+        // place mines
+        let placed = 0;
+        while (placed < MINES) {
+            const r = Math.floor(Math.random()*ROWS);
+            const c = Math.floor(Math.random()*COLS);
+            const cell = board[idx(r,c)];
+            if (!cell.mine) {
+                cell.mine = true;
+                placed++;
+            }
+        }
+        // compute neighbour counts
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const cell = board[idx(r,c)];
+                if (cell.mine) continue;
+                let cnt = 0;
+                for (let dr=-1; dr<=1; dr++) {
+                    for (let dc=-1; dc<=1; dc++) {
+                        if (dr===0 && dc===0) continue;
+                        const nr=r+dr, nc=c+dc;
+                        if (inBounds(nr,nc) && board[idx(nr,nc)].mine) cnt++;
+                    }
+                }
+                cell.count = cnt;
+            }
+        }
+        // render UI
+        for (let i = 0; i < board.length; i++) {
+            const div = document.createElement('div');
+            div.className = 'cell';
+            div.dataset.index = i;
+            boardEl.appendChild(div);
+        }
+        // attach listeners
+        boardEl.addEventListener('click', onLeftClick);
+        boardEl.addEventListener('contextmenu', onRightClick);
+    }
+
+    // ----- Game logic -----
+    function revealCell(i) {
+        const cell = board[i];
+        if (cell.revealed || cell.flagged) return;
+        const el = boardEl.children[i];
+        cell.revealed = true;
+        el.classList.add('revealed');
+        if (cell.mine) {
+            el.classList.add('mine');
+            el.textContent = '💣';
+            endGame(false);
+        } else if (cell.count > 0) {
+            el.textContent = cell.count;
+            el.style.color = getNumberColor(cell.count);
+        } else {
+            // empty – flood fill neighbours
+            el.textContent = '';
+            floodFill(i);
+        }
+        checkWin();
+    }
+
+    function floodFill(startIdx) {
+        const stack = [startIdx];
+        while (stack.length) {
+            const i = stack.pop();
+            const r = Math.floor(i / COLS);
+            const c = i % COLS;
+            for (let dr=-1; dr<=1; dr++) {
+                for (let dc=-1; dc<=1; dc++) {
+                    if (dr===0 && dc===0) continue;
+                    const nr=r+dr, nc=c+dc;
+                    if (!inBounds(nr,nc)) continue;
+                    const ni = idx(nr,nc);
+                    const nCell = board[ni];
+                    const nEl = boardEl.children[ni];
+                    if (nCell.revealed || nCell.flagged) continue;
+                    nCell.revealed = true;
+                    nEl.classList.add('revealed');
+                    if (nCell.mine) continue;   // should never happen
+                    if (nCell.count > 0) {
+                        nEl.textContent = nCell.count;
+                        nEl.style.color = getNumberColor(nCell.count);
+                    } else {
+                        nEl.textContent = '';
+                        stack.push(ni);
+                    }
+                }
+            }
+        }
+    }
+
+    function toggleFlag(i) {
+        const cell = board[i];
+        if (cell.revealed) return;
+        const el = boardEl.children[i];
+        cell.flagged = !cell.flagged;
+        el.classList.toggle('flag', cell.flagged);
+        el.textContent = cell.flagged ? '🚩' : '';
+    }
+
+    function checkWin() {
+        const unrevealed = board.filter(c=>!c.revealed && !c.mine).length;
+        if (unrevealed===0 && !gameOver) {
+            endGame(true);
+        }
+    }
+
+    function endGame(won) {
+        gameOver = true;
+        msgEl.textContent = won ? 'You win! 🎉' : 'Game over! 💥';
+        // reveal all mines on loss
+        if (!won) {
+            board.forEach((c,i)=>{
+                if (c.mine && !c.revealed) {
+                    const el = boardEl.children[i];
+                    el.classList.add('revealed','mine');
+                    el.textContent = '💣';
+                }
+            });
+        }
+    }
+
+    function getNumberColor(num) {
+        const colors = ['','blue','green','red','darkblue','brown','cyan','black','gray'];
+        return colors[num] || 'black';
+    }
+
+    // ----- Event handlers -----
+    function onLeftClick(e) {
+        if (gameOver) return;
+        const cellDiv = e.target.closest('.cell');
+        if (!cellDiv) return;
+        const i = Number(cellDiv.dataset.index);
+        revealCell(i);
+    }
+
+    function onRightClick(e) {
+        e.preventDefault();               // suppress context menu
+        if (gameOver) return;
+        const cellDiv = e.target.closest('.cell');
+        if (!cellDiv) return;
+        const i = Number(cellDiv.dataset.index);
+        toggleFlag(i);
+    }
+
+    restartBtn.addEventListener('click', init);
+
+    // start the game
+    init();
+})();
+</script>
+</body>
+</html>

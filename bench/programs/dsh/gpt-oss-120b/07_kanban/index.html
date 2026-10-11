@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kanban Board</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f0f0f0;
+  }
+  .board {
+    display: flex;
+    height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  .column {
+    flex: 1;
+    margin: 0 5px;
+    background: #e2e4e6;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+  }
+  .column h2 {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 1.2em;
+  }
+  .cards {
+    flex: 1;
+    padding: 5px;
+    overflow-y: auto;
+  }
+  .card {
+    background: white;
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card button {
+    margin-left: 5px;
+  }
+  .add-btn {
+    margin: 5px;
+    padding: 5px;
+    background: #5aac44;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="column" data-index="0">
+    <h2>To Do</h2>
+    <button class="add-btn">+ Add Card</button>
+    <div class="cards"></div>
+  </div>
+  <div class="column" data-index="1">
+    <h2>In Progress</h2>
+    <button class="add-btn">+ Add Card</button>
+    <div class="cards"></div>
+  </div>
+  <div class="column" data-index="2">
+    <h2>Done</h2>
+    <button class="add-btn" disabled>+ Add Card</button>
+    <div class="cards"></div>
+  </div>
+</div>
+<script>
+// Helper to create a new card element
+function createCard(text) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const span = document.createElement('span');
+  span.textContent = text;
+  const moveBtn = document.createElement('button');
+  moveBtn.textContent = '→';
+  moveBtn.title = 'Move Right';
+  moveBtn.addEventListener('click', () => moveCardRight(card));
+  card.appendChild(span);
+  card.appendChild(moveBtn);
+  return card;
+}
+
+function moveCardRight(card) {
+  const col = card.parentElement.parentElement; // .column
+  const idx = parseInt(col.dataset.index);
+  if (idx < 2) {
+    const nextCol = document.querySelector(`.column[data-index='${idx+1}'] .cards`);
+    // Remove move button if moving into last column
+    if (idx+1 === 2) {
+      const btn = card.querySelector('button');
+      btn.disabled = true;
+      btn.style.display = 'none';
+    }
+    nextCol.appendChild(card);
+  }
+}
+
+// Add card button handlers
+document.querySelectorAll('.add-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const col = btn.parentElement;
+    const title = prompt('Card title:');
+    if (title) {
+      const card = createCard(title);
+      col.querySelector('.cards').appendChild(card);
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+build/
+dist/
+*.egg-info/
+*.pyc
+__pycache__/
+.pytest_cache/
+shots/
+.venv/
+
+# A page generator run from the repo root by mistake writes its page here.
+/index.html

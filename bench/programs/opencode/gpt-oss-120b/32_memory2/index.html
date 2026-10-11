@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Memory Game</title>
+<style>
+  body {font-family: system-ui, sans-serif; background:#fafafa; margin:0; display:flex; flex-direction:column; align-items:center; min-height:100vh;}
+  h1 {margin-top:1rem;}
+  #stats {margin:1rem; font-size:1.1rem;}
+  #board {display:grid; grid-template-columns:repeat(4,80px); gap:8px;}
+  .card {
+    width:80px; height:80px; background:#4a90e2; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:2rem; color:#fff; border-radius:8px;
+    user-select:none; perspective:600px;
+  }
+  .card.flipped {background:#fff; color:#333; cursor:default;}
+  .card.matched {background:#2ecc71; color:#fff; cursor:default;}
+  #winMessage {
+    display:none; margin-top:2rem; padding:1rem 2rem;
+    background:#2ecc71; color:#fff; border-radius:8px; font-size:1.5rem;
+  }
+</style>
+</head>
+<body>
+<h1>Memory Game</h1>
+<div id="stats">
+  Moves: <span id="moves">0</span> |
+  Pairs found: <span id="pairs">0</span> |
+  Time: <span id="timer">0</span>s
+</div>
+<div id="board"></div>
+<div id="winMessage">🎉 You won! 🎉</div>
+
+<script>
+(() => {
+  const symbols = ['🍎','🍌','🍇','🍊','🥝','🍓','🍍','🍑']; // 8 unique symbols
+  const totalPairs = symbols.length;
+  const board = document.getElementById('board');
+  const movesEl = document.getElementById('moves');
+  const pairsEl = document.getElementById('pairs');
+  const timerEl = document.getElementById('timer');
+  const winMsg = document.getElementById('winMessage');
+
+  let moves = 0, pairsFound = 0, timer = 0, timerId = null;
+  let firstCard = null, lockBoard = false;
+
+  // Build shuffled deck
+  const deck = symbols.concat(symbols);
+  deck.sort(() => Math.random() - 0.5);
+
+  // Render cards
+  deck.forEach((sym, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.symbol = sym;
+    card.dataset.index = i;
+    card.textContent = '';
+    card.addEventListener('click', onCardClick);
+    board.appendChild(card);
+  });
+
+  function startTimer() {
+    if (timerId) return;
+    timerId = setInterval(() => {
+      timer++;
+      timerEl.textContent = timer;
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerId);
+    timerId = null;
+  }
+
+  function onCardClick(e) {
+    const card = e.currentTarget;
+    if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+    // Start timer on first flip
+    if (moves === 0 && pairsFound === 0 && !timerId) startTimer();
+
+    card.textContent = card.dataset.symbol;
+    card.classList.add('flipped');
+
+    if (!firstCard) {
+      firstCard = card;
+      return;
+    }
+
+    // Second card flipped – count a move
+    moves++;
+    movesEl.textContent = moves;
+    lockBoard = true;
+
+    const isMatch = firstCard.dataset.symbol === card.dataset.symbol;
+    if (isMatch) {
+      firstCard.classList.add('matched');
+      card.classList.add('matched');
+      pairsFound++;
+      pairsEl.textContent = pairsFound;
+      resetTurn();
+      if (pairsFound === totalPairs) {
+        win();
+      }
+    } else {
+      setTimeout(() => {
+        firstCard.textContent = '';
+        firstCard.classList.remove('flipped');
+        card.textContent = '';
+        card.classList.remove('flipped');
+        resetTurn();
+      }, 800);
+    }
+  }
+
+  function resetTurn() {
+    firstCard = null;
+    lockBoard = false;
+  }
+
+  function win() {
+    stopTimer();
+    winMsg.style.display = 'block';
+    // Optionally show final stats
+    winMsg.textContent = `🎉 You won! 🎉 Moves: ${moves}, Time: ${timer}s`;
+  }
+})();
+</script>
+</body>
+</html>

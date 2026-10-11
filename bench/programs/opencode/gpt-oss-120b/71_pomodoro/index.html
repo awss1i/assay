@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pomodoro Timer</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background:#f4f4f4;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    margin:0;
+  }
+  #timer {
+    font-size:4rem;
+    margin:0.5rem;
+  }
+  #rounds {
+    font-size:1.2rem;
+    margin-bottom:1rem;
+  }
+  button {
+    padding:0.6rem 1.2rem;
+    margin:0.3rem;
+    font-size:1rem;
+    cursor:pointer;
+    border:none;
+    border-radius:4px;
+    background:#007bff;
+    color:#fff;
+  }
+  button:disabled {
+    opacity:0.5;
+    cursor:default;
+  }
+</style>
+</head>
+<body>
+<h1>Pomodoro Timer</h1>
+<div id="rounds">Completed Rounds: <span id="count">0</span></div>
+<div id="timer">25:00</div>
+<div>
+  <button id="startBtn">Start</button>
+  <button id="pauseBtn" disabled>Pause</button>
+  <button id="skipBtn" disabled>Skip</button>
+</div>
+
+<script>
+(() => {
+  const WORK_MIN = 25;
+  const BREAK_MIN = 5;
+  const timerEl = document.getElementById('timer');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const skipBtn = document.getElementById('skipBtn');
+  const countEl = document.getElementById('count');
+
+  let intervalId = null;
+  let remaining = WORK_MIN * 60; // seconds
+  let isWork = true; // true = work session, false = break
+  let rounds = 0;
+
+  function format(seconds) {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function updateDisplay() {
+    timerEl.textContent = format(remaining);
+  }
+
+  function tick() {
+    if (remaining > 0) {
+      remaining--;
+      updateDisplay();
+    } else {
+      clearInterval(intervalId);
+      intervalId = null;
+      // Switch session
+      isWork = !isWork;
+      remaining = (isWork ? WORK_MIN : BREAK_MIN) * 60;
+      if (!isWork) {
+        // a work round just finished
+        rounds++;
+        countEl.textContent = rounds;
+      }
+      updateDisplay();
+      // auto‑start next session
+      startTimer();
+    }
+  }
+
+  function startTimer() {
+    if (!intervalId) {
+      intervalId = setInterval(tick, 1000);
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      skipBtn.disabled = false;
+    }
+  }
+
+  function pauseTimer() {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+    }
+  }
+
+  function skipTimer() {
+    clearInterval(intervalId);
+    intervalId = null;
+    // Force end of current session
+    remaining = 0;
+    tick(); // trigger switch logic
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    skipBtn.disabled = true;
+  }
+
+  // Button listeners
+  startBtn.addEventListener('click', startTimer);
+  pauseBtn.addEventListener('click', pauseTimer);
+  skipBtn.addEventListener('click', skipTimer);
+
+  // Initialise display
+  updateDisplay();
+})();
+</script>
+</body>
+</html>

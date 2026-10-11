@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Country Table – Searchable & Sortable</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9;}
+  h1 {margin-bottom: .5em;}
+  #filterBox {margin-bottom: .5em; padding: .4em .6em; width: 250px; font-size: 1rem;}
+  table {border-collapse: collapse; width: 100%; background:#fff;}
+  th, td {border: 1px solid #ccc; padding: .5em; text-align:left;}
+  th {background:#e2e2e2; cursor:pointer; user-select:none;}
+  th.sorted-asc::after {content:" ▲";}
+  th.sorted-desc::after {content:" ▼";}
+  tr.hidden {display:none;}
+  #rowCount {margin-top:.5em; font-size:.9rem; color:#555;}
+</style>
+</head>
+<body>
+
+<h1>Country List</h1>
+<input type="text" id="filterBox" placeholder="Search…">
+
+<table id="countryTable">
+  <thead>
+    <tr>
+      <th data-col="0" data-type="string">Country</th>
+      <th data-col="1" data-type="string">Capital</th>
+      <th data-col="2" data-type="number">Population (M)</th>
+      <th data-col="3" data-type="number">Area (km²)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Argentina</td><td>Buenos Aires</td><td>45.2</td><td>2 780 400</td></tr>
+    <tr><td>Australia</td><td>Canberra</td><td>26.0</td><td>7 692 024</td></tr>
+    <tr><td>Brazil</td><td>Brasília</td><td>213.3</td><td>8 515 767</td></tr>
+    <tr><td>Canada</td><td>Ottawa</td><td>38.0</td><td>9 984 670</td></tr>
+    <tr><td>China</td><td>Beijing</td><td>1 411.8</td><td>9 596 961</td></tr>
+    <tr><td>Egypt</td><td>Cairo</td><td>104.1</td><td>1 001 450</td></tr>
+    <tr><td>France</td><td>Paris</td><td>67.8</td><td>551 695</td></tr>
+    <tr><td>Germany</td><td>Berlin</td><td>84.0</td><td>357 386</td></tr>
+    <tr><td>India</td><td>New Delhi</td><td>1 393.0</td><td>3 287 263</td></tr>
+    <tr><td>Indonesia</td><td>Jakarta</td><td>276.4</td><td>1 904 569</td></tr>
+    <tr><td>Italy</td><td>Rome</td><td>60.4</td><td>301 340</td></tr>
+    <tr><td>Japan</td><td>Tokyo</td><td>125.5</td><td>377 975</td></tr>
+    <tr><td>Mexico</td><td>Mexico City</td><td>126.0</td><td>1 964 375</td></tr>
+    <tr><td>Russia</td><td>Moscow</td><td>146.0</td><td>17 098 242</td></tr>
+    <tr><td>South Africa</td><td>Pretoria</td><td>60.1</td><td>1 221 037</td></tr>
+    <tr><td>South Korea</td><td>Seoul</td><td>51.8</td><td>100 210</td></tr>
+    <tr><td>Spain</td><td>Madrid</td><td>47.6</td><td>505 990</td></tr>
+    <tr><td>Turkey</td><td>Ankara</td><td>85.3</td><td>783 562</td></tr>
+    <tr><td>United Kingdom</td><td>London</td><td>68.2</td><td>242 495</td></tr>
+    <tr><td>United States</td><td>Washington, D.C.</td><td>331.9</td><td>9 833 517</td></tr>
+  </tbody>
+</table>
+
+<div id="rowCount"></div>
+
+<script>
+(() => {
+  const table = document.getElementById('countryTable');
+  const tbody = table.tBodies[0];
+  const filterBox = document.getElementById('filterBox');
+  const rowCount = document.getElementById('rowCount');
+  const headers = table.tHead.rows[0].cells;
+
+  let sortState = {col: null, asc: true};
+
+  // ---- Sorting -------------------------------------------------
+  const sortTable = (colIdx, type) => {
+    const rows = Array.from(tbody.rows);
+    const multiplier = sortState.asc ? 1 : -1;
+
+    rows.sort((a, b) => {
+      let aText = a.cells[colIdx].textContent.trim();
+      let bText = b.cells[colIdx].textContent.trim();
+
+      if (type === 'number') {
+        // Remove commas, spaces, non‑digits
+        aText = aText.replace(/[^\d.-]/g,'');
+        bText = bText.replace(/[^\d.-]/g,'');
+        const aNum = parseFloat(aText) || 0;
+        const bNum = parseFloat(bText) || 0;
+        return (aNum - bNum) * multiplier;
+      } else {
+        return aText.localeCompare(bText) * multiplier;
+      }
+    });
+
+    // Re‑attach rows in new order
+    rows.forEach(r => tbody.appendChild(r));
+  };
+
+  // Header click handler
+  Array.from(headers).forEach((th, i) => {
+    th.addEventListener('click', () => {
+      const type = th.dataset.type;
+      if (sortState.col === i) {
+        sortState.asc = !sortState.asc;
+      } else {
+        sortState.col = i;
+        sortState.asc = true;
+      }
+      // Update visual arrows
+      Array.from(headers).forEach(h => h.classList.remove('sorted-asc','sorted-desc'));
+      th.classList.add(sortState.asc ? 'sorted-asc' : 'sorted-desc');
+
+      sortTable(i, type);
+      applyFilter(); // keep filter after sorting
+    });
+  });
+
+  // ---- Filtering ------------------------------------------------
+  const applyFilter = () => {
+    const term = filterBox.value.trim().toLowerCase();
+    let visible = 0;
+    Array.from(tbody.rows).forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const match = text.includes(term);
+      row.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    rowCount.textContent = `Showing ${visible} of ${tbody.rows.length} countries`;
+  };
+
+  filterBox.addEventListener('input', applyFilter);
+  // initialise count
+  applyFilter();
+})();
+</script>
+
+</body>
+</html>

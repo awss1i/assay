@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hash‑Based SPA Demo</title>
+<style>
+  body {font-family:Arial,sans-serif;margin:0;padding:0;background:#fafafa;color:#333;}
+  header {background:#4a90e2;color:#fff;padding:1rem;text-align:center;}
+  nav a {margin:0 0.5rem;color:#fff;text-decoration:none;font-weight:bold;}
+  main {padding:2rem;min-height:70vh;}
+  section {display:none;}
+  section.active {display:block;}
+  footer {background:#ddd;padding:1rem;text-align:center;}
+  button.back {margin-top:1rem;padding:0.5rem 1rem;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Hash‑Based Single‑Page App</h1>
+  <nav>
+    <a href="#view1">View 1</a>
+    <a href="#view2">View 2</a>
+    <a href="#view3">View 3</a>
+  </nav>
+</header>
+
+<main>
+  <section id="view1">
+    <h2>View 1</h2>
+    <p>This is the first view. Use the navigation links above to switch views or the back button
+      below to return to the previous view.</p>
+    <button class="back" onclick="history.back()">← Back</button>
+  </section>
+
+  <section id="view2">
+    <h2>View 2</h2>
+    <p>This is the second view. The URL hash updates so a page reload keeps you on this view.</p>
+    <button class="back" onclick="history.back()">← Back</button>
+  </section>
+
+  <section id="view3">
+    <h2>View 3</h2>
+    <p>This is the third view. The browser back button (or the button below) will return
+      to the previous hash.</p>
+    <button class="back" onclick="history.back()">← Back</button>
+  </section>
+</main>
+
+<footer>© 2026 Hash‑SPA Demo</footer>
+
+<script>
+  // Show the section that matches the current hash, default to view1
+  function showSection() {
+    const hash = location.hash.replace('#', '') || 'view1';
+    document.querySelectorAll('section').forEach(sec => {
+      sec.classList.toggle('active', sec.id === hash);
+    });
+  }
+
+  // Initial render
+  showSection();
+
+  // Update view on hash change (back/forward navigation)
+  window.addEventListener('hashchange', showSection);
+</script>
+</body>
+</html>

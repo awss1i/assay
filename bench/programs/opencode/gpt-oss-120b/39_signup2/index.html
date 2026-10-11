@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign‑Up Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+    background: #f9f9f9;
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  input {
+    width: 100%;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  input:invalid {
+    border-color: #e74c3c;
+  }
+  .meter {
+    height: 0.8rem;
+    width: 100%;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.3rem;
+  }
+  .meter div {
+    height: 100%;
+    width: 0%;
+    background: #e74c3c;
+    transition: width 0.2s;
+  }
+  .strength-1 { background:#e74c3c; }
+  .strength-2 { background:#e67e22; }
+  .strength-3 { background:#f1c40f; }
+  .strength-4 { background:#2ecc71; }
+  .msg {
+    font-size: 0.9rem;
+    color: #e74c3c;
+    height: 1rem;
+    margin-top: 0.2rem;
+  }
+  button:disabled {
+    background:#bbb;
+    cursor:not-allowed;
+  }
+  button {
+    padding:0.6rem 1.2rem;
+    background:#3498db;
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>Sign‑Up</h2>
+<form id="signup" novalidate>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input id="email" type="email" required>
+    <div class="msg" id="emailMsg"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="pwd">Password</label>
+    <input id="pwd" type="password" required minlength="8">
+    <div class="meter"><div id="strengthBar"></div></div>
+    <div class="msg" id="pwdMsg"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="confirm">Confirm Password</label>
+    <input id="confirm" type="password" required>
+    <div class="msg" id="confirmMsg"></div>
+  </div>
+
+  <button type="submit" id="submitBtn" disabled>Sign Up</button>
+</form>
+
+<script>
+(() => {
+  const emailInput = document.getElementById('email');
+  const pwdInput = document.getElementById('pwd');
+  const confirmInput = document.getElementById('confirm');
+  const submitBtn = document.getElementById('submitBtn');
+  const strengthBar = document.getElementById('strengthBar');
+  const pwdMsg = document.getElementById('pwdMsg');
+  const confirmMsg = document.getElementById('confirmMsg');
+  const emailMsg = document.getElementById('emailMsg');
+
+  const tests = {
+    lower: /[a-z]/,
+    upper: /[A-Z]/,
+    digit: /\d/,
+    special: /[!@#$%^&*(),.?":{}|<>]/
+  };
+
+  function evaluateStrength(pwd) {
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (tests.lower.test(pwd)) score++;
+    if (tests.upper.test(pwd)) score++;
+    if (tests.digit.test(pwd)) score++;
+    if (tests.special.test(pwd)) score++;
+    // Normalize to 0‑4 range
+    return Math.min(score, 4);
+  }
+
+  function updateStrength() {
+    const pwd = pwdInput.value;
+    const strength = evaluateStrength(pwd);
+    strengthBar.style.width = (strength * 25) + '%';
+    strengthBar.className = '';
+    if (strength) strengthBar.classList.add('strength-' + strength);
+    pwdMsg.textContent = strength < 4 ? 'Password is weak' : '';
+    validateForm();
+  }
+
+  function validateConfirm() {
+    const match = pwdInput.value === confirmInput.value;
+    confirmMsg.textContent = match ? '' : 'Passwords do not match';
+    validateForm();
+  }
+
+  function validateEmail() {
+    // HTML5 validation already checks format, we just show a message.
+    emailMsg.textContent = emailInput.validity.valid ? '' : 'Invalid email address';
+    validateForm();
+  }
+
+  function validateForm() {
+    const emailOk = emailInput.validity.valid;
+    const pwdOk = evaluateStrength(pwdInput.value) === 4;
+    const confirmOk = pwdInput.value && (pwdInput.value === confirmInput.value);
+    submitBtn.disabled = !(emailOk && pwdOk && confirmOk);
+  }
+
+  emailInput.addEventListener('input', validateEmail);
+  pwdInput.addEventListener('input', () => {
+    updateStrength();
+    validateConfirm(); // re‑check match as password changes
+  });
+  confirmInput.addEventListener('input', validateConfirm);
+})();
+</script>
+
+</body>
+</html>

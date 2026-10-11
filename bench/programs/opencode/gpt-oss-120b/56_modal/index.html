@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Modal Dialog</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 2rem;
+  }
+  #openBtn {
+    padding: .5rem 1rem;
+    font-size: 1rem;
+  }
+  /* Overlay – dims the page */
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* hidden by default */
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .2s ease;
+  }
+  #overlay.visible {
+    visibility: visible;
+    opacity: 1;
+  }
+  /* Modal box */
+  .modal {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: .5rem;
+    max-width: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  }
+  .modal h2 {
+    margin-top: 0;
+  }
+  .modal button {
+    margin-top: 1rem;
+    padding: .4rem .8rem;
+    font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+
+<button id="openBtn">Open Dialog</button>
+
+<div id="overlay" role="dialog" aria-modal="true">
+  <div class="modal" tabindex="-1">
+    <h2>Dialog Title</h2>
+    <p>This is a simple modal dialog. Click outside, press Escape, or use the button below to close it.</p>
+    <button id="closeBtn">Close</button>
+  </div>
+</div>
+
+<script>
+  const openBtn = document.getElementById('openBtn');
+  const overlay  = document.getElementById('overlay');
+  const modal    = overlay.querySelector('.modal');
+  const closeBtn = document.getElementById('closeBtn');
+
+  // Open dialog
+  openBtn.addEventListener('click', () => {
+    overlay.classList.add('visible');
+    // Focus the first focusable element inside the modal
+    closeBtn.focus();
+  });
+
+  // Close dialog helper
+  function closeDialog() {
+    overlay.classList.remove('visible');
+    openBtn.focus();           // return focus to the opener
+  }
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('visible')) {
+      closeDialog();
+    }
+  });
+
+  // Close on click outside modal
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      closeDialog();
+    }
+  });
+
+  // Close button inside modal
+  closeBtn.addEventListener('click', closeDialog);
+
+  // Prevent clicks inside the modal from bubbling to the overlay
+  modal.addEventListener('click', (e) => e.stopPropagation());
+</script>
+
+</body>
+</html>

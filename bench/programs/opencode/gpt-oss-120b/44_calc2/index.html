@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calculator</title>
+<style>
+    body{font-family:Arial,sans-serif;background:#f0f0f0;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+    .calc{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);width:320px}
+    .display{font-size:2rem;background:#222;color:#0f0;padding:10px 12px;border-radius:4px;text-align:right;overflow:hidden}
+    .history{font-size:.9rem;margin-top:8px;color:#555;max-height:4.5rem;overflow-y:auto}
+    .buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+    button{font-size:1.2rem;padding:12px;border:none;border-radius:4px;background:#e0e0e0;cursor:pointer;transition:.2s}
+    button:active{background:#d0d0d0}
+    .op{background:#ffb74d;color:#fff}
+    .eq{grid-column:span 2;background:#4caf50;color:#fff}
+    .clear{background:#f44336;color:#fff}
+</style>
+</head>
+<body>
+<div class="calc">
+    <div class="display" id="display">0</div>
+    <div class="history" id="history"></div>
+    <div class="buttons">
+        <button class="clear" data-action="clear">C</button>
+        <button data-action="sign">±</button>
+        <button data-action="percent">%</button>
+        <button class="op" data-action="operator" data-value="/">÷</button>
+
+        <button data-action="digit" data-value="7">7</button>
+        <button data-action="digit" data-value="8">8</button>
+        <button data-action="digit" data-value="9">9</button>
+        <button class="op" data-action="operator" data-value="*">×</button>
+
+        <button data-action="digit" data-value="4">4</button>
+        <button data-action="digit" data-value="5">5</button>
+        <button data-action="digit" data-value="6">6</button>
+        <button class="op" data-action="operator" data-value="-">‑</button>
+
+        <button data-action="digit" data-value="1">1</button>
+        <button data-action="digit" data-value="2">2</button>
+        <button data-action="digit" data-value="3">3</button>
+        <button class="op" data-action="operator" data-value="+">+</button>
+
+        <button data-action="digit" data-value="0" style="grid-column:span 2">0</button>
+        <button data-action="dot">.</button>
+        <button class="eq" data-action="equals">=</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const display = document.getElementById('display');
+    const historyEl = document.getElementById('history');
+    let current = '';
+    let operand = null;
+    let operator = null;
+    const history = [];
+
+    function updateDisplay(value) {
+        display.textContent = value || '0';
+    }
+
+    function pushHistory(val) {
+        history.unshift(val);
+        if (history.length > 5) history.pop();
+        historyEl.innerHTML = history.map(v => `<div>${v}</div>`).join('');
+    }
+
+    function clearAll() {
+        current = '';
+        operand = null;
+        operator = null;
+        updateDisplay('0');
+    }
+
+    function calculate() {
+        const a = operand;
+        const b = parseFloat(current);
+        if (a === null || operator === null) return;
+        let result;
+        switch (operator) {
+            case '+': result = a + b; break;
+            case '-': result = a - b; break;
+            case '*': result = a * b; break;
+            case '/':
+                if (b === 0) {
+                    result = '∞';
+                } else {
+                    result = a / b;
+                }
+                break;
+        }
+        // round to avoid floating noise
+        if (typeof result === 'number') {
+            result = Math.round(result * 1e12) / 1e12;
+        }
+        pushHistory(`${a} ${operator} ${b} = ${result}`);
+        operand = result === '∞' ? null : result;
+        current = '';
+        operator = null;
+        updateDisplay(result);
+    }
+
+    function handleDigit(d) {
+        if (current === '0' && d === '0') return;
+        current += d;
+        updateDisplay(current);
+    }
+
+    function handleDot() {
+        if (!current.includes('.')) {
+            current = current ? current + '.' : '0.';
+            updateDisplay(current);
+        }
+    }
+
+    function handleOperator(op) {
+        if (current) {
+            if (operand !== null) {
+                calculate();
+            } else {
+                operand = parseFloat(current);
+            }
+            current = '';
+        }
+        operator = op;
+    }
+
+    function handlePercent() {
+        if (current) {
+            const num = parseFloat(current) / 100;
+            current = num.toString();
+            updateDisplay(current);
+        }
+    }
+
+    function handleSign() {
+        if (current) {
+            if (current.startsWith('-')) {
+                current = current.slice(1);
+            } else {
+                current = '-' + current;
+            }
+            updateDisplay(current);
+        }
+    }
+
+    function bindButton(btn) {
+        const action = btn.dataset.action;
+        btn.addEventListener('click', () => {
+            const val = btn.dataset.value;
+            switch (action) {
+                case 'digit':   handleDigit(val); break;
+                case 'dot':     handleDot(); break;
+                case 'operator':handleOperator(val); break;
+                case 'equals': calculate(); break;
+                case 'clear':  clearAll(); break;
+                case 'percent':handlePercent(); break;
+                case 'sign':   handleSign(); break;
+            }
+        });
+    }
+
+    document.querySelectorAll('button').forEach(bindButton);
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.isContentEditable) return;
+        const key = e.key;
+        if (/\d/.test(key)) { handleDigit(key); }
+        else if (key === '.') { handleDot(); }
+        else if (key === '+' ) { handleOperator('+'); }
+        else if (key === '-' ) { handleOperator('-'); }
+        else if (key === '*') { handleOperator('*'); }
+        else if (key === '/' || key === '÷') { handleOperator('/'); }
+        else if (key === 'Enter' || key === '=') { e.preventDefault(); calculate(); }
+        else if (key === 'Backspace') { clearAll(); }
+        else if (key === '%') { handlePercent(); }
+        else if (key.toLowerCase() === 'c') { clearAll(); }
+        else if (key === 'Escape') { clearAll(); }
+        else if (key === 's') { handleSign(); }
+    });
+})();
+</script>
+</body>
+</html>

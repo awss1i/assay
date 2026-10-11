@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic‑Tac‑Toe</title>
+<style>
+  body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2rem;
+    background: #f0f0f0;
+  }
+  h1 { margin-bottom: 0.5rem; }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+    margin-bottom: 1rem;
+  }
+  .cell {
+    background: #fff;
+    border: 2px solid #333;
+    font-size: 3rem;
+    text-align: center;
+    line-height: 100px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cell:hover { background: #e0e0e0; }
+  #msg {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  button {
+    padding: .5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Tic‑Tac‑Toe</h1>
+<div id="msg">Player X's turn</div>
+<div id="board"></div>
+<button id="resetBtn">Reset Game</button>
+
+<script>
+(() => {
+  const boardEl = document.getElementById('board');
+  const msgEl   = document.getElementById('msg');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const SIZE = 3;
+  let board = [];              // 2‑D array of '' | 'X' | 'O'
+  let turn = 'X';
+  let gameOver = false;
+
+  // ---- Helper functions ----------------------------------------------------
+  const createBoard = () => {
+    board = Array.from({length: SIZE}, () => Array(SIZE).fill(''));
+    boardEl.innerHTML = '';
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        cell.addEventListener('click', onCellClick);
+        boardEl.appendChild(cell);
+      }
+    }
+  };
+
+  const onCellClick = (e) => {
+    if (gameOver) return;
+    const cell = e.target;
+    const r = +cell.dataset.row;
+    const c = +cell.dataset.col;
+
+    if (board[r][c] !== '') return; // already taken
+
+    board[r][c] = turn;
+    cell.textContent = turn;
+
+    if (checkWin(r, c)) {
+      msgEl.textContent = `Player ${turn} wins!`;
+      gameOver = true;
+      highlightWinningLine();
+    } else if (isDraw()) {
+      msgEl.textContent = "It's a draw.";
+      gameOver = true;
+    } else {
+      turn = turn === 'X' ? 'O' : 'X';
+      msgEl.textContent = `Player ${turn}'s turn`;
+    }
+  };
+
+  const checkWin = (row, col) => {
+    // check row
+    if (board[row].every(v => v === turn)) return true;
+    // check column
+    if (board.every(r => r[col] === turn)) return true;
+    // main diagonal
+    if (row === col && board.every((r,i) => r[i] === turn)) return true;
+    // anti‑diagonal
+    if (row + col === SIZE-1 && board.every((r,i) => r[SIZE-1-i] === turn)) return true;
+    return false;
+  };
+
+  const isDraw = () => board.flat().every(v => v !== '');
+
+  // Highlight winning cells (optional but nice)
+  const highlightWinningLine = () => {
+    const cells = boardEl.querySelectorAll('.cell');
+    cells.forEach(cell => {
+      const r = +cell.dataset.row;
+      const c = +cell.dataset.col;
+      let win = false;
+      // row
+      if (board[r].every(v => v === turn) && r === row) win = true;
+      // column
+      if (board.every(rArr => rArr[c] === turn) && c === col) win = true;
+      // main diag
+      if (row === col && board.every((rArr,i) => rArr[i] === turn) && r === c) win = true;
+      // anti diag
+      if (row + col === SIZE-1 && board.every((rArr,i) => rArr[SIZE-1-i] === turn) && r + c === SIZE-1) win = true;
+      if (win) cell.style.background = '#ffd700';
+    });
+  };
+
+  const resetGame = () => {
+    turn = 'X';
+    gameOver = false;
+    msgEl.textContent = `Player ${turn}'s turn`;
+    createBoard();
+  };
+
+  // ---- Initialise -----------------------------------------------------------
+  resetBtn.addEventListener('click', resetGame);
+  createBoard();
+})();
+</script>
+
+</body>
+</html>

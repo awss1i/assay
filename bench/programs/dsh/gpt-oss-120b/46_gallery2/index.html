@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CSS Gallery</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background: #111;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 10px;
+  }
+  .tile {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* square */
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-size: 2rem;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+  }
+  .tile .content { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; }
+  /* Different backgrounds for each tile */
+  .tile:nth-child(1)  { background: linear-gradient(45deg, #ff6b6b, #ff8e53); }
+  .tile:nth-child(2)  { background: linear-gradient(45deg, #ff8e53, #f9d423); }
+  .tile:nth-child(3)  { background: linear-gradient(45deg, #f9d423, #c2e812); }
+  .tile:nth-child(4)  { background: linear-gradient(45deg, #c2e812, #7be86a); }
+  .tile:nth-child(5)  { background: linear-gradient(45deg, #7be86a, #2ec5f5); }
+  .tile:nth-child(6)  { background: linear-gradient(45deg, #2ec5f5, #2a80b9); }
+  .tile:nth-child(7)  { background: linear-gradient(45deg, #2a80b9, #7a78ff); }
+  .tile:nth-child(8)  { background: linear-gradient(45deg, #7a78ff, #b17eff); }
+  .tile:nth-child(9)  { background: linear-gradient(45deg, #b17eff, #ff76ff); }
+  .tile:nth-child(10) { background: linear-gradient(45deg, #ff76ff, #ff5e5e); }
+  .tile:nth-child(11) { background: linear-gradient(45deg, #ff5e5e, #ff6b6b); }
+  .tile:nth-child(12) { background: linear-gradient(45deg, #6a5acd, #4b0082); }
+  .tile:nth-child(13) { background: linear-gradient(45deg, #4b0082, #800080); }
+  .tile:nth-child(14) { background: linear-gradient(45deg, #800080, #c71585); }
+  .tile:nth-child(15) { background: linear-gradient(45deg, #c71585, #ff1493); }
+  .tile:nth-child(16) { background: linear-gradient(45deg, #ff1493, #ff69b4); }
+  .tile:nth-child(17) { background: linear-gradient(45deg, #ff69b4, #ffb6c1); }
+  .tile:nth-child(18) { background: linear-gradient(45deg, #ffb6c1, #ffe4e1); }
+  .tile:nth-child(19) { background: linear-gradient(45deg, #ffe4e1, #ffffe0); }
+  .tile:nth-child(20) { background: linear-gradient(45deg, #ffffe0, #fafad2); }
+
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #lightbox .inner {
+    width: 80vw;
+    height: 80vh;
+    background: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5rem;
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+<div class="gallery">
+  <div class="tile" data-index="0"><div class="content">1</div></div>
+  <div class="tile" data-index="1"><div class="content">2</div></div>
+  <div class="tile" data-index="2"><div class="content">3</div></div>
+  <div class="tile" data-index="3"><div class="content">4</div></div>
+  <div class="tile" data-index="4"><div class="content">5</div></div>
+  <div class="tile" data-index="5"><div class="content">6</div></div>
+  <div class="tile" data-index="6"><div class="content">7</div></div>
+  <div class="tile" data-index="7"><div class="content">8</div></div>
+  <div class="tile" data-index="8"><div class="content">9</div></div>
+  <div class="tile" data-index="9"><div class="content">10</div></div>
+  <div class="tile" data-index="10"><div class="content">11</div></div>
+  <div class="tile" data-index="11"><div class="content">12</div></div>
+  <div class="tile" data-index="12"><div class="content">13</div></div>
+  <div class="tile" data-index="13"><div class="content">14</div></div>
+  <div class="tile" data-index="14"><div class="content">15</div></div>
+  <div class="tile" data-index="15"><div class="content">16</div></div>
+  <div class="tile" data-index="16"><div class="content">17</div></div>
+  <div class="tile" data-index="17"><div class="content">18</div></div>
+  <div class="tile" data-index="18"><div class="content">19</div></div>
+  <div class="tile" data-index="19"><div class="content">20</div></div>
+</div>
+<div id="lightbox"><div class="inner"></div></div>
+<script>
+  const tiles = document.querySelectorAll('.tile');
+  const lightbox = document.getElementById('lightbox');
+  const inner = document.querySelector('#lightbox .inner');
+  let current = 0;
+  function open(idx) {
+    current = idx;
+    const num = tiles[idx].querySelector('.content').textContent;
+    inner.textContent = num;
+    lightbox.style.display = 'flex';
+  }
+  function close() {
+    lightbox.style.display = 'none';
+  }
+  tiles.forEach((t, i) => {
+    t.addEventListener('click', () => open(i));
+  });
+  // Click outside inner to close
+  lightbox.addEventListener('click', e => {
+    if (e.target === lightbox) close();
+  });
+  document.addEventListener('keydown', e => {
+    if (lightbox.style.display !== 'flex') return;
+    if (e.key === 'Escape') {
+      close();
+    } else if (e.key === 'ArrowRight') {
+      current = (current + 1) % tiles.length;
+      open(current);
+    } else if (e.key === 'ArrowLeft') {
+      current = (current - 1 + tiles.length) % tiles.length;
+      open(current);
+    }
+  });
+</script>
+</body>
+</html>

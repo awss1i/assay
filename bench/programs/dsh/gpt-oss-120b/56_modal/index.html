@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dialog Demo</title>
+<style>
+  body {font-family: sans-serif; margin: 0; padding: 2rem;}
+  #overlay {
+    display: none; /* hidden by default */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  #dialog {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    min-width: 300px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  #dialog button {
+    margin-top: 1rem;
+  }
+</style>
+</head>
+<body>
+  <button id="openBtn">Open Dialog</button>
+
+  <div id="overlay" role="dialog" aria-modal="true">
+    <div id="dialog">
+      <h2>Modal Dialog</h2>
+      <p>This is a simple modal dialog. Click outside or press Escape to close.</p>
+      <button id="closeBtn">Close</button>
+    </div>
+  </div>
+
+<script>
+  const openBtn = document.getElementById('openBtn');
+  const overlay = document.getElementById('overlay');
+  const dialog = document.getElementById('dialog');
+  const closeBtn = document.getElementById('closeBtn');
+
+  function openDialog() {
+    overlay.style.display = 'flex';
+    // Focus the dialog or first focusable element inside it
+    closeBtn.focus();
+  }
+
+  function closeDialog() {
+    overlay.style.display = 'none';
+    openBtn.focus();
+  }
+
+  openBtn.addEventListener('click', openDialog);
+  closeBtn.addEventListener('click', closeDialog);
+
+  // Close when clicking outside the dialog content
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      closeDialog();
+    }
+  });
+
+  // Prevent click inside the dialog from bubbling to the overlay
+  dialog.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') {
+      closeDialog();
+    }
+  });
+</script>
+</body>
+</html>

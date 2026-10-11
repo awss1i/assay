@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Drawing</title>
+<style>
+    body {font-family: sans-serif; margin: 20px; background:#f0f0f0;}
+    #toolbar {margin-bottom:10px;}
+    canvas {border:1px solid #333; background:#fff; cursor: crosshair;}
+    button, select, input[type="color"] {margin-right:5px;}
+</style>
+</head>
+<body>
+<div id="toolbar">
+    <label>Color: <input type="color" id="colorPicker" value="#000000"></label>
+    <label>Size: 
+        <select id="sizePicker">
+            <option value="5">Small</option>
+            <option value="10" selected>Medium</option>
+            <option value="20">Large</option>
+        </select>
+    </label>
+    <button id="undoBtn">Undo</button>
+    <button id="redoBtn">Redo</button>
+    <button id="clearBtn">Clear</button>
+</div>
+<canvas id="canvas" width="800" height="600"></canvas>
+<script>
+(() => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const sizePicker = document.getElementById('sizePicker');
+    const undoBtn = document.getElementById('undoBtn');
+    const redoBtn = document.getElementById('redoBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const undoStack = [];
+    const redoStack = [];
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+
+    // Load saved image if any
+    const saved = localStorage.getItem('canvasImage');
+    if (saved) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = saved;
+    }
+
+    const pushState = () => {
+        // Save current canvas state as data URL
+        undoStack.push(canvas.toDataURL());
+        // Limit stack size to avoid memory blow‑up
+        if (undoStack.length > 50) undoStack.shift();
+        // Clear redo stack on new action
+        redoStack.length = 0;
+    };
+
+    const restoreState = (dataURL) => {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = dataURL;
+    };
+
+    const startDrawing = (e) => {
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+    };
+
+    const draw = (e) => {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = colorPicker.value;
+        ctx.lineWidth = sizePicker.value;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        lastX = x; lastY = y;
+    };
+
+    const stopDrawing = () => {
+        if (!drawing) return;
+        drawing = false;
+        ctx.closePath();
+        pushState();
+        // Persist after each stroke
+        localStorage.setItem('canvasImage', canvas.toDataURL());
+    };
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+
+    undoBtn.addEventListener('click', () => {
+        if (undoStack.length === 0) return;
+        const last = undoStack.pop();
+        redoStack.push(canvas.toDataURL());
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (last) restoreState(last);
+        localStorage.setItem('canvasImage', canvas.toDataURL());
+    });
+
+    redoBtn.addEventListener('click', () => {
+        if (redoStack.length === 0) return;
+        const next = redoStack.pop();
+        undoStack.push(canvas.toDataURL());
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (next) restoreState(next);
+        localStorage.setItem('canvasImage', canvas.toDataURL());
+    });
+
+    clearBtn.addEventListener('click', () => {
+        // Save current state for undo
+        pushState();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        localStorage.removeItem('canvasImage');
+    });
+})();
+</script>
+</body>
+</html>

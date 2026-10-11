@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Countdown Timer</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    background:#f0f4f8;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    margin:0;
+  }
+  h1 { margin-bottom:0.5rem; }
+  .timer-display {
+    font-size:4rem;
+    margin:1rem 0;
+    font-weight:600;
+    color:#222;
+  }
+  .controls, .inputs {
+    display:flex;
+    gap:0.5rem;
+    margin:0.3rem;
+  }
+  input[type=number] {
+    width:4rem;
+    padding:0.2rem;
+    font-size:1rem;
+    text-align:center;
+  }
+  button {
+    padding:0.4rem 0.9rem;
+    font-size:1rem;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    background:#007bff;
+    color:#fff;
+    transition:background .2s;
+  }
+  button:disabled {
+    background:#aaa;
+    cursor:not-allowed;
+  }
+  button:hover:not(:disabled) { background:#0056b3; }
+</style>
+</head>
+<body>
+<h1>Countdown Timer</h1>
+
+<div class="inputs">
+  <label>Minutes
+    <input id="minutes" type="number" min="0" value="0">
+  </label>
+  <label>Seconds
+    <input id="seconds" type="number" min="0" max="59" value="0">
+  </label>
+</div>
+
+<div class="timer-display" id="display">00:00</div>
+
+<div class="controls">
+  <button id="startBtn">Start</button>
+  <button id="pauseBtn" disabled>Pause</button>
+  <button id="resumeBtn" disabled>Resume</button>
+  <button id="resetBtn" disabled>Reset</button>
+</div>
+
+<script>
+(() => {
+  const minutesInput = document.getElementById('minutes');
+  const secondsInput = document.getElementById('seconds');
+  const display      = document.getElementById('display');
+  const startBtn    = document.getElementById('startBtn');
+  const pauseBtn    = document.getElementById('pauseBtn');
+  const resumeBtn   = document.getElementById('resumeBtn');
+  const resetBtn    = document.getElementById('resetBtn');
+
+  let totalSeconds = 0;      // total set time
+  let remaining    = 0;      // seconds left
+  let intervalId   = null;   // setInterval reference
+
+  const updateDisplay = () => {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  };
+
+  const beep = () => {
+    // Simple 300 Hz beep lasting ~200 ms
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 300;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  };
+
+  const startTimer = () => {
+    // read and validate inputs
+    const mins = Math.max(0, parseInt(minutesInput.value,10) || 0);
+    const secs = Math.max(0, Math.min(59, parseInt(secondsInput.value,10) || 0));
+    totalSeconds = mins * 60 + secs;
+    if (totalSeconds === 0) return; // nothing to count down
+
+    remaining = totalSeconds;
+    updateDisplay();
+
+    intervalId = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(intervalId);
+        intervalId = null;
+        remaining = 0;
+        updateDisplay();
+        beep();
+        alert("⏰ Time's up!");
+        // reset UI to allow a new start
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        resumeBtn.disabled = true;
+        resetBtn.disabled = true;
+        minutesInput.disabled = false;
+        secondsInput.disabled = false;
+      } else {
+        updateDisplay();
+      }
+    }, 1000);
+
+    // UI state
+    startBtn.disabled = true;
+    pauseBtn.disabled = false;
+    resumeBtn.disabled = true;
+    resetBtn.disabled = false;
+    minutesInput.disabled = true;
+    secondsInput.disabled = true;
+  };
+
+  const pauseTimer = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+      pauseBtn.disabled = true;
+      resumeBtn.disabled = false;
+    }
+  };
+
+  const resumeTimer = () => {
+    if (!intervalId && remaining > 0) {
+      intervalId = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(intervalId);
+          intervalId = null;
+          remaining = 0;
+          updateDisplay();
+          beep();
+          alert("⏰ Time's up!");
+          startBtn.disabled = false;
+          pauseBtn.disabled = true;
+          resumeBtn.disabled = true;
+          resetBtn.disabled = true;
+          minutesInput.disabled = false;
+          secondsInput.disabled = false;
+        } else {
+          updateDisplay();
+        }
+      }, 1000);
+      pauseBtn.disabled = false;
+      resumeBtn.disabled = true;
+    }
+  };
+
+  const resetTimer = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    remaining = totalSeconds;
+    updateDisplay();
+
+    // UI reset
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    resumeBtn.disabled = true;
+    resetBtn.disabled = true;
+    minutesInput.disabled = false;
+    secondsInput.disabled = false;
+  };
+
+  // Button event listeners
+  startBtn.addEventListener('click', startTimer);
+  pauseBtn.addEventListener('click', pauseTimer);
+  resumeBtn.addEventListener('click', resumeTimer);
+  resetBtn.addEventListener('click', resetTimer);
+
+  // Initialize display
+  updateDisplay();
+})();
+</script>
+</body>
+</html>

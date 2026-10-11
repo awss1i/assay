@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Branching Questionnaire</title>
+<style>
+    body {
+        font-family: sans-serif;
+        background: #f9f9f9;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    #app {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px 30px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(0,0,0,.1);
+    }
+    h2 {
+        margin-top: 0;
+    }
+    .buttons {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+    button {
+        flex: 1;
+        padding: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        transition: background .2s;
+    }
+    #yesBtn { background:#4caf50; color:#fff; }
+    #yesBtn:hover { background:#43a047; }
+    #noBtn  { background:#f44336; color:#fff; }
+    #noBtn:hover { background:#e53935; }
+    #backBtn {
+        background:#777;
+        color:#fff;
+    }
+    #backBtn:disabled {
+        background:#bbb;
+        cursor: not-allowed;
+    }
+    #result {
+        margin-top: 20px;
+        padding: 15px;
+        background:#e0f7fa;
+        border-left: 4px solid #0097a7;
+    }
+    #pathList {
+        margin-top: 10px;
+        line-height: 1.5;
+    }
+    #restartBtn {
+        margin-top: 15px;
+        background:#607d8b;
+        color:#fff;
+    }
+    #restartBtn:hover { background:#546e7a; }
+</style>
+</head>
+<body>
+<div id="app">
+    <h2 id="question"></h2>
+
+    <div class="buttons" id="answerButtons">
+        <button id="yesBtn">Yes</button>
+        <button id="noBtn">No</button>
+    </div>
+
+    <button id="backBtn">← Back</button>
+
+    <div id="result" style="display:none;"></div>
+</div>
+
+<script>
+(function(){
+    // ==== questionnaire definition ====
+    const data = {
+        start: { text: "Do you like coffee?", yes: "q1", no: "q2" },
+        q1:    { text: "Do you take it black?", yes: "leaf1", no: "leaf2" },
+        q2:    { text: "Do you prefer tea?",   yes: "leaf3", no: "leaf4" },
+
+        leaf1: { text: "You love strong coffee.",   leaf:true },
+        leaf2: { text: "You love milky coffee.",    leaf:true },
+        leaf3: { text: "You enjoy tea.",            leaf:true },
+        leaf4: { text: "You dislike both coffee and tea.", leaf:true }
+    };
+
+    // ==== state ====
+    let currentId = "start";
+    const path = []; // each entry = {id, answer ('yes'|'no')}
+
+    // ==== DOM references ====
+    const qEl      = document.getElementById('question');
+    const yesBtn   = document.getElementById('yesBtn');
+    const noBtn    = document.getElementById('noBtn');
+    const backBtn  = document.getElementById('backBtn');
+    const resultEl = document.getElementById('result');
+    const answerDiv= document.getElementById('answerButtons');
+
+    // ==== render functions ====
+    function render() {
+        const node = data[currentId];
+        qEl.textContent = node.text;
+
+        // leaf handling
+        if (node.leaf) {
+            answerDiv.style.display = 'none';
+            backBtn.disabled = (path.length===0);
+            showResult(node.text);
+        } else {
+            answerDiv.style.display = 'flex';
+            backBtn.disabled = (path.length===0);
+            resultEl.style.display = 'none';
+        }
+    }
+
+    function showResult(finalText) {
+        resultEl.innerHTML = `
+            <strong>Result:</strong> ${finalText}<br>
+            <strong>Path taken:</strong>
+            <div id="pathList"></div>
+            <button id="restartBtn">Restart</button>
+        `;
+        const listDiv = document.getElementById('pathList');
+        path.forEach(step => {
+            const q = data[step.id];
+            const ans = step.answer === 'yes' ? 'Yes' : 'No';
+            const line = document.createElement('div');
+            line.textContent = `${q.text} – ${ans}`;
+            listDiv.appendChild(line);
+        });
+        document.getElementById('restartBtn').addEventListener('click', restart);
+        resultEl.style.display = 'block';
+    }
+
+    // ==== navigation helpers ====
+    function answer(choice) {
+        const node = data[currentId];
+        const nextId = node[choice];
+        if (!nextId) return; // safety
+        path.push({id: currentId, answer: choice});
+        currentId = nextId;
+        render();
+    }
+
+    function goBack() {
+        if (path.length===0) return;
+        const last = path.pop();
+        currentId = last.id;
+        render();
+    }
+
+    function restart() {
+        currentId = "start";
+        path.length = 0;
+        render();
+    }
+
+    // ==== event listeners ====
+    yesBtn.addEventListener('click', () => answer('yes'));
+    noBtn .addEventListener('click', () => answer('no'));
+    backBtn.addEventListener('click', goBack);
+
+    // ==== initial render ====
+    render();
+
+})();
+</script>
+</body>
+</html>

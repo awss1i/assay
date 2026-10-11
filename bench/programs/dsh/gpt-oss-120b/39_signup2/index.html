@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sign Up</title>
+<style>
+body {font-family:Arial, sans-serif; max-width:400px; margin:20px auto; padding:10px;}
+form {display:flex; flex-direction:column;}
+label {margin-top:10px;}
+input {padding:5px; font-size:1em;}
+#passwordStrength {height:10px; background:#ddd; margin-top:5px;}
+#strengthBar {height:100%; width:0%; background:#f00; transition:width 0.3s;}
+#submitBtn {margin-top:15px; padding:10px; font-size:1em;}
+</style>
+</head>
+<body>
+<h2>Sign Up</h2>
+<form id="signupForm" novalidate>
+<label>Email:
+<input type="email" id="email" required>
+</label>
+<label>Password:
+<input type="password" id="password" required>
+<div id="passwordStrength"><div id="strengthBar"></div></div>
+</label>
+<label>Confirm Password:
+<input type="password" id="confirmPassword" required>
+</label>
+<button type="submit" id="submitBtn" disabled>Submit</button>
+</form>
+<script>
+const email = document.getElementById('email');
+const password = document.getElementById('password');
+const confirm = document.getElementById('confirmPassword');
+const submitBtn = document.getElementById('submitBtn');
+const strengthBar = document.getElementById('strengthBar');
+
+function assessStrength(pwd) {
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (/[a-z]/.test(pwd)) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  return score;
+}
+function updateStrength() {
+  const val = password.value;
+  const score = assessStrength(val);
+  const percent = (score/5)*100;
+  strengthBar.style.width = percent + '%';
+  if (score <=2) strengthBar.style.background = '#f00';
+  else if (score===3) strengthBar.style.background = '#ffa500';
+  else if (score===4) strengthBar.style.background = '#ff0';
+  else strengthBar.style.background = '#0f0';
+}
+function validateForm() {
+  const emailValid = email.checkValidity();
+  const pwd = password.value;
+  const pwdValid = assessStrength(pwd)===5;
+  const match = pwd === confirm.value && pwd!==''; 
+  submitBtn.disabled = !(emailValid && pwdValid && match);
+}
+password.addEventListener('input', () => {
+  updateStrength();
+  validateForm();
+});
+confirm.addEventListener('input', validateForm);
+email.addEventListener('input', validateForm);
+document.getElementById('signupForm').addEventListener('submit', e => {
+  e.preventDefault();
+  alert('Form submitted!');
+});
+</script>
+</body>
+</html>

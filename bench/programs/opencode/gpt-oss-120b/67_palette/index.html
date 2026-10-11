@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Canvas Shape Selector</title>
+<style>
+  body {font-family: sans-serif; margin: 20px;}
+  #palette {margin-top: 10px;}
+  .swatch {display:inline-block;width:30px;height:30px;margin:2px;cursor:pointer;border:1px solid #000;}
+</style>
+</head>
+<body>
+<canvas id="canvas" width="400" height="300" style="border:1px solid #000;"></canvas>
+<div id="palette"></div>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const palette = document.getElementById('palette');
+
+  const colors = ['red','green','blue','orange','purple','black'];
+  colors.forEach(col => {
+    const div = document.createElement('div');
+    div.className = 'swatch';
+    div.style.background = col;
+    div.dataset.color = col;
+    palette.appendChild(div);
+  });
+
+  // Define shapes
+  const shapes = [
+    {type:'rect', x:50, y:50, w:100, h:80, color:'red'},
+    {type:'circle', x:250, y:80, r:50, color:'green'},
+    {type:'triangle', x1:150, y1:200, x2:200, y2:250, x3:100, y3:250, color:'blue'}
+  ];
+  let selected = null;
+
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    shapes.forEach(s => {
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      if (s.type==='rect') {
+        ctx.rect(s.x,s.y,s.w,s.h);
+      } else if (s.type==='circle') {
+        ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      } else if (s.type==='triangle') {
+        ctx.moveTo(s.x1,s.y1);
+        ctx.lineTo(s.x2,s.y2);
+        ctx.lineTo(s.x3,s.y3);
+        ctx.closePath();
+      }
+      ctx.fill();
+      // outline for selection
+      if (s===selected) {
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    });
+  }
+
+  function hitTest(x,y) {
+    for (let i=shapes.length-1;i>=0;i--) {
+      const s = shapes[i];
+      if (s.type==='rect') {
+        if (x>=s.x && x<=s.x+s.w && y>=s.y && y<=s.y+s.h) return s;
+      } else if (s.type==='circle') {
+        const dx=x-s.x, dy=y-s.y;
+        if (dx*dx+dy*dy <= s.r*s.r) return s;
+      } else if (s.type==='triangle') {
+        const {x1,y1,x2,y2,x3,y3} = s;
+        const denom = (y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3);
+        const a = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / denom;
+        const b = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / denom;
+        const c = 1 - a - b;
+        if (a>=0 && b>=0 && c>=0) return s;
+      }
+    }
+    return null;
+  }
+
+  canvas.addEventListener('click',e=>{
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    selected = hitTest(x,y);
+    draw();
+  });
+
+  palette.addEventListener('click',e=>{
+    if (!selected) return;
+    const col = e.target.dataset.color;
+    if (col) {
+      selected.color = col;
+      draw();
+    }
+  });
+
+  draw();
+</script>
+</body>
+</html>

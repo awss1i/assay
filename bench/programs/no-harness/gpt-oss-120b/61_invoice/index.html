@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice</title>
+<style>
+    body {
+        font-family: sans-serif;
+        margin: 40px;
+        background: #f9f9f9;
+    }
+    h1 {
+        text-align: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background:#fff;
+    }
+    th, td {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        text-align: right;
+    }
+    th {
+        background:#f0f0f0;
+    }
+    th:first-child, td:first-child {
+        text-align: left;
+    }
+    input[type=number] {
+        width: 60px;
+        padding: 4px;
+        font-size: 1em;
+    }
+    .summary {
+        margin-top: 20px;
+        width: 40%;
+        float: right;
+    }
+    .summary td {
+        border: none;
+    }
+    .summary .label {
+        text-align:left;
+    }
+    .total-row {
+        font-weight: bold;
+        border-top:2px solid #000;
+    }
+</style>
+</head>
+<body>
+<h1>Invoice</h1>
+
+<table id="invoice">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price (£)</th>
+            <th>Line Total (£)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-price-pence="299">
+            <td>Widget A</td>
+            <td><input type="number" min="0" value="1" class="qty"></td>
+            <td class="unit-price">2.99</td>
+            <td class="line-total">2.99</td>
+        </tr>
+        <tr data-price-pence="1499">
+            <td>Gadget B</td>
+            <td><input type="number" min="0" value="2" class="qty"></td>
+            <td class="unit-price">14.99</td>
+            <td class="line-total">29.98</td>
+        </tr>
+        <tr data-price-pence="450">
+            <td>Doohickey C</td>
+            <td><input type="number" min="0" value="0" class="qty"></td>
+            <td class="unit-price">4.50</td>
+            <td class="line-total">0.00</td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="summary">
+    <tr>
+        <td class="label">Subtotal:</td>
+        <td id="subtotal">37.97</td>
+    </tr>
+    <tr>
+        <td class="label">Tax (20%):</td>
+        <td id="tax">7.59</td>
+    </tr>
+    <tr class="total-row">
+        <td class="label">Total:</td>
+        <td id="total">45.56</td>
+    </tr>
+</table>
+
+<script>
+(function(){
+    const invoiceBody = document.querySelector('#invoice tbody');
+    const subtotalEl = document.getElementById('subtotal');
+    const taxEl = document.getElementById('tax');
+    const totalEl = document.getElementById('total');
+
+    // Utility: format pence integer to £ string with 2 decimals
+    function fmt(pence){
+        return (pence/100).toFixed(2);
+    }
+
+    // Recalculate everything
+    function recalc(){
+        let subtotalPence = 0;
+
+        // Iterate each row
+        const rows = invoiceBody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const qtyInput = row.querySelector('.qty');
+            const qty = parseInt(qtyInput.value,10) || 0;
+            const pricePence = parseInt(row.dataset.pricePence,10);
+            const lineTotalPence = qty * pricePence;
+            row.querySelector('.line-total').textContent = fmt(lineTotalPence);
+            subtotalPence += lineTotalPence;
+        });
+
+        const taxPence = Math.round(subtotalPence * 0.20);
+        const totalPence = subtotalPence + taxPence;
+
+        subtotalEl.textContent = fmt(subtotalPence);
+        taxEl.textContent = fmt(taxPence);
+        totalEl.textContent = fmt(totalPence);
+    }
+
+    // Attach listeners
+    invoiceBody.addEventListener('input', function(e){
+        if(e.target.classList.contains('qty')){
+            recalc();
+        }
+    });
+
+    // Initial calculation
+    recalc();
+})();
+</script>
+</body>
+</html>

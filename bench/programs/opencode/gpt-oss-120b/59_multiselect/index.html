@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Selectable List Demo</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 2rem;
+    background: #f9f9f9;
+    color: #333;
+  }
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+  #counter {
+    margin-top: 1rem;
+    font-weight: bold;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: 300px;
+  }
+  li {
+    padding: 0.4rem 0.6rem;
+    margin: 0.2rem 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  li.selected {
+    background: #0066ff;
+    color: #fff;
+    border-color: #004ecc;
+  }
+</style>
+</head>
+<body>
+<h1>Selectable List</h1>
+<ul id="list">
+  <li data-index="0">Item 1</li>
+  <li data-index="1">Item 2</li>
+  <li data-index="2">Item 3</li>
+  <li data-index="3">Item 4</li>
+  <li data-index="4">Item 5</li>
+  <li data-index="5">Item 6</li>
+  <li data-index="6">Item 7</li>
+  <li data-index="7">Item 8</li>
+  <li data-index="8">Item 9</li>
+  <li data-index="9">Item 10</li>
+</ul>
+<div id="counter">Selected: 0</div>
+
+<script>
+(() => {
+  const list = document.getElementById('list');
+  const items = Array.from(list.children);
+  const counter = document.getElementById('counter');
+  let lastClicked = null; // index of last clicked item for shift‑range
+
+  const updateCounter = () => {
+    const selectedCount = items.filter(li => li.classList.contains('selected')).length;
+    counter.textContent = `Selected: ${selectedCount}`;
+  };
+
+  const clearSelection = () => {
+    items.forEach(li => li.classList.remove('selected'));
+  };
+
+  const selectRange = (start, end) => {
+    const [from, to] = start < end ? [start, end] : [end, start];
+    for (let i = from; i <= to; i++) {
+      items[i].classList.add('selected');
+    }
+  };
+
+  list.addEventListener('click', e => {
+    if (e.target.tagName !== 'LI') return;
+    const li = e.target;
+    const idx = Number(li.dataset.index);
+    const ctrl = e.ctrlKey || e.metaKey; // meta for macOS command key
+    const shift = e.shiftKey;
+
+    if (shift && lastClicked !== null) {
+      // Shift‑click: add range between lastClicked and current
+      selectRange(lastClicked, idx);
+    } else if (ctrl) {
+      // Ctrl‑click: toggle this item in the current selection
+      li.classList.toggle('selected');
+      lastClicked = idx;
+    } else {
+      // Plain click: clear previous selection and select this item only
+      clearSelection();
+      li.classList.add('selected');
+      lastClicked = idx;
+    }
+    updateCounter();
+  });
+})();
+</script>
+</body>
+</html>

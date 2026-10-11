@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stopwatch</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background:#f0f4f8;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:2rem;
+    margin:0;
+  }
+  h1 {
+    margin-bottom:0.5rem;
+  }
+  #display {
+    font-size:3rem;
+    font-weight:600;
+    margin:1rem 0;
+    width:12rem;
+    text-align:center;
+    background:#fff;
+    border:2px solid #333;
+    border-radius:8px;
+    padding:0.5rem;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+  }
+  .controls {
+    display:flex;
+    gap:0.8rem;
+    margin-bottom:1.5rem;
+  }
+  button {
+    font-size:1rem;
+    padding:0.6rem 1.2rem;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    background:#0069d9;
+    color:#fff;
+    transition:background .2s;
+  }
+  button:disabled {
+    background:#999;
+    cursor:default;
+  }
+  button:hover:not(:disabled) {
+    background:#0053a6;
+  }
+  #laps {
+    width:100%;
+    max-width:400px;
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:6px;
+    padding:0.8rem;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  #laps h2 {
+    margin-top:0;
+    font-size:1.2rem;
+  }
+  #laps ol {
+    margin:0;
+    padding-left:1.2rem;
+  }
+  #laps li {
+    line-height:1.5;
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+<h1>Stopwatch</h1>
+<div id="display">00:00.00</div>
+<div class="controls">
+  <button id="startBtn">Start</button>
+  <button id="stopBtn" disabled>Stop</button>
+  <button id="lapBtn" disabled>Lap</button>
+  <button id="resetBtn" disabled>Reset</button>
+</div>
+<div id="laps">
+  <h2>Lap Times</h2>
+  <ol id="lapList"></ol>
+</div>
+
+<script>
+(() => {
+  const display   = document.getElementById('display');
+  const startBtn  = document.getElementById('startBtn');
+  const stopBtn   = document.getElementById('stopBtn');
+  const lapBtn    = document.getElementById('lapBtn');
+  const resetBtn  = document.getElementById('resetBtn');
+  const lapList   = document.getElementById('lapList');
+
+  let startTime = 0;      // timestamp when the current run started
+  let elapsed   = 0;      // total elapsed ms (including previous runs)
+  let rafId;              // requestAnimationFrame id
+
+  const formatTime = ms => {
+    const totalSec = Math.floor(ms / 1000);
+    const minutes  = Math.floor(totalSec / 60);
+    const seconds  = totalSec % 60;
+    const hundredths = Math.floor((ms % 1000) / 10);
+    return (
+      String(minutes).padStart(2, '0') + ':' +
+      String(seconds).padStart(2, '0') + '.' +
+      String(hundredths).padStart(2, '0')
+    );
+  };
+
+  const update = () => {
+    const now = Date.now();
+    const current = now - startTime + elapsed;
+    display.textContent = formatTime(current);
+    rafId = requestAnimationFrame(update);
+  };
+
+  const start = () => {
+    startTime = Date.now();
+    rafId = requestAnimationFrame(update);
+    // button states
+    startBtn.disabled  = true;
+    stopBtn.disabled   = false;
+    lapBtn.disabled    = false;
+    resetBtn.disabled  = false;
+  };
+
+  const stop = () => {
+    cancelAnimationFrame(rafId);
+    elapsed += Date.now() - startTime;
+    // button states
+    startBtn.disabled = false;
+    stopBtn.disabled  = true;
+    lapBtn.disabled   = true;
+  };
+
+  const reset = () => {
+    cancelAnimationFrame(rafId);
+    startTime = 0;
+    elapsed = 0;
+    display.textContent = '00:00.00';
+    lapList.innerHTML = '';
+    // button states
+    startBtn.disabled  = false;
+    stopBtn.disabled   = true;
+    lapBtn.disabled    = true;
+    resetBtn.disabled  = true;
+  };
+
+  const lap = () => {
+    const now = Date.now();
+    const current = now - startTime + elapsed;
+    const li = document.createElement('li');
+    li.textContent = formatTime(current);
+    lapList.appendChild(li);
+  };
+
+  // event listeners
+  startBtn.addEventListener('click', start);
+  stopBtn.addEventListener('click', stop);
+  resetBtn.addEventListener('click', reset);
+  lapBtn.addEventListener('click', lap);
+})();
+</script>
+</body>
+</html>

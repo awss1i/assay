@@ -1,0 +1,19 @@
+benchmark:
+  - changed-files:
+      - any-glob-to-any-file: 'bench/**'
+
+plugin:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'plugins/**'
+          - '.claude-plugin/**'
+          - '.cursor-plugin/**'
+          - '.grok-plugin/**'
+          - '.agents/**'
+          - '.github/plugin/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic Tac Toe</title>
+<style>
+  body {font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 30px;}
+  h1 {margin-bottom: 10px;}
+  #board {display: grid; grid-template: repeat(3, 100px) / repeat(3, 100px); gap: 5px;}
+  .cell {
+    width: 100px; height: 100px; display: flex; justify-content: center; align-items: center;
+    font-size: 64px; cursor: pointer; background: #f0f0f0; border: 2px solid #333;
+    user-select: none;
+  }
+  .cell:hover {background: #e0e0e0;}
+  #status {margin-top: 20px; font-size: 1.2em;}
+  button {margin-top: 15px; padding: 5px 10px; font-size: 1em;}
+</style>
+</head>
+<body>
+<h1>Tic Tac Toe</h1>
+<div id="board"></div>
+<div id="status"></div>
+<button id="reset">Reset Game</button>
+<script>
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  const resetBtn = document.getElementById('reset');
+  const winningLines = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // cols
+    [0,4,8],[2,4,6] // diagonals
+  ];
+  let board = Array(9).fill(null);
+  let turn = 'X';
+  let gameOver = false;
+
+  function renderBoard(){
+    boardEl.innerHTML = '';
+    board.forEach((cell,i)=>{
+      const div = document.createElement('div');
+      div.className='cell';
+      div.dataset.index=i;
+      div.textContent = cell||'';
+      div.addEventListener('click',()=>handleClick(i));
+      boardEl.appendChild(div);
+    });
+    statusEl.textContent = gameOver ? statusEl.textContent : `Turn: ${turn}`;
+  }
+
+  function handleClick(idx){
+    if(gameOver || board[idx]) return;
+    board[idx]=turn;
+    if(checkWinner(turn)){
+      statusEl.textContent = `${turn} wins!`;
+      gameOver = true;
+    } else if(board.every(c=>c!==null)){
+      statusEl.textContent = "It's a draw!";
+      gameOver = true;
+    } else {
+      turn = turn==='X'?'O':'X';
+      statusEl.textContent = `Turn: ${turn}`;
+    }
+    renderBoard();
+  }
+
+  function checkWinner(player){
+    return winningLines.some(line=>{
+      return line.every(idx=>board[idx]===player);
+    });
+  }
+
+  function resetGame(){
+    board = Array(9).fill(null);
+    turn = 'X';
+    gameOver = false;
+    statusEl.textContent = '';
+    renderBoard();
+  }
+
+  resetBtn.addEventListener('click',resetGame);
+  renderBoard();
+</script>
+</body>
+</html>

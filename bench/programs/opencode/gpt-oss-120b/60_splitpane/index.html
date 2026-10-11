@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Draggable Split Pane</title>
+<style>
+  html,body {margin:0;height:100%;overflow:hidden;font-family:system-ui, sans-serif;}
+  #container {display:flex;height:100%;width:100%;user-select:none;}
+  .pane {
+    flex-grow:0;flex-shrink:0;overflow:auto;display:flex;align-items:center;justify-content:center;
+    background:#f0f0f0; border:1px solid #ccc; box-sizing:border-box;
+  }
+  #divider {
+    width:5px; background:#aaa; cursor:col-resize; flex-shrink:0; flex-grow:0;
+  }
+  .label {font-size:1.2em;}
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="left" class="pane"><span class="label" id="leftLabel"></span></div>
+  <div id="divider"></div>
+  <div id="right" class="pane"><span class="label" id="rightLabel"></span></div>
+</div>
+<script>
+(function(){
+  const container = document.getElementById('container');
+  const left = document.getElementById('left');
+  const right = document.getElementById('right');
+  const divider = document.getElementById('divider');
+  const leftLabel = document.getElementById('leftLabel');
+  const rightLabel = document.getElementById('rightLabel');
+  const minPct = 10; // minimum percent for each pane
+  // initialise widths
+  let leftPct = 50;
+  let rightPct = 50;
+  function setWidths(){
+    left.style.width = leftPct + '%';
+    right.style.width = rightPct + '%';
+    leftLabel.textContent = leftPct.toFixed(1) + '%';
+    rightLabel.textContent = rightPct.toFixed(1) + '%';
+  }
+  setWidths();
+  let dragging = false;
+  divider.addEventListener('mousedown', e=>{ dragging = true; e.preventDefault(); });
+  document.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    const rect = container.getBoundingClientRect();
+    let offsetX = e.clientX - rect.left; // position within container
+    // calculate percentages
+    let newLeftPct = (offsetX / rect.width) * 100;
+    let newRightPct = 100 - newLeftPct;
+    // enforce minimums
+    if(newLeftPct < minPct){ newLeftPct = minPct; newRightPct = 100 - minPct; }
+    if(newRightPct < minPct){ newRightPct = minPct; newLeftPct = 100 - minPct; }
+    leftPct = newLeftPct;
+    rightPct = newRightPct;
+    setWidths();
+  });
+  document.addEventListener('mouseup', ()=>{ dragging = false; });
+  // Handle window resize to keep percentages consistent
+  window.addEventListener('resize', setWidths);
+})();
+</script>
+</body>
+</html>

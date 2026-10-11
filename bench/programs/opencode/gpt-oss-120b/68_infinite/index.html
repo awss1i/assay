@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Infinite Scroll</title>
+<style>
+  body,html {
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family:system-ui, sans-serif;
+    background:#f9f9f9;
+    color:#333;
+  }
+  #container {
+    box-sizing:border-box;
+    height:100%;
+    overflow-y:auto;
+    padding:20px;
+  }
+  ul {
+    list-style:none;
+    padding:0;
+    margin:0;
+  }
+  li {
+    background:#fff;
+    margin-bottom:10px;
+    padding:12px 16px;
+    border-radius:4px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+  }
+  #status {
+    text-align:center;
+    padding:12px;
+    color:#666;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <ul id="list"></ul>
+  <div id="status"></div>
+</div>
+
+<script>
+(() => {
+  const BATCH_SIZE = 20;      // rows added each time
+  const MAX_ITEMS  = 60;      // total rows max
+  let loaded = 0;             // how many rows already rendered
+
+  const listEl   = document.getElementById('list');
+  const statusEl = document.getElementById('status');
+  const container = document.getElementById('container');
+
+  // Render a batch of rows
+  function loadMore() {
+    const fragment = document.createDocumentFragment();
+    const toLoad = Math.min(BATCH_SIZE, MAX_ITEMS - loaded);
+    for (let i = 0; i < toLoad; i++) {
+      const li = document.createElement('li');
+      li.textContent = `Row ${loaded + i + 1}`;
+      fragment.appendChild(li);
+    }
+    listEl.appendChild(fragment);
+    loaded += toLoad;
+
+    // Update status message
+    if (loaded >= MAX_ITEMS) {
+      statusEl.textContent = 'No more to load.';
+      container.removeEventListener('scroll', onScroll);
+    } else {
+      statusEl.textContent = '';
+    }
+  }
+
+  // Detect near‑bottom scroll
+  function onScroll() {
+    const threshold = 150; // px from bottom before we load next batch
+    if (container.scrollTop + container.clientHeight >= container.scrollHeight - threshold) {
+      loadMore();
+    }
+  }
+
+  // Initial load
+  loadMore();
+
+  // Attach scroll listener
+  container.addEventListener('scroll', onScroll);
+})();
+</script>
+</body>
+</html>

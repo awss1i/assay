@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3x3 Matrix Multiply</title>
+<style>
+  body {font-family: sans-serif; padding: 20px;}
+  table {border-collapse: collapse; margin: 10px;}
+  td {border: 1px solid #333; padding: 5px;}
+  input[type="number"] {width: 50px;}
+  .grid {display: inline-block; vertical-align: top;}
+  #resultGrid span {display: block; width: 50px; height: 1.2em; text-align: center;}
+  #calc {margin-top: 20px; font-weight: bold;}
+</style>
+</head>
+<body>
+<h2>Matrix Multiply (3x3)</h2>
+<div class="grid">
+  <strong>Matrix A</strong>
+  <table id="gridA">
+    <tbody>
+      <!-- 3 rows, 3 columns -->
+      <tr>
+        <td><input type="number" id="a00" value="0"></td>
+        <td><input type="number" id="a01" value="0"></td>
+        <td><input type="number" id="a02" value="0"></td>
+      </tr>
+      <tr>
+        <td><input type="number" id="a10" value="0"></td>
+        <td><input type="number" id="a11" value="0"></td>
+        <td><input type="number" id="a12" value="0"></td>
+      </tr>
+      <tr>
+        <td><input type="number" id="a20" value="0"></td>
+        <td><input type="number" id="a21" value="0"></td>
+        <td><input type="number" id="a22" value="0"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="grid">
+  <strong>Matrix B</strong>
+  <table id="gridB">
+    <tbody>
+      <tr>
+        <td><input type="number" id="b00" value="0"></td>
+        <td><input type="number" id="b01" value="0"></td>
+        <td><input type="number" id="b02" value="0"></td>
+      </tr>
+      <tr>
+        <td><input type="number" id="b10" value="0"></td>
+        <td><input type="number" id="b11" value="0"></td>
+        <td><input type="number" id="b12" value="0"></td>
+      </tr>
+      <tr>
+        <td><input type="number" id="b20" value="0"></td>
+        <td><input type="number" id="b21" value="0"></td>
+        <td><input type="number" id="b22" value="0"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="grid">
+  <strong>Result (A×B)</strong>
+  <table id="resultGrid">
+    <tbody>
+      <tr>
+        <td><span id="c00"></span></td>
+        <td><span id="c01"></span></td>
+        <td><span id="c02"></span></td>
+      </tr>
+      <tr>
+        <td><span id="c10"></span></td>
+        <td><span id="c11"></span></td>
+        <td><span id="c12"></span></td>
+      </tr>
+      <tr>
+        <td><span id="c20"></span></td>
+        <td><span id="c21"></span></td>
+        <td><span id="c22"></span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<button id="multiplyBtn">Multiply</button>
+<div id="calc"></div>
+<script>
+// Helper to get value or NaN if empty
+function getVal(id) {
+  const el = document.getElementById(id);
+  const val = el.value.trim();
+  return val === '' ? NaN : Number(val);
+}
+
+function multiplyMatrices() {
+  // read matrices
+  const A = [
+    [getVal('a00'), getVal('a01'), getVal('a02')],
+    [getVal('a10'), getVal('a11'), getVal('a12')],
+    [getVal('a20'), getVal('a21'), getVal('a22')]
+  ];
+  const B = [
+    [getVal('b00'), getVal('b01'), getVal('b02')],
+    [getVal('b10'), getVal('b11'), getVal('b12')],
+    [getVal('b20'), getVal('b21'), getVal('b22')]
+  ];
+
+  // validate numeric entries
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (isNaN(A[i][j]) || isNaN(B[i][j])) {
+        alert('All entries must be numeric.');
+        return;
+      }
+    }
+  }
+
+  const C = [];
+  for (let i = 0; i < 3; i++) {
+    C[i] = [];
+    for (let j = 0; j < 3; j++) {
+      // compute dot product of row i of A and column j of B
+      let sum = 0;
+      for (let k = 0; k < 3; k++) {
+        sum += A[i][k] * B[k][j];
+      }
+      C[i][j] = sum;
+      document.getElementById(`c${i}${j}`).textContent = sum;
+    }
+  }
+
+  // Show arithmetic for the top‑left cell (0,0) as an example
+  const example = `${A[0][0]} × ${B[0][0]} + ${A[0][1]} × ${B[1][0]} + ${A[0][2]} × ${B[2][0]} = ${C[0][0]}`;
+  document.getElementById('calc').textContent = 'Cell (0,0): ' + example;
+}
+
+document.getElementById('multiplyBtn').addEventListener('click', multiplyMatrices);
+</script>
+</body>
+</html>

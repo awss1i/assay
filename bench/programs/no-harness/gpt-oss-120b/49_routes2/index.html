@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hash‑Router SPA – 3 Views</title>
+<style>
+    /* ---- Basic page layout ---- */
+    body {
+        margin:0;
+        font-family:Arial,Helvetica,sans-serif;
+        background:#f9f9f9;
+        color:#333;
+    }
+    header {
+        background:#4A90E2;
+        color:#fff;
+        padding:1rem;
+        text-align:center;
+        font-size:1.5rem;
+    }
+    nav {
+        background:#fff;
+        padding:0.5rem;
+        text-align:center;
+        box-shadow:0 2px 4px rgba(0,0,0,0.05);
+    }
+    nav a {
+        margin:0 1rem;
+        text-decoration:none;
+        color:#4A90E2;
+        font-weight:bold;
+    }
+    nav a.active {
+        border-bottom:2px solid #4A90E2;
+    }
+    .view {
+        display:none;            /* hidden by default */
+        padding:2rem;
+        max-width:800px;
+        margin:auto;
+    }
+    .view h2 {
+        color:#4A90E2;
+    }
+    footer {
+        text-align:center;
+        padding:1rem;
+        font-size:0.9rem;
+        color:#777;
+        margin-top:2rem;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    Hash‑Router Single‑Page App
+</header>
+
+<nav>
+    <a href="#home"   id="link-home">Home</a>
+    <a href="#about"  id="link-about">About</a>
+    <a href="#contact"id="link-contact">Contact</a>
+</nav>
+
+<div id="home"    class="view"><h2>Home</h2><p>Welcome to the home page. This is the default view.</p></div>
+<div id="about"   class="view"><h2>About</h2><p>Here you can learn more about this tiny SPA example.</p></div>
+<div id="contact" class="view"><h2>Contact</h2><p>Got questions? Feel free to pretend to contact us.</p></div>
+
+<footer>
+    &copy; 2026 Simple SPA Demo
+</footer>
+
+<script>
+/*
+   Minimal hash‑router for a three‑view SPA.
+   - Views are <div id="home|about|contact" class="view">
+   - Navigation links get the "active" class when their hash matches.
+   - On page load and on every hashchange we show the correct view.
+   - If no hash is present we default to #home.
+*/
+
+(function () {
+    const views = ['home', 'about', 'contact'];   // the ids of the view containers
+
+    // Show the view whose id matches the hash (without leading '#')
+    function showView(hash) {
+        const target = hash ? hash.replace(/^#/, '') : 'home';
+        const viewId = views.includes(target) ? target : 'home';
+
+        // Hide all, then show the selected one
+        views.forEach(id => {
+            document.getElementById(id).style.display = (id === viewId) ? 'block' : 'none';
+        });
+
+        // Update nav link styling
+        views.forEach(id => {
+            const link = document.getElementById('link-' + id);
+            if (link) {
+                link.classList.toggle('active', id === viewId);
+            }
+        });
+    }
+
+    // Initial load – ensure a hash exists, then display the proper view
+    function init() {
+        if (!location.hash) {
+            // No hash → set default, but do not push a history entry
+            history.replaceState(null, '', '#home');
+        }
+        showView(location.hash);
+    }
+
+    // Listen to hash changes (back/forward navigation & clicks)
+    window.addEventListener('hashchange', () => showView(location.hash));
+
+    // Run init after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+
+</body>
+</html>

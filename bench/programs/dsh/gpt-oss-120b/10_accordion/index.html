@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FAQ Accordion</title>
+<style>
+    body {font-family: Arial, sans-serif; margin: 20px;}
+    .accordion {border: 1px solid #ccc; border-radius: 4px;}
+    .accordion-item {border-top: 1px solid #ccc;}
+    .accordion-item:first-child {border-top: none;}
+    .accordion-header {
+        background: #f2f2f2;
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: bold;
+        user-select: none;
+    }
+    .accordion-content {
+        display: none;
+        padding: 12px 16px;
+        border-top: 1px solid #e5e5e5;
+    }
+    .active .accordion-content {display: block;}
+</style>
+</head>
+<body>
+<h1>Frequently Asked Questions</h1>
+<div class="accordion" id="faqAccordion">
+    <div class="accordion-item" id="item1">
+        <div class="accordion-header">What is the purpose of this page?</div>
+        <div class="accordion-content">
+            <p>This page demonstrates a simple FAQ accordion with five collapsible sections.</p>
+        </div>
+    </div>
+    <div class="accordion-item" id="item2">
+        <div class="accordion-header">How does the accordion work?</div>
+        <div class="accordion-content">
+            <p>Clicking a heading expands its content and automatically collapses any other open sections.</p>
+        </div>
+    </div>
+    <div class="accordion-item" id="item3">
+        <div class="accordion-header">Can I customize the style?</div>
+        <div class="accordion-content">
+            <p>Yes, modify the CSS inside the <code>&lt;style&gt;</code> tag to change colors, fonts, and spacing.</p>
+        </div>
+    </div>
+    <div class="accordion-item" id="item4">
+        <div class="accordion-header">Is JavaScript required?</div>
+        <div class="accordion-content">
+            <p>JavaScript is used to ensure only one section is open at a time. Without it, all sections can be opened independently.</p>
+        </div>
+    </div>
+    <div class="accordion-item" id="item5">
+        <div class="accordion-header">Where can I see the source?</div>
+        <div class="accordion-content">
+            <p>The entire source code is contained in this single HTML file – no external files or assets.</p>
+        </div>
+    </div>
+</div>
+<script>
+    // Accordion logic: only one panel open at any time
+    document.addEventListener('DOMContentLoaded', function() {
+        const accordion = document.getElementById('faqAccordion');
+        const items = accordion.getElementsByClassName('accordion-item');
+        Array.from(items).forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            header.addEventListener('click', function() {
+                // Close all items
+                Array.from(items).forEach(i => i.classList.remove('active'));
+                // Open the clicked one
+                item.classList.add('active');
+            });
+        });
+    });
+</script>
+</body>
+</html>

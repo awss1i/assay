@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Seat Map</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .grid { display: grid; gap: 5px; }
+  .grid[data-cols="8"] { grid-template-columns: repeat(8, 30px); }
+  .seat {
+    width: 30px;
+    height: 30px;
+    background:#ddd;
+    color:#333;
+    font-size:12px;
+    line-height:30px;
+    text-align:center;
+    cursor:pointer;
+    user-select:none;
+    border-radius:4px;
+  }
+  .seat.booked { background:#777; color:#fff; cursor:not-allowed; }
+  .seat.selected { background:#4caf50; color:#fff; }
+  #total { margin-top:20px; font-size:1.2em; }
+</style>
+</head>
+<body>
+
+<h2>Choose Your Seats</h2>
+
+<div class="grid" id="seatGrid" data-cols="8"></div>
+
+<div id="total">Total: $0</div>
+
+<script>
+(() => {
+  const rows = 5;
+  const cols = 8;
+  const pricePerSeat = 10;
+  const bookedSeats = new Set([
+    '2-3', '2-4', '3-5', '4-2', '5-7'   // row-col identifiers (1‑based)
+  ]);
+
+  const grid = document.getElementById('seatGrid');
+  // generate seats
+  for (let r = 1; r <= rows; r++) {
+    for (let c = 1; c <= cols; c++) {
+      const seat = document.createElement('div');
+      seat.className = 'seat';
+      seat.dataset.id = `${r}-${c}`;
+      seat.textContent = `${r}${c}`;
+      if (bookedSeats.has(seat.dataset.id)) {
+        seat.classList.add('booked');
+      } else {
+        seat.addEventListener('click', () => {
+          seat.classList.toggle('selected');
+          updateTotal();
+        });
+      }
+      grid.appendChild(seat);
+    }
+  }
+
+  function updateTotal() {
+    const selected = document.querySelectorAll('.seat.selected');
+    const total = selected.length * pricePerSeat;
+    document.getElementById('total').textContent = `Total: $${total}`;
+  }
+})();
+</script>
+</body>
+</html>

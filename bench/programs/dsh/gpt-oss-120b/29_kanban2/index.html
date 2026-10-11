@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kanban Board</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; padding:20px; background:#f0f0f0;}
+    #board {display:flex; gap:10px;}
+    .column {
+      background:#fff; border:1px solid #ccc; flex:1; min-width:200px; display:flex; flex-direction:column; max-height:80vh; overflow:auto;
+    }
+    .column h2 {margin:0; padding:10px; background:#e0e0e0; font-size:1.2em; display:flex; justify-content:space-between; align-items:center;}
+    .cards {flex:1; padding:10px; display:flex; flex-direction:column; gap:5px;}
+    .card {
+      background:#fffae6; border:1px solid #d3c; padding:8px; cursor:grab; user-select:none;
+    }
+    .card.dragging {opacity:0.5;}
+    button {margin-top:10px; padding:6px 12px;}
+  </style>
+</head>
+<body>
+  <h1>Kanban Board</h1>
+  <div id="board">
+    <div class="column" data-status="todo">
+      <h2>To Do (<span class="count">0</span>)</h2>
+      <div class="cards"></div>
+    </div>
+    <div class="column" data-status="inprogress">
+      <h2>In Progress (<span class="count">0</span>)</h2>
+      <div class="cards"></div>
+    </div>
+    <div class="column" data-status="done">
+      <h2>Done (<span class="count">0</span>)</h2>
+      <div class="cards"></div>
+    </div>
+  </div>
+  <button id="addCard">Add Card</button>
+
+  <script>
+    const STORAGE_KEY = 'kanbanCards';
+    let cards = [];
+
+    function loadCards() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        try { cards = JSON.parse(data); }
+        catch { cards = []; }
+      }
+    }
+    function saveCards() { localStorage.setItem(STORAGE_KEY, JSON.stringify(cards)); }
+
+    function render() {
+      const columns = document.querySelectorAll('.column');
+      columns.forEach(col => {
+        const status = col.dataset.status;
+        const container = col.querySelector('.cards');
+        container.innerHTML = '';
+        const filtered = cards.filter(c => c.status === status);
+        filtered.forEach(card => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.draggable = true;
+          div.textContent = card.text;
+          div.dataset.id = card.id;
+          div.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', card.id);
+            e.currentTarget.classList.add('dragging');
+          });
+          div.addEventListener('dragend', e => {
+            e.currentTarget.classList.remove('dragging');
+          });
+          container.appendChild(div);
+        });
+        const countSpan = col.querySelector('.count');
+        countSpan.textContent = filtered.length;
+      });
+    }
+
+    function initDragAndDrop() {
+      const cols = document.querySelectorAll('.column');
+      cols.forEach(col => {
+        col.addEventListener('dragover', e => {
+          e.preventDefault(); // allow drop
+        });
+        col.addEventListener('drop', e => {
+          e.preventDefault();
+          const id = e.dataTransfer.getData('text/plain');
+          const card = cards.find(c => c.id === id);
+          if (!card) return;
+          const newStatus = col.dataset.status;
+          if (card.status !== newStatus) {
+            card.status = newStatus;
+            saveCards();
+            render();
+          }
+        });
+      });
+    }
+
+    document.getElementById('addCard').addEventListener('click', () => {
+      const text = prompt('Card text:');
+      if (!text) return;
+      const newCard = { id: Date.now().toString() + Math.random().toString(36).substr(2,5), text, status: 'todo' };
+      cards.push(newCard);
+      saveCards();
+      render();
+    });
+
+    // Initial load
+    loadCards();
+    render();
+    initDragAndDrop();
+  </script>
+</body>
+</html>

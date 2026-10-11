@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WebGL Wireframe Cube</title>
+<style>
+  body,html{margin:0;height:100%;overflow:hidden;background:#111;color:#eee;font-family:sans-serif;}
+  #ui{position:absolute;top:10px;left:10px;z-index:10;}
+  button{padding:5px 10px;font-size:14px;}
+</style>
+</head>
+<body>
+<div id="ui"><button id="toggle">Pause</button></div>
+<canvas id="glcanvas"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('glcanvas');
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) { alert('WebGL not supported'); return; }
+
+  // Resize canvas to fill the window
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  };
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Vertex shader – transforms vertex positions
+  const vsSource = `
+    attribute vec3 aPosition;
+    uniform mat4 uMVP;
+    void main(void) {
+      gl_Position = uMVP * vec4(aPosition, 1.0);
+    }
+  `;
+
+  // Fragment shader – simple white color
+  const fsSource = `
+    precision mediump float;
+    void main(void) {
+      gl_FragColor = vec4(1.0);
+    }
+  `;
+
+  // Compile shader
+  const compileShader = (src, type) => {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+      gl.deleteShader(shader);
+      return null;
+    }
+    return shader;
+  };
+
+  const vertexShader = compileShader(vsSource, gl.VERTEX_SHADER);
+  const fragmentShader = compileShader(fsSource, gl.FRAGMENT_SHADER);
+
+  // Link program
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error('Program link error:', gl.getProgramInfoLog(program));
+    return;
+  }
+  gl.useProgram(program);
+
+  // Cube vertices
+  const vertices = new Float32Array([
+    -1,-1,-1,  1,-1,-1,  1, 1,-1, -1, 1,-1, // back face
+    -1,-1, 1,  1,-1, 1,  1, 1, 1, -1, 1, 1  // front face
+  ]);
+
+  // Indices for wireframe lines
+  const indices = new Uint16Array([
+    0,1, 1,2, 2,3, 3,0, // back square
+    4,5, 5,6, 6,7, 7,4, // front square
+    0,4, 1,5, 2,6, 3,7  // connecting edges
+  ]);
+
+  // Buffer setup
+  const posBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+  const idxBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+  const aPosLoc = gl.getAttribLocation(program, 'aPosition');
+  gl.enableVertexAttribArray(aPosLoc);
+  gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
+
+  const uMVPLoc = gl.getUniformLocation(program, 'uMVP');
+
+  // Simple matrix utilities
+  const degToRad = d => d * Math.PI / 180;
+  const identity = () => [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+  const perspective = (fovy, aspect, near, far) => {
+    const f = 1.0 / Math.tan(fovy/2);
+    return [
+      f/aspect,0,0,0,
+      0,f,0,0,
+      0,0,(far+near)/(near-far),-1,
+      0,0,(2*far*near)/(near-far),0
+    ];
+  };
+  const multiply = (a,b) => {
+    const out = new Array(16);
+    for(let i=0;i<4;i++){
+      for(let j=0;j<4;j++){
+        out[i*4+j]=a[i*4]*b[j]+a[i*4+1]*b[4+j]+a[i*4+2]*b[8+j]+a[i*4+3]*b[12+j];
+      }
+    }
+    return out;
+  };
+  const rotateX = a => {
+    const s=Math.sin(a),c=Math.cos(a);
+    return [1,0,0,0, 0,c,-s,0, 0,s,c,0, 0,0,0,1];
+  };
+  const rotateY = a => {
+    const s=Math.sin(a),c=Math.cos(a);
+    return [c,0,s,0, 0,1,0,0, -s,0,c,0, 0,0,0,1];
+  };
+  const rotateZ = a => {
+    const s=Math.sin(a),c=Math.cos(a);
+    return [c,-s,0,0, s,c,0,0, 0,0,1,0, 0,0,0,1];
+  };
+  const translate = (x,y,z) => [1,0,0,0, 0,1,0,0, 0,0,1,0, x,y,z,1];
+
+  // Animation state
+  let rotX = 0, rotY = 0, rotZ = 0;
+  let speed = 0.02;          // radians per frame
+  let axis = 'y';            // current rotation axis
+  let running = true;
+
+  // Handle arrow keys
+  window.addEventListener('keydown', e => {
+    switch(e.key) {
+      case 'ArrowUp':
+        speed += 0.01;
+        break;
+      case 'ArrowDown':
+        speed = Math.max(0, speed - 0.01);
+        break;
+      case 'ArrowLeft':
+        axis = axis === 'x' ? 'z' : 'x';
+        break;
+      case 'ArrowRight':
+        axis = axis === 'z' ? 'y' : 'z';
+        break;
+    }
+  });
+
+  // Pause / resume button
+  document.getElementById('toggle').addEventListener('click', () => {
+    running = !running;
+    document.getElementById('toggle').textContent = running ? 'Pause' : 'Resume';
+  });
+
+  // Render loop
+  const render = () => {
+    if (running) {
+      if (axis === 'x') rotX += speed;
+      else if (axis === 'y') rotY += speed;
+      else rotZ += speed;
+    }
+
+    gl.clearColor(0.07,0.07,0.07,1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+
+    const proj = perspective(degToRad(45), canvas.width / canvas.height, 0.1, 100);
+    const view = translate(0,0,-6);
+    const model = multiply(multiply(rotateX(rotX), rotateY(rotY)), rotateZ(rotZ));
+    const mvp = multiply(proj, multiply(view, model));
+
+    gl.uniformMatrix4fv(uMVPLoc, false, new Float32Array(mvp));
+    gl.drawElements(gl.LINES, indices.length, gl.UNSIGNED_SHORT, 0);
+
+    requestAnimationFrame(render);
+  };
+  render();
+})();
+</script>
+</body>
+</html>

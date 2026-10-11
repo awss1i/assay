@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Memory Matching Game</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: #2c3e50;
+    font-family: sans-serif;
+  }
+  #game {
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    grid-gap: 10px;
+  }
+  .card {
+    width: 80px;
+    height: 80px;
+    background: #ecf0f1;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    cursor: pointer;
+    user-select: none;
+    perspective: 600px;
+  }
+  .inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+  }
+  .flipped .inner {
+    transform: rotateY(180deg);
+  }
+  .front, .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .front {
+    background: #2980b9;
+    color: #fff;
+    transform: rotateY(180deg);
+  }
+  .back {
+    background: #bdc3c7;
+    color: #2c3e50;
+  }
+</style>
+</head>
+<body>
+<div id="game"></div>
+<script>
+(() => {
+  const symbols = ['🍎','🍌','🍒','🍇','🍉','🍍','🥝','🍓']; // 8 unique symbols
+  const cards = [];
+  // duplicate symbols to make pairs
+  symbols.forEach(sym => {
+    cards.push(sym);
+    cards.push(sym);
+  });
+  // shuffle
+  cards.sort(() => Math.random() - 0.5);
+  const game = document.getElementById('game');
+  let firstCard = null;
+  let lockBoard = false;
+  function createCard(symbol) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const inner = document.createElement('div');
+    inner.className = 'inner';
+    const front = document.createElement('div');
+    front.className = 'front';
+    front.textContent = symbol;
+    const back = document.createElement('div');
+    back.className = 'back';
+    back.textContent = '?';
+    inner.appendChild(back);
+    inner.appendChild(front);
+    card.appendChild(inner);
+    card.dataset.symbol = symbol;
+    card.addEventListener('click', onCardClick);
+    return card;
+  }
+  function onCardClick(e) {
+    if (lockBoard) return;
+    const clicked = e.currentTarget;
+    if (clicked === firstCard) return; // same card
+    clicked.classList.add('flipped');
+    if (!firstCard) {
+      firstCard = clicked;
+      return;
+    }
+    // second card
+    const isMatch = firstCard.dataset.symbol === clicked.dataset.symbol;
+    if (isMatch) {
+      // keep both flipped
+      firstCard.removeEventListener('click', onCardClick);
+      clicked.removeEventListener('click', onCardClick);
+      resetTurn();
+    } else {
+      lockBoard = true;
+      setTimeout(() => {
+        firstCard.classList.remove('flipped');
+        clicked.classList.remove('flipped');
+        resetTurn();
+      }, 800);
+    }
+  }
+  function resetTurn() {
+    firstCard = null;
+    lockBoard = false;
+    // check win
+    if (document.querySelectorAll('.card.flipped').length === 16) {
+      setTimeout(() => alert('Congratulations! You found all matches.'), 300);
+    }
+  }
+  // init board
+  cards.forEach(sym => game.appendChild(createCard(sym)));
+})();
+</script>
+</body>
+</html>

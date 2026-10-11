@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Infinite Scroll Demo</title>
+  <style>
+    body {font-family: sans-serif; margin:0; padding:0;}
+    #list {padding:20px;}
+    .row {padding:10px; border-bottom:1px solid #ddd;}
+    #endMessage {text-align:center; color:#555; padding:20px;}
+  </style>
+</head>
+<body>
+  <div id="list"></div>
+  <div id="endMessage" style="display:none;">No more items to load.</div>
+  <script>
+    (function(){
+      const totalItems = 60;
+      const batchSize = 20;
+      let loaded = 0;
+      const listEl = document.getElementById('list');
+      const endMessage = document.getElementById('endMessage');
+
+      function loadMore(){
+        if(loaded>=totalItems) return;
+        const fragment = document.createDocumentFragment();
+        const toLoad = Math.min(batchSize, totalItems-loaded);
+        for(let i=0;i<toLoad;i++){
+          const div = document.createElement('div');
+          div.className='row';
+          div.textContent = `Row ${loaded + i + 1}`;
+          fragment.appendChild(div);
+        }
+        listEl.appendChild(fragment);
+        loaded += toLoad;
+        if(loaded>=totalItems){
+          endMessage.style.display='block';
+        }
+      }
+
+      function onScroll(){
+        if((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10){
+          loadMore();
+        }
+      }
+      window.addEventListener('scroll', onScroll);
+      // initial load
+      loadMore();
+    })();
+  </script>
+</body>
+</html>

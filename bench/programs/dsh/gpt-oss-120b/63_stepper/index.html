@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quantity Control</title>
+<style>
+  body {font-family: Arial, sans-serif; margin: 20px;}
+  .counter {display: flex; align-items: center; gap: 10px;}
+  button {width: 30px; height: 30px; font-size: 20px; cursor: pointer;}
+  input[type="number"] {width: 50px; text-align: center; font-size: 16px;}
+  .price {margin-top: 15px; font-weight: bold;}
+</style>
+</head>
+<body>
+<h2>Product Quantity</h2>
+<div class="counter">
+  <button id="minus">‑</button>
+  <input type="number" id="qty" value="1" min="1" max="10" readonly>
+  <button id="plus">+</button>
+</div>
+<div class="price">Total Price: $<span id="total">10.00</span></div>
+
+<script>
+  const pricePerItem = 10.00;
+  const qtyInput = document.getElementById('qty');
+  const totalSpan = document.getElementById('total');
+  const plusBtn = document.getElementById('plus');
+  const minusBtn = document.getElementById('minus');
+
+  function updateTotal() {
+    const qty = Number(qtyInput.value);
+    const total = (qty * pricePerItem).toFixed(2);
+    totalSpan.textContent = total;
+  }
+
+  plusBtn.addEventListener('click', () => {
+    let val = Number(qtyInput.value);
+    if (val < 10) {
+      qtyInput.value = ++val;
+      updateTotal();
+    }
+  });
+
+  minusBtn.addEventListener('click', () => {
+    let val = Number(qtyInput.value);
+    if (val > 1) {
+      qtyInput.value = --val;
+      updateTotal();
+    }
+  });
+
+  // In case the user manually edits (though readonly) – keep bounds.
+  qtyInput.addEventListener('input', () => {
+    let val = Number(qtyInput.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 10) val = 10;
+    qtyInput.value = val;
+    updateTotal();
+  });
+
+  // Initial display
+  updateTotal();
+</script>
+</body>
+</html>

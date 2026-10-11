@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Seating Chart</title>
+<style>
+body {font-family: Arial, sans-serif; padding: 20px;}
+.grid {display: grid; grid-template-columns: repeat(8, 40px); gap: 5px; margin-bottom: 20px;}
+.seat {width: 40px; height: 40px; background: #e0e0e0; border: 1px solid #999; cursor: pointer; display: flex; align-items: center; justify-content: center;}
+.seat.booked {background: #555; cursor: not-allowed;}
+.seat.selected {background: #4caf50; color: #fff;}
+</style>
+</head>
+<body>
+<h1>Seat Selection</h1>
+<div class="grid" id="grid"></div>
+<p>Total: $<span id="total">0</span></p>
+<script>
+const rows = 5;
+const cols = 8;
+// Define some booked seats (row-col) format
+const bookedSeats = new Set(['1-2', '2-5', '3-3', '4-7', '5-1']);
+const pricePerSeat = 10;
+const grid = document.getElementById('grid');
+const totalSpan = document.getElementById('total');
+
+for (let r = 1; r <= rows; r++) {
+  for (let c = 1; c <= cols; c++) {
+    const seat = document.createElement('div');
+    seat.className = 'seat';
+    seat.dataset.coord = `${r}-${c}`;
+    // Label seats like A1, B2, etc.
+    seat.textContent = String.fromCharCode(64 + r) + c;
+    if (bookedSeats.has(seat.dataset.coord)) {
+      seat.classList.add('booked');
+    } else {
+      seat.addEventListener('click', () => {
+        seat.classList.toggle('selected');
+        const selectedCount = document.querySelectorAll('.seat.selected').length;
+        totalSpan.textContent = selectedCount * pricePerSeat;
+      });
+    }
+    grid.appendChild(seat);
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kanban Board</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin:0;
+        padding:1rem;
+        background:#f0f0f0;
+    }
+    .board {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .col {
+        background:#fff;
+        border:1px solid #ccc;
+        border-radius:4px;
+        display:flex;
+        flex-direction:column;
+        max-height:80vh;
+    }
+    .col-header {
+        padding:.5rem 1rem;
+        background:#e0e0e0;
+        border-bottom:1px solid #ccc;
+        font-weight:bold;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    }
+    .col-body {
+        flex:1;
+        overflow-y:auto;
+        padding:.5rem;
+    }
+    .card {
+        background:#fffbcc;
+        border:1px solid #ddc;
+        border-radius:3px;
+        padding:.5rem 0.75rem;
+        margin:.25rem 0;
+        cursor:grab;
+    }
+    .card:active {
+        cursor:grabbing;
+    }
+    .add-btn {
+        background:#4caf50;
+        color:#fff;
+        border:none;
+        padding:.25rem .5rem;
+        margin:.25rem;
+        border-radius:3px;
+        cursor:pointer;
+        font-size:.85rem;
+    }
+    .add-btn:hover {background:#45a047;}
+</style>
+</head>
+<body>
+<h1>Kanban Board</h1>
+<div class="board">
+    <div class="col" data-index="0">
+        <div class="col-header"><span>Todo</span> <span class="count">0</span></div>
+        <div class="col-body" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+        <button class="add-btn" onclick="addCard(0)">+ Add</button>
+    </div>
+    <div class="col" data-index="1">
+        <div class="col-header"><span>In Progress</span> <span class="count">0</span></div>
+        <div class="col-body" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+        <button class="add-btn" onclick="addCard(1)">+ Add</button>
+    </div>
+    <div class="col" data-index="2">
+        <div class="col-header"><span>Done</span> <span class="count">0</span></div>
+        <div class="col-body" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+        <button class="add-btn" onclick="addCard(2)">+ Add</button>
+    </div>
+</div>
+
+<script>
+/* ---------- Data handling ---------- */
+let state = [];                    // [{id, text, col}]
+const STORAGE_KEY = 'kanban-board-state';
+
+function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        state = JSON.parse(saved);
+    } else {
+        // default cards
+        state = [
+            {id: genId(), text: 'Task 1', col: 0},
+            {id: genId(), text: 'Task 2', col: 0},
+            {id: genId(), text: 'Task 3', col: 0}
+        ];
+        saveState();
+    }
+}
+function saveState() {
+    // rebuild state based on DOM order (preserves ordering)
+    const newState = [];
+    document.querySelectorAll('.col').forEach(col => {
+        const colIdx = +col.dataset.index;
+        col.querySelectorAll('.card').forEach(card => {
+            newState.push({
+                id: card.dataset.id,
+                text: card.textContent,
+                col: colIdx
+            });
+        });
+    });
+    state = newState;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function genId() {
+    return 'c_' + Math.random().toString(36).substr(2, 9);
+}
+
+/* ---------- Rendering ---------- */
+function renderBoard() {
+    // clear bodies
+    document.querySelectorAll('.col-body').forEach(body => body.innerHTML = '');
+    // add cards
+    state.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.draggable = true;
+        div.dataset.id = card.id;
+        div.textContent = card.text;
+        div.addEventListener('dragstart', dragStart);
+        div.addEventListener('dblclick', editCard);
+        // Append to proper column
+        const colBody = document.querySelector(`.col[data-index="${card.col}"] .col-body`);
+        colBody.appendChild(div);
+    });
+    updateCounts();
+}
+function updateCounts() {
+    document.querySelectorAll('.col').forEach(col => {
+        const cnt = col.querySelectorAll('.card').length;
+        col.querySelector('.count').textContent = cnt;
+    });
+}
+
+/* ---------- Drag & Drop ---------- */
+function allowDrop(ev) {
+    ev.preventDefault(); // enable drop
+}
+function dragStart(ev) {
+    ev.dataTransfer.setData('text/plain', ev.target.dataset.id);
+}
+function drop(ev) {
+    ev.preventDefault();
+    const cardId = ev.dataTransfer.getData('text/plain');
+    const cardEl = document.querySelector(`.card[data-id="${cardId}"]`);
+    // Find the column body that received the drop
+    const targetBody = ev.currentTarget;
+    // If dropped on a card, insert before it; else append
+    if (ev.target.classList.contains('card')) {
+        targetBody.insertBefore(cardEl, ev.target);
+    } else {
+        targetBody.appendChild(cardEl);
+    }
+    // Update state and counts
+    const newCol = +targetBody.closest('.col').dataset.index;
+    const cardObj = state.find(c => c.id === cardId);
+    if (cardObj) cardObj.col = newCol;
+    saveState();
+    updateCounts();
+}
+
+/* ---------- Card editing / adding ---------- */
+function editCard(ev) {
+    const el = ev.currentTarget;
+    const newText = prompt('Edit task text:', el.textContent);
+    if (newText !== null) {
+        el.textContent = newText;
+        const card = state.find(c => c.id === el.dataset.id);
+        if (card) card.text = newText;
+        saveState();
+    }
+}
+function addCard(colIdx) {
+    const text = prompt('New task description:');
+    if (!text) return;
+    const newCard = {id: genId(), text, col: colIdx};
+    state.push(newCard);
+    saveState();
+    renderBoard();
+}
+
+/* ---------- Init ---------- */
+loadState();
+renderBoard();
+</script>
+</body>
+</html>
