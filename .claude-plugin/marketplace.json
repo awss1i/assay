@@ -1,6 +1,6 @@
 {
   "name": "assay",
-  "strict": false,
+  "description": "The assay plugin, which checks a generated web page after you change it",
   "owner": {
     "name": "awss1i",
     "url": "https://github.com/awss1i/assay"
