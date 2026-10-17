@@ -122,6 +122,14 @@ SANDBOX_OFF = ("assay: Chromium's sandbox couldn't start on this system, so "
                "the page ran without it.")
 
 
+def _where(root: Path, entry: str) -> str:
+    """The page as `folder/entry`, the way the one-line output names it."""
+    # Resolve so `assay .` still gets a folder name, which tells apart two
+    # pages that are both called `index.html`.
+    folder = root.resolve().name
+    return f"{folder}/{entry}" if folder else entry
+
+
 def one_line(run: object, root: Path, entry: str) -> str:
     """The whole run as one sentence, for a hook or skill to repeat verbatim.
 
@@ -134,10 +142,7 @@ def one_line(run: object, root: Path, entry: str) -> str:
 
     results = getattr(run, "results", {})
     plan = getattr(run, "plan", [])
-    # Resolve so `assay .` still gets a folder name, which tells apart two
-    # pages that are both called `index.html`.
-    folder = root.resolve().name
-    where = f"{folder}/{entry}" if folder else entry
+    where = _where(root, entry)
     bad = [r for r in results.values() if r.outcome == FAILED]
     # Count only the cases that ran and say how many didn't, so a page isn't
     # reported clean on the strength of checks that never happened.
@@ -256,8 +261,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
     if not ensure_browser():
         # The error is already on stderr. With `--if-page` the exit code
-        # stays 0, so a hook doesn't fail the agent's turn over it.
-        return 0 if args.if_page else 2
+        # stays 0, so a hook doesn't fail the agent's turn over it, and the
+        # reason also goes to stdout, because a hook passes on only stdout
+        # and a page that wasn't checked mustn't look like silence.
+        if args.if_page:
+            print(f"assay: couldn't check {_where(root, entry)} because "
+                  f"Chromium isn't installed and assay couldn't install it, "
+                  f"so nothing was verified.")
+            return 0
+        return 2
 
     from assay import check, look, tint
 

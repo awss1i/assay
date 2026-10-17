@@ -29,15 +29,21 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import pages  # noqa: E402
 
-#: Seconds to wait for assay. Long enough for a page with many controls, and
-#: shorter than the harness's own hook timeout, so a stuck browser can't hold
-#: up the end of a turn.
+#: Seconds to wait for assay on one page. Long enough for a page with many
+#: controls, and short enough that a stuck browser can't hold up the end of a
+#: turn for long.
 PATIENCE = 240
+
+#: Seconds the hook spends checking pages in all. A harness that cancels a
+#: hook throws away what it printed, so this stays shorter than the `timeout`
+#: in `hooks.json`, and a page left without time is reported as not checked.
+BUDGET = 540
 
 #: The instruction above every report. It's worded to fit any outcome, so it
 #: reads correctly above a finding, a clean result or a failure to check.
@@ -45,7 +51,13 @@ TELL = ("Print the block below verbatim as your reply, then stop. Don't "
         "change any code because of it.")
 
 
-def summarise(page: Path) -> str:
+def short(page: Path) -> str:
+    """The page as `folder/page.html`, the way assay's one-line output names
+    it."""
+    return f"{page.parent.name}/{page.name}" if page.parent.name else page.name
+
+
+def summarise(page: Path, patience: float = PATIENCE) -> str:
     """Return assay's one-line report on a page, or why it couldn't check it.
 
     `page` is the HTML file itself, because pages aren't always called
@@ -53,26 +65,36 @@ def summarise(page: Path) -> str:
     file. The wording comes from assay's `--one-line`, so the hook and the
     skill print the same sentence.
     """
-    where, entry = str(page.parent), page.name
-    short = f"{page.parent.name}/{entry}" if page.parent.name else entry
+    where, entry, name = str(page.parent), page.name, short(page)
     try:
         done = subprocess.run(
             ["assay", where, "-e", entry, "--if-page", "--one-line"],
-            capture_output=True, text=True, timeout=PATIENCE)
+            capture_output=True, text=True, timeout=patience)
     except FileNotFoundError:
-        return (f"assay: couldn't check {short} because assay isn't on "
+        return (f"assay: couldn't check {name} because assay isn't on "
                 f"PATH, so nothing was verified.")
     except subprocess.TimeoutExpired:
-        return (f"assay: gave up checking {short} after {PATIENCE}s, so "
+        return (f"assay: gave up checking {name} after {patience:.0f}s, so "
                 f"nothing was verified.")
     except Exception as slipped:
-        return (f"assay: couldn't check {short} ({slipped}), so nothing "
+        return (f"assay: couldn't check {name} ({slipped}), so nothing "
                 f"was verified.")
 
     # With `--if-page`, assay prints nothing for a file it can't check, so that
     # page reports nothing. When assay exits 2 because it refused the
     # command, the page reports nothing too.
-    return "" if done.returncode == 2 else done.stdout.strip()
+    if done.returncode == 2:
+        return ""
+    said = done.stdout.strip()
+    if said or done.returncode == 0:
+        return said
+    # assay prints its findings to stdout when it exits 1, so a failing exit
+    # with nothing on stdout means it crashed. Python prints the reason last.
+    last = (done.stderr.strip().splitlines() or [""])[-1]
+    why = " ".join(last.split())[:200]
+    return (f"assay: couldn't check {name} because assay stopped with exit "
+            f"code {done.returncode}" + (f" ({why})" if why else "")
+            + ", so nothing was verified.")
 
 
 def main() -> int:
@@ -102,7 +124,15 @@ def main() -> int:
     if not touched:
         return 0
 
-    lines = [line for page in touched if (line := summarise(page))]
+    deadline = time.monotonic() + BUDGET
+    lines = []
+    for page in touched:
+        left = min(PATIENCE, deadline - time.monotonic())
+        line = summarise(page, left) if left > 0 else (
+            f"assay: didn't check {short(page)} because the hook ran out of "
+            f"time, so nothing was verified.")
+        if line:
+            lines.append(line)
     if not lines:
         return 0
 

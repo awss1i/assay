@@ -81,21 +81,46 @@ def clock(session: str, scratch: str = "",
     same pages on every `Stop`.
 
     The order of preference is a scratch folder the harness passes in, then
-    `.git` in the working directory (nothing in `.git` shows in `git status`),
-    then a single `.assay-last-run` in the working directory. The temp
-    directory is used only when there's no working directory.
+    the git directory of the repository the working directory is in (nothing
+    there shows in `git status`), then a single `.assay-last-run` in the
+    working directory. The temp directory is used only when there's no
+    working directory.
     """
     tag = hashlib.sha1(session.encode()).hexdigest()[:12]
     if scratch and Path(scratch).is_dir():
         return Path(scratch) / f"assay-last-run-{tag}"
     if root is not None:
-        if (root / ".git").is_dir():
-            return root / ".git" / f"assay-last-run-{tag}"
+        git = git_dir(root)
+        if git is not None:
+            return git / f"assay-last-run-{tag}"
         # One file per folder instead of one per session, so the user's
         # project doesn't fill up with files. Two sessions in one folder share
         # it, which at worst repeats a report.
         return root / ".assay-last-run"
     return Path(tempfile.gettempdir()) / f"assay-last-run-{tag}"
+
+
+def git_dir(root: Path) -> Optional[Path]:
+    """The git directory of the repository `root` is in, or None.
+
+    The working directory can be any folder inside the repository. `.git` is
+    a folder in an ordinary clone, and in a worktree or submodule it's a file
+    whose `gitdir:` line names the real folder.
+    """
+    for here in (root, *root.parents):
+        dot = here / ".git"
+        if dot.is_dir():
+            return dot
+        if dot.is_file():
+            try:
+                said = dot.read_text(encoding="utf-8").strip()
+            except OSError:
+                return None
+            if not said.startswith("gitdir:"):
+                return None
+            target = here / said[len("gitdir:"):].strip()
+            return target if target.is_dir() else None
+    return None
 
 
 def last_run(path: Path) -> float:
