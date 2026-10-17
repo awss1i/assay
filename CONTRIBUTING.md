@@ -182,8 +182,8 @@ browser. `tests/test_judge.py`, `tests/test_plan.py`, `tests/test_links.py`,
 run in seconds, so run those while you work. `tests/test_end_to_end.py` takes most of the time, and skips
 rather than fails when there's no browser.
 
-CI runs the whole suite on Python 3.10, 3.12, 3.13 and 3.14 for every pull
-request, plus a short run of both benchmark scorers. All of it must pass
+CI runs the whole suite on Python 3.10, 3.11, 3.12, 3.13 and 3.14 for every
+pull request, plus a short run of both benchmark scorers. All of it must pass
 before anything is merged.
 
 ---
