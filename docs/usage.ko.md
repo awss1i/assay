@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/usage.md 9be11eb39f461b4b49c164c323369eef0bdba264 -->
+<!-- i18n-source: docs/usage.md 3b28af15e7fcd3c1fba90ffdf0ef7cdc24513549 -->
 
 <h1 align="center">assay 사용법</h1>
 
@@ -32,7 +32,7 @@ assay ./my-app --one-line         # 스크립트와 에이전트용 짧은 요�
 assay ./my-app --surface          # 찾은 컨트롤을 나열한 뒤 종료
 ```
 
-요청하지 않으면 디스크에 아무것도 쓰지 않으며, 하나라도 실패하면 종료 코드가 0이 아닌 값이 됩니다.
+하나라도 실패하면 종료 코드가 0이 아닌 값이 됩니다. 첫 실행 때 Chromium을 내려받는 것을 제외하면, 요청하지 않는 한 디스크에 아무것도 쓰지 않습니다.
 
 ---
 

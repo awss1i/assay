@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/usage.md 9be11eb39f461b4b49c164c323369eef0bdba264 -->
+<!-- i18n-source: docs/usage.md 3b28af15e7fcd3c1fba90ffdf0ef7cdc24513549 -->
 
 <h1 align="center">使用 assay</h1>
 
@@ -32,7 +32,7 @@ assay ./my-app --one-line         # 供脚本和智能体读取的简短摘要
 assay ./my-app --surface          # 列出找到的控件后停止
 ```
 
-除非你要求，assay 不会向磁盘写入任何内容。只要有任何检查（check）失败，退出码就不为零。
+只要有任何检查（check）失败，退出码就不为零。除了首次运行时下载 Chromium 以外，assay 只在你要求时才向磁盘写入内容。
 
 ---
 

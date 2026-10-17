@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 8c074d8000142ff19d4c5491cdd2f2a8293ab8ad -->
+<!-- i18n-source: README.md 1c0bdf9148e1771661e82bfb2866b220dafeae8c -->
 
 <h1 align="center">assay</h1>
 
@@ -33,7 +33,7 @@ assay 会在 Chromium 中打开你的页面，找出页面上的每个控件（c
 
 - **无需编写测试。** assay 根据在页面上找到的控件生成检查（check）。
 - **不依赖 LLM。** 不需要 API 密钥，不产生费用，每次运行的结果都相同。
-- **支持编程智能体（coding agent）。** 一个可在 15 种 harness（智能体运行框架）中使用的 skill 会让智能体检查它写出的每个页面，另有一个适用于 Claude Code 和 DeepSeek Harness 的插件（plugin），会在每一轮（turn）结束后自动运行检查。
+- **支持编程智能体（coding agent）。** 一个可在 15 种 harness（智能体运行框架）中使用的 skill 会让智能体检查它写出的每个页面。在 Claude Code、Codex、Grok Build CLI、Devin CLI、Factory Droid、GitHub Copilot CLI 和 DeepSeek Harness 中，还有一个钩子（hook）会在每一轮（turn）结束后自动运行检查。
 - **合并重复的问题（finding）。** 当一个 bug 导致多项检查失败时，后面的检查会显示 *same finding as C003*（与 C003 是同一个问题），而不会重复同一条消息。
 
 ---
@@ -63,7 +63,7 @@ pip install -e ".[dev]"
 
 ### <a id="for-coding-agents"></a>用于编程智能体
 
-先按上文安装 CLI，再按照 **[harness 安装指南 →](https://github.com/awss1i/assay/blob/main/docs/harnesses.zh-CN.md)**，在已支持的 15 种 harness 中的任意一种里添加 skill 或插件。
+先按上文安装 CLI，再按照 **[harness 安装指南 →](https://github.com/awss1i/assay/blob/main/docs/harnesses.zh-CN.md)**，在已支持的 15 种 harness 中的任意一种里添加 skill 或插件（plugin）。
 
 ---
 
@@ -75,7 +75,7 @@ assay ./my-app --report out.html  # 同时生成带截图的 HTML 报告
 assay ./my-app --one-line         # 供脚本和智能体读取的简短摘要
 ```
 
-只要有任何检查失败，退出码就不为零。除非你要求，assay 不会向磁盘写入任何内容。
+只要有任何检查失败，退出码就不为零。除了首次运行时下载 Chromium 以外，assay 只在你要求时才向磁盘写入内容。
 
 **[全部参数、完整示例、Python API 和 HTML 报告 →](https://github.com/awss1i/assay/blob/main/docs/usage.zh-CN.md)**
 
@@ -87,7 +87,7 @@ assay ./my-app --one-line         # 供脚本和智能体读取的简短摘要
 assay: checked todo/todo.html, 8 checks, nothing flagged.
 ```
 
-**插件**（适用于 Claude Code 和 DeepSeek Harness）会添加一个钩子（hook），在每一轮修改了页面的对话结束时自动运行检查。无论使用哪种方式，智能体都会报告 assay 发现的问题，除非你要求，否则不会因此修改代码。
+**插件**会添加一个钩子，在每一轮修改了页面的对话结束时自动运行检查。这个钩子适用于 Claude Code、Codex、Grok Build CLI、Devin CLI、Factory Droid、GitHub Copilot CLI 和 DeepSeek Harness。无论使用哪种方式，智能体都会报告 assay 发现的问题，除非你要求，否则不会因此修改代码。
 
 ```
 /plugin marketplace add awss1i/assay
@@ -106,7 +106,7 @@ assay 的评分基于本仓库中的两组页面，下面的每个数字都由�
 
 assay 在 20 个有问题的页面中找到了其中 15 个页面的真实 bug，205 个正常页面中有 0 个被标记为有问题。[每个页面及其结果](https://github.com/awss1i/assay/blob/main/bench/README.md)。
 
-**人为植入 bug 的页面。** 另一个从未被告知 assay 存在的智能体拿来 10 个正常运行的应用，在每个应用的副本中植入了 5 个由它自己挑选的 bug，然后把这些 bug 逐一列出。
+**人为植入 bug 的页面。** 另一个从未被告知 assay 存在的智能体拿来 10 个正常运行的应用，在每个应用的副本中植入了 5 个由它自己挑选的 bug，然后把这些 bug 逐一列出。assay 的规则（rule）在开发时参考过这些页面，所以这项得分是样本内（in-sample）结果。
 
 assay 在植入的 50 个 bug 中找到了 12 个，10 个原始页面中有 0 个被标记为有问题。[每个 bug 及其结果](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)。
 
@@ -151,7 +151,7 @@ Playwright 和 Cypress 需要有人事先写好测试。视觉回归测试需要
 ## <a id="limits"></a>局限
 
 - **无法检查意图。** 如果页面能运行但做错了事，比如总计算错了，通常会通过检查。要检查这类问题，请在 Python 中传入验收标准（acceptance criteria）。
-- **仅限网页。** assay 每次检查一个页面，页面由本地文件夹提供。它不会爬取网站、不会登录，也不会发起真实的网络请求。
+- **仅限网页。** assay 每次检查一个页面，页面由本地文件夹提供。它不会爬取网站，也不会登录。检查期间页面仍然可以访问互联网，所以对于调用在线 API 的页面，assay 检查时用的是该 API 当时返回的内容。
 - **仅限构建产物。** assay 不会运行 `npm install`，也不会执行你的构建。如果你把它指向源码目录，它会告诉你需要先运行什么。
 - **已结束的游戏可能看起来像坏了。** 游戏结束后如果无法重新开始，就不再响应操作，这可能被报告为页面毫无响应。
 - **速度。** 大多数页面需要几秒到一分钟。基准测试（benchmark）页面列出了每个页面的耗时，以及测量时使用的机器。

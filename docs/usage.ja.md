@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/usage.md 9be11eb39f461b4b49c164c323369eef0bdba264 -->
+<!-- i18n-source: docs/usage.md 3b28af15e7fcd3c1fba90ffdf0ef7cdc24513549 -->
 
 <h1 align="center">assay の使い方</h1>
 
@@ -32,7 +32,7 @@ assay ./my-app --one-line         # スクリプトやエージェント向け�
 assay ./my-app --surface          # 見つけたコントロールを一覧表示して終了
 ```
 
-指定しない限りディスクには何も書き込みません。また、失敗が 1 つでもあれば終了コードは 0 以外になります。
+失敗が 1 つでもあれば終了コードは 0 以外になります。初回の実行時に Chromium をダウンロードすることを除けば、指定しない限りディスクには何も書き込みません。
 
 ---
 

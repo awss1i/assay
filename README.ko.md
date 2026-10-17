@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 8c074d8000142ff19d4c5491cdd2f2a8293ab8ad -->
+<!-- i18n-source: README.md 1c0bdf9148e1771661e82bfb2866b220dafeae8c -->
 
 <h1 align="center">assay</h1>
 
@@ -36,7 +36,7 @@ assay는 Chromium에서 페이지를 열고, 페이지의 모든 컨트롤(contr
 
 - **테스트를 작성할 필요가 없습니다.** assay는 페이지에서 찾은 컨트롤로 검사(check)를 만듭니다.
 - **LLM을 쓰지 않습니다.** API 키도 비용도 필요 없고, 몇 번을 실행해도 결과가 같습니다.
-- **코딩 에이전트(coding agent)와 함께 동작합니다.** harness(에이전트 실행 환경) 15개에서 지원하는 skill은 에이전트가 작성한 페이지를 하나하나 검사하게 하고, Claude Code와 DeepSeek Harness용 플러그인(plugin)은 매 턴(turn)이 끝날 때마다 검사를 자동으로 실행합니다.
+- **코딩 에이전트(coding agent)와 함께 동작합니다.** harness(에이전트 실행 환경) 15개에서 지원하는 skill은 에이전트가 작성한 페이지를 하나하나 검사하게 합니다. Claude Code, Codex, Grok Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI, DeepSeek Harness에서는 훅(hook)도 매 턴(turn)이 끝날 때마다 검사를 자동으로 실행합니다.
 - **반복되는 실패를 묶습니다.** 버그 하나 때문에 여러 검사가 실패하면, 뒤에 실패한 검사는 같은 메시지를 반복하는 대신 *same finding as C003*(C003과 같은 발견 사항)이라고 표시합니다.
 
 ---
@@ -66,7 +66,7 @@ pip install -e ".[dev]"
 
 ### <a id="for-coding-agents"></a>코딩 에이전트용
 
-먼저 위의 CLI를 설치한 다음, **[harness 설정 →](https://github.com/awss1i/assay/blob/main/docs/harnesses.ko.md)** 안내에 따라 지원하는 harness 15개 중 원하는 곳에 skill이나 플러그인을 추가하세요.
+먼저 위의 CLI를 설치한 다음, **[harness 설정 →](https://github.com/awss1i/assay/blob/main/docs/harnesses.ko.md)** 안내에 따라 지원하는 harness 15개 중 원하는 곳에 skill이나 플러그인(plugin)을 추가하세요.
 
 ---
 
@@ -78,7 +78,7 @@ assay ./my-app --report out.html  # 스크린샷이 포함된 HTML 보고서도 
 assay ./my-app --one-line         # 스크립트와 에이전트용 짧은 요약
 ```
 
-하나라도 실패하면 종료 코드가 0이 아닌 값이 되고, 요청하지 않으면 디스크에 아무것도 쓰지 않습니다.
+하나라도 실패하면 종료 코드가 0이 아닌 값이 됩니다. 첫 실행 때 Chromium을 내려받는 것을 제외하면, 요청하지 않는 한 디스크에 아무것도 쓰지 않습니다.
 
 **[전체 플래그, 실제 예시, Python API, HTML 보고서(report) →](https://github.com/awss1i/assay/blob/main/docs/usage.ko.md)**
 
@@ -90,7 +90,7 @@ assay ./my-app --one-line         # 스크립트와 에이전트용 짧은 요�
 assay: checked todo/todo.html, 8 checks, nothing flagged.
 ```
 
-**플러그인**(Claude Code와 DeepSeek Harness)은 페이지를 변경한 턴이 끝날 때마다 검사를 자동으로 실행하는 훅(hook)을 추가합니다. 어느 쪽이든 에이전트는 assay가 찾은 내용을 보고하고, 요청하지 않는 한 그 결과 때문에 코드를 수정하지 않습니다.
+**플러그인**은 페이지를 변경한 턴이 끝날 때마다 검사를 자동으로 실행하는 훅을 추가합니다. 이 훅은 Claude Code, Codex, Grok Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI, DeepSeek Harness에서 동작합니다. 어느 쪽이든 에이전트는 assay가 찾은 내용을 보고하고, 요청하지 않는 한 그 결과 때문에 코드를 수정하지 않습니다.
 
 ```
 /plugin marketplace add awss1i/assay
@@ -109,7 +109,7 @@ assay의 점수는 이 저장소에 있는 두 가지 페이지 세트로 매깁
 
 assay는 고장 난 페이지 20개 중 15개에서 실제 버그를 찾았고, 정상 동작하는 페이지 205개 중 문제로 표시한 페이지는 0개입니다. [모든 페이지와 결과](https://github.com/awss1i/assay/blob/main/bench/README.md).
 
-**의도적으로 심은 버그(planted bug)가 있는 페이지.** assay의 존재를 전혀 알지 못하는 별도의 에이전트가 정상 동작하는 앱 10개의 복사본에 각각 스스로 고른 버그를 5개씩 심고, 그 목록을 남겼습니다.
+**의도적으로 심은 버그(planted bug)가 있는 페이지.** assay의 존재를 전혀 알지 못하는 별도의 에이전트가 정상 동작하는 앱 10개의 복사본에 각각 스스로 고른 버그를 5개씩 심고, 그 목록을 남겼습니다. assay의 규칙(rule)은 이 페이지들을 보면서 개발했으므로, 이 점수는 개발에 쓴 데이터로 매긴 표본 내(in-sample) 점수입니다.
 
 assay는 심은 버그 50개 중 12개를 찾았고, 원본 페이지 10개 중 문제로 표시한 페이지는 0개입니다. [모든 버그와 결과](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).
 
@@ -134,7 +134,7 @@ assay는 페이지의 용도를 모르기 때문에, 아무것도 바꾸지 않�
 - 숫자가 있어야 할 자리에 `NaN`이 나타납니다.
 - 페이지의 어떤 컨트롤을 사용해도 페이지가 전혀 반응하지 않습니다.
 
-**[모든 규칙(rule) →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.ko.md)**
+**[모든 규칙 →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.ko.md)**
 
 ---
 
@@ -154,7 +154,7 @@ Playwright와 Cypress는 누군가 작성한 테스트가 있어야 합니다. �
 ## <a id="limits"></a>한계
 
 - **의도는 검사할 수 없습니다.** 합계를 잘못 더하는 것처럼, 실행은 되지만 엉뚱한 일을 하는 페이지는 대개 통과합니다. 이런 부분을 검사하려면 Python에서 인수 기준(acceptance criteria)을 넘기세요.
-- **웹 페이지만 검사합니다.** 로컬 폴더에서 서빙한 페이지를 한 번에 하나씩 검사합니다. 크롤링, 로그인, 실제 네트워크 호출은 하지 않습니다.
+- **웹 페이지만 검사합니다.** 로컬 폴더에서 서빙한 페이지를 한 번에 하나씩 검사합니다. 크롤링이나 로그인은 하지 않습니다. 검사하는 동안에도 페이지는 인터넷에 접속할 수 있으므로, 실제 API를 호출하는 페이지는 그 API가 그때 돌려주는 응답을 받은 상태로 검사합니다.
 - **빌드 결과물만 검사합니다.** `npm install`이나 빌드를 대신 실행하지 않습니다. 소스 트리를 지정하면 먼저 무엇을 실행해야 하는지 알려 줍니다.
 - **끝난 게임은 고장 난 것처럼 보일 수 있습니다.** 다시 시작할 방법 없이 끝난 게임은 반응하지 않으므로, 아무것도 반응하지 않는다고 보고될 수 있습니다.
 - **속도.** 대부분의 페이지는 몇 초에서 1분 정도 걸립니다. 벤치마크 페이지에 페이지별 소요 시간과 측정에 쓴 머신이 나와 있습니다.

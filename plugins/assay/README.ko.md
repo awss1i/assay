@@ -1,4 +1,4 @@
-<!-- i18n-source: plugins/assay/README.md 228c8a685c996bdf309f1d30fcdd9410cff35811 -->
+<!-- i18n-source: plugins/assay/README.md 180af1a6b8d06f59dee6add968b42fecd831ed93 -->
 
 <h1 align="center">skill과 플러그인</h1>
 
@@ -49,12 +49,13 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 
 ## <a id="the-plugin"></a>플러그인
 
-플러그인(plugin)은 `Stop` 훅(hook)을 추가합니다. 이 훅은 페이지를 변경한 턴(turn)이 끝날 때마다 검사를 실행합니다. Claude Code에서는 플러그인이 skill과 훅을 함께 설치합니다. DeepSeek Harness는 Claude Code 브리지를 통해 훅만 단독으로 사용합니다.
+플러그인(plugin)은 `Stop` 훅(hook)을 추가합니다. 이 훅은 페이지를 변경한 턴(turn)이 끝날 때마다 검사를 실행합니다. Claude Code, Codex, Grok Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI에서는 플러그인이 skill과 훅을 함께 설치합니다. Cursor에서는 skill만 설치합니다. DeepSeek Harness는 Claude Code 브리지를 통해 훅을 실행합니다.
 
 - **검사하는 페이지.** 웹 파일이 하나라도 바뀌면 같은 폴더의 페이지를 검사 대상으로 표시하므로, `app.js`만 수정해도 검사합니다. 폴더마다 가장 최근에 바뀐 `.html` 파일을 검사하며, 바뀐 시각이 같으면 `index.html`을 우선합니다.
 - **탐색 범위.** 폴더를 최대 네 단계 깊이까지 찾고, `node_modules`와 `.git`은 건너뛰며, 마지막 실행 이후 바뀐 파일만 고려하고, 턴마다 최대 세 페이지를 검사합니다.
 - **페이지를 검사하면 항상 보고합니다.** 그래서 문제없다는 결과를 assay가 실행되지 않은 것으로 착각할 일이 없습니다. 페이지를 변경하지 않은 턴은 아무것도 보고하지 않습니다.
-- **결과를 볼 수 있도록 턴을 열어 둡니다.** 단, 두 번 연속으로 열어 두지는 않습니다. 이를 위해 harness의 `stop_hook_active` 플래그를 확인하고 타임스탬프를 기록합니다(harness의 임시 폴더, 없으면 `.git/`, 그것도 없으면 `.assay-last-run` 파일에 기록). 타임스탬프를 기록할 수 없으면 턴을 열어 두지 않고 보고만 합니다.
+- **결과를 볼 수 있도록 턴을 열어 둡니다.** 단, 두 번 연속으로 열어 두지는 않습니다. 이를 위해 harness의 `stop_hook_active` 플래그를 확인하고 타임스탬프를 기록합니다(harness의 임시 폴더, 없으면 저장소의 `.git` 폴더, 그것도 없으면 `.assay-last-run` 파일에 기록). 타임스탬프를 기록할 수 없으면 턴을 열어 두지 않고 보고만 합니다.
+- **제한 시간 안에 끝납니다.** 페이지 하나에 최대 4분, 모든 페이지를 합쳐 최대 9분을 쓰므로, `hooks.json`에 설정된 10분 제한이 지나 harness가 훅을 취소하기 전에 끝납니다. 시간이 남지 않은 페이지는 검사하지 못함(not checked)으로 보고합니다.
 
 ---
 

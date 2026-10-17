@@ -30,7 +30,7 @@ assay ./my-app --one-line         # short summary, for scripts and agents
 assay ./my-app --surface          # list the controls it found, then stop
 ```
 
-Nothing is written to disk unless you ask, and the exit code is non-zero if anything failed.
+The exit code is non-zero if anything failed. Apart from the Chromium download on the first run, nothing is written to disk unless you ask.
 
 ---
 
