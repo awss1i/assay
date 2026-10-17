@@ -511,13 +511,10 @@ def test_a_page_that_blinds_the_driver_is_not_a_page_that_failed(
                    '<div id="d">0</div><button id="go">Go</button>',
                    "")
     # The page's own `eval` replaces the global the driver evaluates through.
-    # The name comes from a variable so source scanners don't flag this
-    # fixture as dynamic code execution.
-    shadow = "eval"
     (tmp_path / "index.html").write_text(
         "<!doctype html><html><head><title>t</title></head><body>"
         '<div id="d">0</div><button id="go">Go</button>'
-        f"<script>function {shadow}() {{ return 1; }}"
+        "<script>function eval() { return 1; }"
         "document.getElementById('go').onclick = "
         "() => document.getElementById('d').textContent = '1';</script>"
         "</body></html>", encoding="utf-8")

@@ -131,8 +131,6 @@ class Surface:
 
     kind: str = ""
     controls: List[Control] = field(default_factory=list)
-    #: Why nothing could be measured, when nothing could.
-    unavailable: str = ""
 
     @property
     def operable(self) -> List[Control]:
@@ -147,8 +145,6 @@ class Surface:
 
     def render(self) -> str:
         """The inventory as text, one control per line."""
-        if self.unavailable:
-            return f"assay couldn't read the page's controls, {self.unavailable}"
         if not self.controls:
             return ("The page has nothing to use. It has no buttons, fields "
                     "or canvases, and nothing to run.")
@@ -169,8 +165,6 @@ def from_page(shot) -> Surface:
     Controls the page builds at run time count, and controls that aren't
     visible don't.
     """
-    if getattr(shot, "unavailable", ""):
-        return Surface(kind="page", unavailable=str(shot.unavailable))
     controls = [
         Control(kind=e.kind, selector=e.selector, label=e.label,
                 grabbed=e.grabbed,

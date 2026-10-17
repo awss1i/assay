@@ -199,7 +199,6 @@ class _Shot:
 
     def __init__(self, elements: Sequence[Any]) -> None:
         self.elements = list(elements)
-        self.unavailable = ""
 
 
 def judge(case: Case, before: Dict[str, Any], after: Dict[str, Any],

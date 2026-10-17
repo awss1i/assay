@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence, Tuple
 
 #: A selector's `:nth-child` position, which differs between otherwise
 #: identical controls.
@@ -125,9 +125,3 @@ def attach(results: Sequence,
                 "load", first.case.id,
                 f"the page threw an error while loading ({first.case.id}), "
                 f"before anything was pressed"))
-
-
-def links_of(results: Sequence) -> List[Tuple[str, str, str, str]]:
-    """Every link in a run, as `(from, kind, to, why)`."""
-    return [(r.case.id, one.kind, one.to, one.why)
-            for r in results for one in getattr(r, "links", [])]
