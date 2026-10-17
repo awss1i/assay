@@ -1,6 +1,6 @@
 [project]
 name = "assay-ui"
-version = "0.3.0"
+version = "0.3.1"
 description = "An agent-native QA CLI for web pages. Deterministic, no tests to write, no LLM."
 keywords = ["testing", "llm", "codegen", "playwright", "evaluation", "qa",
             "ai-agents", "browser-testing"]
