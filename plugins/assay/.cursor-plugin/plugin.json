@@ -8,5 +8,7 @@
   "homepage": "https://github.com/awss1i/assay",
   "repository": "https://github.com/awss1i/assay",
   "license": "MIT",
-  "keywords": ["testing", "browser", "verification", "html"]
+  "keywords": ["testing", "browser", "verification", "html"],
+  "logo": "assets/icon.svg",
+  "hooks": "./hooks/hooks-cursor.json"
 }
