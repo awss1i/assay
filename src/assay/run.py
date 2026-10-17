@@ -55,6 +55,8 @@ class Opened:
     #: up, counted by why they look interactive. Empty means the plan covers
     #: the whole page.
     unreached: Dict[str, int] = field(default_factory=dict)
+    #: Whether the page ran inside Chromium's sandbox. See `Browser`.
+    sandboxed: bool = True
 
     @property
     def blank(self) -> bool:
@@ -93,15 +95,28 @@ class Browser:
         self._base = ""
         #: How the last page opened came to rest, as a `browser.Settled`.
         self.rest = browser.Settled(True, 0, 0, 1, 0)
+        #: Whether Chromium's sandbox is on. See `__enter__`.
+        self.sandboxed = True
 
     def __enter__(self) -> "Browser":
-        from playwright.sync_api import sync_playwright
+        from playwright.sync_api import Error, sync_playwright
 
         self._base = self._exit.enter_context(browser.serve(self.folder))
         self._play = sync_playwright().start()
-        self._engine = self._play.chromium.launch(
-            headless=self.headless,
-            args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"])
+        # Playwright turns Chromium's sandbox off unless asked, and assay runs
+        # pages nobody has read, so it asks. The sandbox can't start as root
+        # or where the system blocks the namespaces it needs, as in some
+        # containers. There assay runs the page without it and says so,
+        # instead of refusing to check anything.
+        launch = dict(headless=self.headless,
+                      args=["--disable-dev-shm-usage", "--disable-gpu"])
+        try:
+            self._engine = self._play.chromium.launch(
+                chromium_sandbox=True, **launch)
+        except Error:
+            self._engine = self._play.chromium.launch(
+                chromium_sandbox=False, **launch)
+            self.sandboxed = False
         return self
 
     def __exit__(self, *exc: Any) -> None:
@@ -175,7 +190,8 @@ def look(folder: str | Path, entry: str = "index.html") -> Opened:
                       crashes=list(crashes),
                       console=list(dict.fromkeys(console)),
                       failed_requests=list(dict.fromkeys(failed)),
-                      title=(page.title() or ""), rest=engine.rest)
+                      title=(page.title() or ""), rest=engine.rest,
+                      sandboxed=engine.sandboxed)
 
 
 class _Shot:
@@ -529,7 +545,8 @@ def check(folder: str | Path, entry: str = "index.html",
                             crashes=list(crashes),
                             console=list(dict.fromkeys(console)),
                             failed_requests=list(dict.fromkeys(failed)),
-                            title=(page.title() or ""), rest=engine.rest)
+                            title=(page.title() or ""), rest=engine.rest,
+                            sandboxed=engine.sandboxed)
         cases = plan(opened.surface, criteria)
         seed = _seeding(cases)
         #: Every control the page offered on load or after seeding, by
@@ -885,6 +902,7 @@ def check(folder: str | Path, entry: str = "index.html",
 
         run = QA(measure=lambda: opened.surface, build_plan=lambda _: cases,
                  carry_out=carry_out)
+        run.sandboxed = engine.sandboxed
         run.run()
         run.console_errors = list(dict.fromkeys(
             line for console, _ in heard for line in console))
