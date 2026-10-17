@@ -130,6 +130,17 @@ def _where(root: Path, entry: str) -> str:
     return f"{folder}/{entry}" if folder else entry
 
 
+def _flat(text: object) -> str:
+    """Text from the page as a single line of printable characters.
+
+    Labels and error messages come from the page, and an agent repeats the
+    one-line output verbatim. A newline in one would let the page add a line
+    of its own to the report, such as a false "nothing flagged".
+    """
+    return "".join(ch for ch in " ".join(str(text).split())
+                   if ch.isprintable())
+
+
 def one_line(run: object, root: Path, entry: str) -> str:
     """The whole run as one sentence, for a hook or skill to repeat verbatim.
 
@@ -157,16 +168,17 @@ def one_line(run: object, root: Path, entry: str) -> str:
     out = [f"{head}, {len(bad)} flagged:"]
     # This output has no case ids, so a repeat names the first finding by
     # its description.
-    words = {r.case.id: r.case.what for r in results.values()}
+    words = {r.case.id: _flat(r.case.what) for r in results.values()}
     for r in bad:
         notes = getattr(r, "links", [])
         same = [one for one in notes if one.kind == "same"]
+        what = _flat(r.case.what)
         if same:
-            out.append(f"  - {r.case.what} (same finding as "
+            out.append(f"  - {what} (same finding as "
                        f"{words.get(same[0].to, same[0].to)})")
             continue
-        said = f"  - {r.case.what}: {r.detail}" if r.detail \
-            else f"  - {r.case.what}"
+        said = f"  - {what}: {_flat(r.detail)}" if r.detail \
+            else f"  - {what}"
         for one in notes:
             if one.kind == "load":
                 said += " (the page threw an error while loading, before " \
