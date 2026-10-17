@@ -1,4 +1,4 @@
-<!-- i18n-source: plugins/assay/README.md 228c8a685c996bdf309f1d30fcdd9410cff35811 -->
+<!-- i18n-source: plugins/assay/README.md 180af1a6b8d06f59dee6add968b42fecd831ed93 -->
 
 <h1 align="center">skill 与插件</h1>
 
@@ -48,12 +48,13 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 
 ## <a id="the-plugin"></a>插件
 
-插件（plugin）会添加一个 `Stop` 钩子（hook），在每一轮（turn）修改了页面的对话结束时运行检查。在 Claude Code 中，插件会同时安装 skill 和钩子。DeepSeek Harness 则通过它的 Claude Code 桥接，单独使用这个钩子。
+插件（plugin）会添加一个 `Stop` 钩子（hook），在每一轮（turn）修改了页面的对话结束时运行检查。在 Claude Code、Codex、Grok Build CLI、Devin CLI、Factory Droid 和 GitHub Copilot CLI 中，插件会同时安装 skill 和钩子。在 Cursor 中，插件只安装 skill。DeepSeek Harness 通过它的 Claude Code 桥接运行这个钩子。
 
 - **检查哪些页面。** 任何网页文件发生变化，都会标记同一文件夹中的页面，所以修改 `app.js` 也算。在每个文件夹中，钩子会检查最近修改的 `.html` 文件，修改时间相同时优先选择 `index.html`。
 - **查找范围。** 钩子最多向下搜索四层文件夹，跳过 `node_modules` 和 `.git`，只考虑上次运行之后修改过的文件，每一轮最多检查三个页面。
 - **只要检查了页面就一定会报告**，这样没有问题的结果就不会被误认为是 assay 没有运行。没有修改任何页面的一轮不会报告任何内容。
-- **暂不结束这一轮**，好让你看到结果，但不会连续两次这样做。钩子会检查 harness 的 `stop_hook_active` 标志，并写入一个时间戳（写在 harness 的临时文件夹中，没有的话写在 `.git/` 中，再没有的话写入 `.assay-last-run` 文件）。如果无法写入时间戳，钩子会照常报告，但不会阻止这一轮结束。
+- **暂不结束这一轮**，好让你看到结果，但不会连续两次这样做。钩子会检查 harness 的 `stop_hook_active` 标志，并写入一个时间戳（写在 harness 的临时文件夹中，没有的话写在仓库的 `.git` 文件夹中，再没有的话写入 `.assay-last-run` 文件）。如果无法写入时间戳，钩子会照常报告，但不会阻止这一轮结束。
+- **按时结束。** 钩子给每个页面最多四分钟，给所有页面合计最多九分钟，这样它会在 harness 按照 `hooks.json` 中设定的十分钟上限取消它之前结束。没来得及检查的页面会被报告为未检查（not checked）。
 
 ---
 

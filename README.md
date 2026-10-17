@@ -38,8 +38,9 @@ them, and reports what went wrong.
 - **No LLM.** There's no API key and no cost, and every run gives the same
   result.
 - **Works with coding agents.** A skill, supported across fifteen harnesses,
-  has the agent check each page it writes, and a plugin for Claude Code and the
-  DeepSeek Harness runs the check automatically after every turn.
+  has the agent check each page it writes. In Claude Code, Codex, Grok Build
+  CLI, Devin CLI, Factory Droid, GitHub Copilot CLI and the DeepSeek Harness,
+  a hook also runs the check automatically after every turn.
 - **Groups repeats.** When one bug fails several checks, the later ones say
   *same finding as C003* instead of repeating the message.
 
@@ -85,8 +86,8 @@ assay ./my-app --report out.html  # also write an HTML report with screenshots
 assay ./my-app --one-line         # short summary, for scripts and agents
 ```
 
-The exit code is non-zero if anything failed, and nothing is written to disk
-unless you ask.
+The exit code is non-zero if anything failed. Apart from the Chromium download
+on the first run, nothing is written to disk unless you ask.
 
 **[The full flags, a worked example, the Python API and the HTML report →](https://github.com/awss1i/assay/blob/main/docs/usage.md)**
 
@@ -102,10 +103,11 @@ end its reply with the result:
 assay: checked todo/todo.html, 8 checks, nothing flagged.
 ```
 
-The **plugin** (Claude Code and the DeepSeek Harness) adds a hook that runs
-the check automatically at the end of each turn that changed a page. Either
-way, the agent reports what assay found and doesn't change code because of it
-unless you ask.
+The **plugin** adds a hook that runs the check automatically at the end of
+each turn that changed a page. The hook works in Claude Code, Codex, Grok
+Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI and the DeepSeek
+Harness. Either way, the agent reports what assay found and doesn't change
+code because of it unless you ask.
 
 ```
 /plugin marketplace add awss1i/assay
@@ -132,7 +134,8 @@ assay found the real bug on 15 of the 20 broken pages and flagged 0 of the 205 w
 
 **Pages with planted bugs.** A separate agent, never told assay exists, took
 10 working apps and planted 5 bugs of its own choosing in a copy of each, then
-listed them.
+listed them. assay's rules were developed with these pages in view, so this
+score is in-sample.
 
 <!-- planted -->
 
@@ -191,7 +194,9 @@ running it. assay runs it, with nothing prepared in advance.
   a total that adds wrongly, usually passes. To check that, pass acceptance
   criteria from Python.
 - **Web pages only.** It checks one page at a time, served from a local
-  folder. It doesn't crawl, log in or use live network calls.
+  folder. It doesn't crawl or log in. The page keeps its internet access
+  while it's checked, so a page that calls a live API is checked against
+  whatever that API returns.
 - **Built output only.** It won't run `npm install` or your build. Point it
   at a source tree and it tells you what to run first.
 - **A finished game can look broken.** A game that has ended with no way to
