@@ -249,3 +249,50 @@ def test_the_json_says_whether_the_page_ran_in_the_sandbox() -> None:
                           sandboxed=False)
 
     assert json.loads(as_json(run))["sandboxed"] is False
+
+
+def ran(*codes: int):
+    """A stand-in for `subprocess.run` that returns `codes` in turn and
+    records each command."""
+    from types import SimpleNamespace
+
+    left, seen = list(codes), []
+
+    def run(cmd, **kw):
+        seen.append(cmd)
+        return SimpleNamespace(returncode=left.pop(0))
+
+    return run, seen
+
+
+def test_an_installed_browser_is_not_downloaded_again(
+        capsys, monkeypatch) -> None:
+    import assay.cli as cli
+
+    run, seen = ran(0)
+    monkeypatch.setattr(cli.subprocess, "run", run)
+
+    assert cli.ensure_browser() is True
+    assert len(seen) == 1
+    assert capsys.readouterr().err == ""
+
+
+def test_a_missing_browser_is_downloaded_and_said_so(
+        capsys, monkeypatch) -> None:
+    import assay.cli as cli
+
+    run, seen = ran(1, 0)
+    monkeypatch.setattr(cli.subprocess, "run", run)
+
+    assert cli.ensure_browser() is True
+    assert seen[1][1:] == ["-m", "playwright", "install", "chromium"]
+    assert "downloading it" in capsys.readouterr().err
+
+
+def test_a_failed_download_means_no_browser(monkeypatch) -> None:
+    import assay.cli as cli
+
+    run, _ = ran(1, 1)
+    monkeypatch.setattr(cli.subprocess, "run", run)
+
+    assert cli.ensure_browser() is False
