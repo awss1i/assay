@@ -65,13 +65,13 @@ _BUILT = ("dist", "build", "out", ".output/public", "public")
 def unbuilt(root: Path, entry: str) -> str:
     """Why this folder can't be checked as it is, or an empty string if it can.
 
-    assay never runs a project's build. Serving a folder is safe because the
-    page runs in the browser's sandbox, but `npm install` runs any
-    `postinstall` script in the dependency tree with the user's privileges,
-    and assay is for checking code nobody has read. A flag to allow builds
-    wouldn't help, because people would add it once and stop thinking about
-    it. Instead assay prints the build command, and the user runs it in their
-    own shell and points assay at the output.
+    assay never runs a project's build. A served page runs inside the
+    browser, in Chromium's sandbox wherever the system allows one, but
+    `npm install` runs any `postinstall` script in the dependency tree with
+    the user's privileges, and assay is for checking code nobody has read. A
+    flag to allow builds wouldn't help, because people would add it once and
+    stop thinking about it. Instead assay prints the build command, and the
+    user runs it in their own shell and points assay at the output.
     """
     page = root / entry
     if page.is_file():
@@ -114,6 +114,12 @@ def _build_it(root: Path) -> str:
             f"  assay won't run the build itself, because installing "
             f"dependencies runs their setup scripts, and assay is for "
             f"checking code nobody has read yet.")
+
+
+#: Printed on stderr when Chromium's sandbox couldn't start. `run.Browser`
+#: explains when that happens.
+SANDBOX_OFF = ("assay: Chromium's sandbox couldn't start on this system, so "
+               "the page ran without it.")
 
 
 def one_line(run: object, root: Path, entry: str) -> str:
@@ -181,6 +187,7 @@ def as_json(run: object, entry: str = "") -> str:
         "passed": sum(1 for r in results.values() if r.outcome == PASSED),
         "failed": sum(1 for r in results.values() if r.failed),
         "works": getattr(run, "works", False),
+        "sandboxed": getattr(run, "sandboxed", True),
         "surface": [
             {"kind": c.kind, "selector": c.selector, "label": c.label,
              "enabled": c.enabled}
@@ -255,7 +262,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     from assay import check, look, tint
 
     if args.surface:
-        print(look(root, entry).surface.render())
+        opened = look(root, entry)
+        print(opened.surface.render())
+        if not opened.sandboxed:
+            print(SANDBOX_OFF, file=sys.stderr)
         return 0
 
     shots = None
@@ -266,6 +276,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         shots = page.with_name(f"{page.stem}-shots")
 
     run = check(root, entry, shots=shots)
+    if not run.sandboxed:
+        print(SANDBOX_OFF, file=sys.stderr)
 
     if args.json:
         print(as_json(run, entry))

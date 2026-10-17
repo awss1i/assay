@@ -116,6 +116,8 @@ class QA:
         #: They're reported but never fail a case. See `cli.as_json`.
         self.console_errors: List[str] = []
         self.failed_requests: List[str] = []
+        #: Whether the page ran inside Chromium's sandbox. See `run.Browser`.
+        self.sandboxed = True
 
     def run(self) -> "QA":
         """Measure, plan, and carry every case out."""

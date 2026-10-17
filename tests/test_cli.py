@@ -195,3 +195,37 @@ def test_a_repeat_names_the_first_of_its_group_by_its_words() -> None:
 
     assert said[1] == "  - click blue twice: it stayed lit"
     assert said[2] == "  - click green twice (same finding as click blue twice)"
+
+
+def test_a_run_without_the_sandbox_says_so(
+        tmp_path: Path, capsys, monkeypatch) -> None:
+    """The warning goes to stderr, so the one-line report an agent repeats
+    stays one line."""
+    from types import SimpleNamespace
+
+    import assay
+    import assay.cli as cli
+
+    write(tmp_path, "index.html", "<!doctype html><body>hi")
+    monkeypatch.setattr(cli, "ensure_browser", lambda: True)
+    run = SimpleNamespace(plan=[], results={}, works=True, sandboxed=False)
+    monkeypatch.setattr(assay, "check", lambda *a, **kw: run)
+
+    code = main([str(tmp_path), "--one-line"])
+    said = capsys.readouterr()
+
+    assert code == 0
+    assert said.err.strip() == cli.SANDBOX_OFF
+    assert cli.SANDBOX_OFF not in said.out
+
+
+def test_the_json_says_whether_the_page_ran_in_the_sandbox() -> None:
+    import json
+    from types import SimpleNamespace
+
+    from assay.cli import as_json
+
+    run = SimpleNamespace(plan=[], results={}, works=True, surface=None,
+                          sandboxed=False)
+
+    assert json.loads(as_json(run))["sandboxed"] is False

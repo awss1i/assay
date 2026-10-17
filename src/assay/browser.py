@@ -110,6 +110,12 @@ def serve(root: Path) -> Iterator[str]:
         def __init__(self, *a: Any, **kw: Any) -> None:
             super().__init__(*a, directory=str(root), **kw)
 
+        def send_head(self) -> Any:
+            if not servable(root, Path(self.translate_path(self.path))):
+                self.send_error(404)
+                return None
+            return super().send_head()
+
         def log_message(self, *a: Any) -> None:
             return
 
@@ -125,6 +131,23 @@ def serve(root: Path) -> Iterator[str]:
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+def servable(root: Path, path: Path) -> bool:
+    """Whether `serve` may answer with `path`, a file or folder under `root`.
+
+    The page under test can request any URL on the server and send what it
+    reads anywhere, so the server keeps to the folder's own files. It refuses
+    hidden files and folders, like `.env` and `.git/`, and a symlink that
+    leads out of the folder.
+    """
+    try:
+        inside = path.relative_to(root)
+    except ValueError:
+        return False
+    if any(part.startswith(".") for part in inside.parts):
+        return False
+    return path.resolve().is_relative_to(root.resolve())
 
 
 # --------------------------------------------------------------------------
