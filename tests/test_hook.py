@@ -1,5 +1,5 @@
-"""Tests for where the plugin's hook records its last run, and the two guards
-that stop it holding a turn open in a loop.
+"""Tests for the plugin's hook: where it records its last run, the two guards
+that stop it holding a turn open in a loop, and what it reports for a page.
 
 The hook exits 2 to show its result to the model, which also starts another
 `Stop` round. That's only safe while the hook can record that it already ran.
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -46,6 +47,47 @@ def test_the_clock_hides_in_git_when_there_is_one(tmp_path: Path) -> None:
     where = pages.clock("s1", "", tmp_path)
 
     assert where.parent == tmp_path / ".git"
+
+
+def test_the_clock_finds_the_repository_from_a_subfolder(
+        tmp_path: Path) -> None:
+    """A harness can run in any folder of a repository. The clock still goes
+    in the repository's `.git`, not into the project as a dotfile."""
+    (tmp_path / ".git").mkdir()
+    deep = tmp_path / "site" / "pages"
+    deep.mkdir(parents=True)
+
+    where = pages.clock("s1", "", deep)
+
+    assert where.parent == tmp_path / ".git"
+
+
+def test_the_clock_follows_a_worktree_to_its_git_folder(
+        tmp_path: Path) -> None:
+    """In a worktree or submodule `.git` is a file naming the real folder."""
+    real = tmp_path / "main" / ".git" / "worktrees" / "wt"
+    real.mkdir(parents=True)
+    tree = tmp_path / "wt"
+    tree.mkdir()
+    (tree / ".git").write_text(f"gitdir: {real}\n", encoding="utf-8")
+
+    where = pages.clock("s1", "", tree)
+
+    assert where.parent == real
+
+
+def test_a_relative_gitdir_is_read_from_the_folder_holding_it(
+        tmp_path: Path) -> None:
+    real = tmp_path / "main" / ".git" / "modules" / "sub"
+    real.mkdir(parents=True)
+    sub = tmp_path / "main" / "sub"
+    sub.mkdir()
+    (sub / ".git").write_text("gitdir: ../.git/modules/sub\n",
+                              encoding="utf-8")
+
+    where = pages.clock("s1", "", sub)
+
+    assert where.parent.resolve() == real.resolve()
 
 
 def test_a_folder_that_is_not_a_repository_gets_one_dotfile(
@@ -138,9 +180,99 @@ def test_it_will_not_hold_a_turn_open_it_cannot_remember_holding(
     check = load("check_pages")
     (tmp_path / "index.html").write_text("<!doctype html><body>hi")
     monkeypatch.setattr(check.pages, "mark_run", lambda path: False)
-    monkeypatch.setattr(check, "summarise", lambda page: "assay: checked it.")
+    monkeypatch.setattr(check, "summarise",
+                        lambda page, patience=0: "assay: checked it.")
 
     code = run_hook({"cwd": str(tmp_path), "session_id": "s"}, check)
 
     assert code == 0
     assert "assay: checked it." in capsys.readouterr().err
+
+
+def fake_assay(tmp_path: Path, monkeypatch, body: str) -> None:
+    """Put an `assay` on PATH that runs `body`, a few lines of Python."""
+    where = tmp_path / "bin"
+    where.mkdir()
+    exe = where / "assay"
+    exe.write_text(f"#!{sys.executable}\nimport sys\n{body}\n",
+                   encoding="utf-8")
+    exe.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{where}{os.pathsep}{os.environ['PATH']}")
+
+
+def a_page(tmp_path: Path) -> Path:
+    page = tmp_path / "site" / "index.html"
+    page.parent.mkdir()
+    page.write_text("<!doctype html><body><button>Go</button>")
+    return page
+
+
+def test_a_crash_is_reported_rather_than_silent(
+        tmp_path: Path, monkeypatch) -> None:
+    """assay prints its findings when it exits 1, so exit 1 with nothing on
+    stdout is a crash. Saying nothing would look like a clean page."""
+    check = load("check_pages")
+    fake_assay(tmp_path, monkeypatch,
+               "print('Traceback (most recent call last):', file=sys.stderr)\n"
+               "print(\"ModuleNotFoundError: No module named 'assay'\", "
+               "file=sys.stderr)\n"
+               "sys.exit(1)")
+
+    said = check.summarise(a_page(tmp_path))
+
+    assert said == ("assay: couldn't check site/index.html because assay "
+                    "stopped with exit code 1 (ModuleNotFoundError: No module "
+                    "named 'assay'), so nothing was verified.")
+
+
+def test_findings_are_passed_on_as_assay_wrote_them(
+        tmp_path: Path, monkeypatch) -> None:
+    check = load("check_pages")
+    fake_assay(tmp_path, monkeypatch,
+               "print('assay: checked site/index.html, 2 checks, 1 flagged:')\n"
+               "print('  - press Go: nothing on the page changed at all')\n"
+               "sys.exit(1)")
+
+    said = check.summarise(a_page(tmp_path))
+
+    assert said.splitlines() == [
+        "assay: checked site/index.html, 2 checks, 1 flagged:",
+        "  - press Go: nothing on the page changed at all"]
+
+
+def test_a_file_assay_cannot_check_says_nothing(
+        tmp_path: Path, monkeypatch) -> None:
+    """With `--if-page`, assay exits 0 and prints nothing for a file that
+    isn't a checkable page, and the hook passes that silence on."""
+    check = load("check_pages")
+    fake_assay(tmp_path, monkeypatch, "sys.exit(0)")
+
+    assert check.summarise(a_page(tmp_path)) == ""
+
+
+def test_a_page_left_without_time_is_reported_as_not_checked(
+        tmp_path: Path, capsys, monkeypatch) -> None:
+    check = load("check_pages")
+    a_page(tmp_path)
+    monkeypatch.setattr(check, "BUDGET", 0)
+
+    def never(page, patience=0):
+        raise AssertionError("assay was started with no time left")
+
+    monkeypatch.setattr(check, "summarise", never)
+
+    code = run_hook({"cwd": str(tmp_path), "session_id": "s"}, check)
+
+    assert code == 2
+    assert ("assay: didn't check site/index.html because the hook ran out of "
+            "time, so nothing was verified.") in capsys.readouterr().err
+
+
+def test_the_hook_finishes_inside_its_own_timeout() -> None:
+    """A harness that cancels a hook throws away what it printed, so the
+    hook's time budget has to end before the `timeout` in `hooks.json`."""
+    check = load("check_pages")
+    said = json.loads((HOOKS / "hooks.json").read_text(encoding="utf-8"))
+    timeout = said["hooks"]["Stop"][0]["hooks"][0]["timeout"]
+
+    assert check.PATIENCE <= check.BUDGET < timeout

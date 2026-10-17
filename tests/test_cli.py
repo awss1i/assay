@@ -197,6 +197,26 @@ def test_a_repeat_names_the_first_of_its_group_by_its_words() -> None:
     assert said[2] == "  - click green twice (same finding as click blue twice)"
 
 
+def test_if_page_names_a_page_it_could_not_check_for_want_of_a_browser(
+        tmp_path: Path, capsys, monkeypatch) -> None:
+    """Without Chromium, `--if-page` still exits 0 so a hook doesn't fail the
+    turn, but it names the unchecked page on stdout. A hook passes on only
+    stdout, and silence would look like a clean page."""
+    import assay.cli as cli
+
+    write(tmp_path, "index.html", "<!doctype html><body><button>Go</button>")
+    monkeypatch.setattr(cli, "ensure_browser", lambda: False)
+
+    code = main([str(tmp_path), "--if-page", "--one-line"])
+    said = capsys.readouterr()
+
+    assert code == 0
+    assert said.out == (
+        f"assay: couldn't check {tmp_path.name}/index.html because Chromium "
+        f"isn't installed and assay couldn't install it, so nothing was "
+        f"verified.\n")
+
+
 def test_a_run_without_the_sandbox_says_so(
         tmp_path: Path, capsys, monkeypatch) -> None:
     """The warning goes to stderr, so the one-line report an agent repeats
