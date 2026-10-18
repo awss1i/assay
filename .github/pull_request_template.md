@@ -12,6 +12,7 @@
 - [ ] Feature
 - [ ] Plugin or harness support
 - [ ] Docs
+- [ ] Misc
 
 Fixes #
 

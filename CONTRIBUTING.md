@@ -83,6 +83,7 @@ Fork, branch, and open a pull request. The template asks what kind it is:
 | Feature | Tests. If it changes what counts as a failure, it's a rule: see [Changing a Rule](#changing-a-rule). |
 | Plugin or harness support | See [Adding a Harness](#adding-a-harness). |
 | Docs | Nothing extra. |
+| Misc, for anything outside assay itself, like CI or the GitHub templates | Nothing extra. |
 
 One change per pull request. Send a fix and a refactor separately.
 
