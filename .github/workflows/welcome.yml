@@ -14,11 +14,20 @@ permissions:
 
 jobs:
   welcome:
+    # The owner and bots don't need the welcome.
+    if: >-
+      (github.event.issue.user.login || github.event.pull_request.user.login) != github.repository_owner
+      && (github.event.issue.user.type || github.event.pull_request.user.type) != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3
-        with:
-          issue_message: >-
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          AUTHOR: ${{ github.event.issue.user.login || github.event.pull_request.user.login }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          IS_PR: ${{ github.event_name == 'pull_request_target' }}
+          ISSUE_MESSAGE: >-
             Thanks for opening your first issue. Issues are for bugs and false
             alarms, and a false alarm needs the page attached. New features,
             improvements and fixes come as pull requests. Questions, ideas and
@@ -26,9 +35,20 @@ jobs:
             [Discussions](https://github.com/awss1i/assay/discussions).
             [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
             has the details.
-          pr_message: >-
+          PR_MESSAGE: >-
             Thanks for your first pull request here. A change to a rule or to
             `bench/` needs both benchmarks run, with the numbers before and
             after in the description.
             [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
             says what each kind of change needs.
+        run: |
+          # The issues endpoint lists pull requests too, marked by .pull_request.
+          earlier=$(gh api --paginate "repos/$GH_REPO/issues?creator=$AUTHOR&state=all&per_page=100" \
+            --jq ".[] | select(.number < $NUMBER and (.pull_request != null) == $IS_PR) | .number" | wc -l)
+          if [ "$IS_PR" = true ]; then kind="pull requests"; message=$PR_MESSAGE
+          else kind=issues; message=$ISSUE_MESSAGE; fi
+          if [ "$earlier" -gt 0 ]; then
+            echo "$AUTHOR has opened $kind here before, so no welcome."
+            exit 0
+          fi
+          gh api --silent "repos/$GH_REPO/issues/$NUMBER/comments" -f body="$message"
