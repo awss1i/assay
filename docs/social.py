@@ -83,9 +83,11 @@ def render(out: pathlib.Path) -> None:
         tab.set_content(card)
         tab.evaluate("document.fonts.ready")
         tab.wait_for_timeout(300)
-        tab.screenshot(path=str(out))
+        # The noise is drawn at 2x so the grit stays fine, then saved at 1x,
+        # because a 2x PNG of the grain is over GitHub's 1 MB limit.
+        tab.screenshot(path=str(out), scale="css")
         browser.close()
-    print(f"  {out}: {W * 2}x{H * 2}")
+    print(f"  {out}: {W}x{H}, {out.stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":
