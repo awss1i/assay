@@ -17,3 +17,20 @@ documentation:
       - any-glob-to-any-file:
           - 'docs/**'
           - '*.md'
+
+# Every changed file has to be outside assay itself, the benchmarks, the
+# plugins and the docs. A pull request that also touches any of those isn't misc.
+misc:
+  - changed-files:
+      - all-globs-to-all-files:
+          - '!src/**'
+          - '!tests/**'
+          - '!bench/**'
+          - '!plugins/**'
+          - '!.claude-plugin/**'
+          - '!.cursor-plugin/**'
+          - '!.grok-plugin/**'
+          - '!.agents/**'
+          - '!.github/plugin/**'
+          - '!docs/**'
+          - '!*.md'
