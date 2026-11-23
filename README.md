@@ -121,7 +121,7 @@ with the planted pages in view, so that score is in-sample.
 | [Usage](https://github.com/awss1i/assay/blob/main/docs/usage.md) | Every option, what assay prints, the exit codes, the HTML report and the Python API |
 | [How it works](https://github.com/awss1i/assay/blob/main/docs/how-it-works.md) | How a run goes, every check and the exact message it prints, and what assay can't check |
 | [Harnesses](https://github.com/awss1i/assay/blob/main/docs/harnesses.md) | Install steps for each of the fifteen supported coding agent harnesses |
-| [The skill and the plugin](https://github.com/awss1i/assay/blob/main/plugins/assay/README.md) | What the skill tells the agent to do, and what the plugin's hook does after each turn |
+| [The Skill & Plugin](https://github.com/awss1i/assay/blob/main/plugins/assay/README.md) | What the skill tells the agent to do, and what the plugin's hook does after each turn |
 | [Development](https://github.com/awss1i/assay/blob/main/docs/development.md) | How the code is laid out, changing a rule, the tests, and adding a harness |
 
 ---

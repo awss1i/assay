@@ -207,7 +207,7 @@ skill and the hook together.
 Either way, the agent reports what assay found and doesn't change code
 because of it unless you ask.
 
-[Harnesses](harnesses.md) · [The skill and the plugin](../plugins/assay/README.md)
+[Harnesses](harnesses.md) · [The Skill & Plugin](../plugins/assay/README.md)
 
 ---
 

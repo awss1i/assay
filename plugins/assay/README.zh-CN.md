@@ -1,4 +1,4 @@
-<!-- i18n-source: plugins/assay/README.md 417d141f0e70242b6251212fd928d234e07ebe83 -->
+<!-- i18n-source: plugins/assay/README.md 5a450a7b4c2728408e11fd47e3de193f0bef3233 -->
 
 <h1 align="center">skill 与插件</h1>
 

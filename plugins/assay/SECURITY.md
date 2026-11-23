@@ -1,6 +1,6 @@
 <h1 align="center">Security</h1>
 
-<p align="center"><a href="../../README.md">assay</a> › <a href="README.md">The skill and the plugin</a> › Security</p>
+<p align="center"><a href="../../README.md">assay</a> › <a href="README.md">The Skill &amp; Plugin</a> › Security</p>
 
 <p align="center">How to report a vulnerability in the plugin, and what counts as one.</p>
 

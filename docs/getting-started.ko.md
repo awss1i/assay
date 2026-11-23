@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/getting-started.md 588a51b0e5e0b00405a336f6847371a74e0ab7f9 -->
+<!-- i18n-source: docs/getting-started.md 87f5daae1ec1d0ee044476575debceac6d4328a6 -->
 
 <h1 align="center">시작하기</h1>
 

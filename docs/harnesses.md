@@ -231,4 +231,4 @@ Agent reads, or paste the file into your `AGENTS.md`.
 Without the hook, the agent decides when to run the check, instead of it
 running at the end of every turn.
 
-[The skill and the plugin](../plugins/assay/README.md)
+[The Skill & Plugin](../plugins/assay/README.md)
