@@ -1,34 +1,14 @@
-<!-- Bugs and false alarms are issues. This is for changes. CONTRIBUTING.md says what each kind needs. -->
+## The change
 
-## What This Changes
-
-
-
-## Kind
-
-- [ ] Bug fix
-- [ ] False-alarm fix
-- [ ] Benchmark improvement
-- [ ] Feature
-- [ ] Plugin or harness support
-- [ ] Docs
-- [ ] Misc
-
-Fixes #
+What changed and why, in a few sentences.
 
 ## Tests
 
-<!-- What you added, and what you ran. -->
+What the test checks and why, or N/A.
 
-## Benchmarks
+---
 
-<!-- Required if this touches a rule or bench/. Paste the summary line each scorer prints. -->
-
-| | before | after |
-|---|---|---|
-| `python bench/score.py` | | |
-| `python bench/planted/score.py` | | |
-
-## AI use
-
-- [ ] AI-written or AI-assisted, and I've read every line.
+- [ ] Fix
+- [ ] Feature
+- [ ] Misc
+- [ ] I used AI assistance (maintainers can skip this)

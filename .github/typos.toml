@@ -1,0 +1,7 @@
+[files]
+# The benchmark pages are kept exactly as a model wrote them.
+extend-exclude = ["bench/programs", "bench/planted/broken", "bench/planted/clean"]
+
+[default.extend-words]
+# docs/how-it-works.md quotes a label that misspells the id it points to.
+emial = "emial"

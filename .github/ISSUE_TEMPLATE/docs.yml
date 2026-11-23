@@ -1,0 +1,16 @@
+name: Docs
+description: Something in the docs is wrong or missing
+labels: [documentation]
+body:
+  - type: input
+    attributes:
+      label: Page
+      description: The page's link.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What's wrong
+      description: What it says now, and what it should say.
+    validations:
+      required: true

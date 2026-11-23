@@ -1,0 +1,43 @@
+name: pr-labels
+
+# Labels a pull request from the checklist in its description, `bug` for Fix
+# and `enhancement` for Feature. Like the labeler, it uses
+# `pull_request_target` to reach pull requests from forks and checks out no
+# code.
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened, edited]
+
+permissions: {}
+
+jobs:
+  label:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          # GitHub's web editor saves descriptions with Windows line endings.
+          BODY=${BODY//$'\r'/}
+          have=$(gh api "repos/$GH_REPO/issues/$NUMBER/labels" --jq '.[].name')
+
+          # sync <checklist line> <label>
+          sync() {
+            if grep -Eq "^[[:space:]]*[-*] \[[xX]\] $1[[:space:]]*$" <<<"$BODY"; then
+              gh api --silent "repos/$GH_REPO/issues/$NUMBER/labels" -f "labels[]=$2"
+              echo "$1 is ticked, so the pull request has $2."
+            elif grep -Fxq "$2" <<<"$have"; then
+              gh api --silent -X DELETE "repos/$GH_REPO/issues/$NUMBER/labels/$2"
+              echo "$1 isn't ticked, so $2 is removed."
+            fi
+          }
+          sync Fix bug
+          sync Feature enhancement

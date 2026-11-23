@@ -1,0 +1,25 @@
+# The link checker's settings. The workflow adds the rules that check links
+# to this repository's main branch against the checkout.
+
+no_progress = true
+include_fragments = "anchor-only"
+max_retries = 3
+retry_wait_time = 5
+
+# A site that is rate limiting or briefly down still has the page, so only a
+# page that is gone fails the check.
+accept = ["200..=299", "429", "503"]
+
+exclude_path = [
+  # The benchmark pages are kept exactly as a model wrote them.
+  "bench/programs",
+  "bench/planted/broken",
+  "bench/planted/clean",
+  ".venv",
+]
+
+exclude = [
+  # README.md links to its own sections with the prefix PyPI gives heading
+  # ids. GitHub accepts the prefix too, and the checker doesn't know it.
+  "#user-content-",
+]
