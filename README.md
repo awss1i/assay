@@ -122,27 +122,24 @@ code because of it unless you ask.
 ## Benchmarks
 
 assay is scored on two sets of pages in this repository, and the scoring
-scripts write every number below.
+scripts write the table below.
 
-**Pages written by AI.** 225 small web apps an AI wrote from 75 prompts, three
-times each, which a person then opened and tried.
+<!-- results -->
 
-<!-- generated -->
+| Set | Pages | Bugs found | Working pages flagged |
+|---|---|---|---|
+| [Pages written by AI](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 15 of 20 | 0 of 205 |
+| [Pages with planted bugs](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 12 of 50 | 0 of 10 |
 
-assay found the real bug on 15 of the 20 broken pages and flagged 0 of the 205 working pages. [Every page and result](https://github.com/awss1i/assay/blob/main/bench/README.md).
+<!-- /results -->
 
-<!-- /generated -->
+The pages written by AI are small web apps an AI wrote from a list of
+prompts, which a person then opened and tried. The pages with planted bugs
+are working apps and a copy of each, in which a separate agent, never told
+assay exists, planted bugs of its own choosing. assay's rules were developed
+with the planted pages in view, so that score is in-sample.
 
-**Pages with planted bugs.** A separate agent, never told assay exists, took
-10 working apps and planted 5 bugs of its own choosing in a copy of each, then
-listed them. assay's rules were developed with these pages in view, so this
-score is in-sample.
-
-<!-- planted -->
-
-assay found 12 of the 50 planted bugs and flagged 0 of the 10 original pages. [Every bug and result](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).
-
-<!-- /planted -->
+[All benchmarks](https://github.com/awss1i/assay/blob/main/benchmarks/README.md)
 
 ---
 

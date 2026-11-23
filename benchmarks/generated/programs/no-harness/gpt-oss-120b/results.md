@@ -1,8 +1,21 @@
-# no-harness / gpt-oss-120b
+<h1 align="center">no-harness on gpt-oss-120b</h1>
 
-75 programs, from the objectives in `../../../objectives.txt`.
+<p align="center"><a href="../../../../../README.md">assay</a> › <a href="../../../../README.md">Benchmarks</a> › <a href="../../../../generated.md">The generated set</a> › no-harness on gpt-oss-120b</p>
 
-`truth` is what a person found by opening and using each program. `assay` is what the tool reported, and for a broken program, whether it flagged the actual bug, as judged by hand in [`verdicts.txt`](verdicts.txt).
+<p align="center">The 75 programs no-harness wrote on gpt-oss-120b, what a person found in each, and what assay reported.</p>
+
+---
+
+## Contents
+
+- [Every program](#every-program)
+- [Totals](#totals)
+
+---
+
+## Every program
+
+`truth` is what a person found by opening and using each program. `assay` is what the tool reported, and for a broken program, whether it flagged the actual bug, as judged by hand in `verdicts.txt`.
 
 | # | objective | truth | assay | seconds | notes |
 |---|---|---|---|---|---|
@@ -41,7 +54,7 @@
 | 33 | minesweeper2 | works | clean | 11 | clicks reveal numbers and flood-fill the empty neighbours, with the mine counter shown |
 | 34 | snake2 | works | clean | 29 | it runs from load, dies at the wall if nobody steers, and Space restarts it with the score and high score updating |
 | 35 | tetris2 | works | clean | 45 | pieces fall on their own, left and right move them, and Pause freezes the board |
-| 36 | breakout2 | broken | **missed** | 19 | the click launches the ball downward, not up. The launch angle gives a positive dy although its comment says 45 degrees upward, so unless the paddle happens to sit under the ball the first click costs a life. Clicked under it, the ball bounces and the game plays (bench/checks/breakout2.py) |
+| 36 | breakout2 | broken | **missed** | 19 | the click launches the ball downward, not up. The launch angle gives a positive dy although its comment says 45 degrees upward, so unless the paddle happens to sit under the ball the first click costs a life. Clicked under it, the ball bounces and the game plays (benchmarks/generated/checks/breakout2.py) |
 | 37 | draw2 | works | clean | 48 | strokes draw, Undo removes exactly one at a time, Redo puts it back and Clear empties the canvas |
 | 38 | chart2 | works | clean | 24 | the button switches between line and bar and back, redrawing the same data |
 | 39 | signup2 | works | clean | 12 | Sign Up stays disabled and names the reason for a bad email, a weak password or a mismatch, and enables only when all three are right |
@@ -82,9 +95,11 @@
 | 74 | cube3d | broken | found | 26 | the canvas never shows anything. The shaders compile, the loop runs and 24 line indices are drawn every frame, but the uploaded MVP leaves every one of the eight corners outside the near and far clip planes (w comes out +/-1 while z is about +/-5), so the whole cube is clipped away and the canvas stays its clear colour |
 | 75 | matrix | works | clean | 15 | 1..9 times 9..1 gives 30 24 18 / 84 69 54 / 138 114 90, the working reads c00 = 1x9 + 2x6 + 3x3 = 30, and a letter in any cell is refused with an alert leaving the last result standing |
 
-**Programs that work:** 69 of 75, checked by hand.
+---
 
-**What assay found:**
+## Totals
+
+69 of the 75 programs work, checked by hand. assay found:
 
 - the actual bug in 5 of the 6 broken programs, missing 36_breakout2
 - 0 false alarms across the 69 working programs

@@ -1,33 +1,44 @@
-<h1 align="center">The planted-bug set</h1>
+<h1 align="center">The planted set</h1>
 
----
+<p align="center"><a href="../README.md">assay</a> › <a href="README.md">Benchmarks</a> › The planted set</p>
 
-<p align="center"><i><code>planted/score.py</code> writes this page, and the checks, flags and times come from running it. Which planted bug each flag shows is judged by hand in each <code>verdict.txt</code>.</i></p>
-
-<p align="center">10 programs with bugs a separate agent planted on purpose (50 in all, as listed in each <code>bugs.md</code>), and 10 working originals.</p>
+<p align="center">10 working programs, a copy of each with bugs a separate agent planted on purpose, and which of the 50 planted bugs assay found.</p>
 
 ---
 
 ## Contents
 
-- [What assay Found](#what-assay-found)
-- [Every Planted Bug](#every-planted-bug)
-- [How the Set Was Built](#how-the-set-was-built)
+- [What assay found](#what-assay-found)
+- [Every planted bug](#every-planted-bug)
+  - [01_bookmarks](#01_bookmarks)
+  - [02_poll](#02_poll)
+  - [03_recipe](#03_recipe)
+  - [04_flashcards](#04_flashcards)
+  - [05_budget](#05_budget)
+  - [06_tagfilter](#06_tagfilter)
+  - [07_scheduler](#07_scheduler)
+  - [08_colormix](#08_colormix)
+  - [09_inventory](#09_inventory)
+  - [10_ratings](#10_ratings)
+- [How the set was built](#how-the-set-was-built)
+- [Running it yourself](#running-it-yourself)
 
 ---
 
-## What assay Found
+## What assay found
 
 - **12 of the 50 planted bugs found.**
 - **0 of the 10 working originals flagged**.
 - **0 flags on broken programs that aren't a planted bug.**
-- **Grouped findings:** assay drew 10 links between findings. 10 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
+- **Grouped findings.** assay drew 10 links between findings. 10 of them match the answer key, 0 are wrong, and 0 that the key expects are missing.
 
 Per program, the median is 23 seconds, 19 of 20 finish inside a minute, and the slowest took 62 seconds. assay ran on AMD Ryzen 7 255 w/ Radeon 780M Graphics, Linux 7.2.9-200.fc44.x86_64, Python 3.14.8, Chromium 153.0.8010.12, Playwright 1.63.0.
 
+`harness/planted.py` writes this page, and the checks, flags and times come from running it. The 10 broken programs carry 50 planted bugs in all, as listed in each `bugs.md`. Which planted bug each flag shows is judged by hand in each `verdict.txt`.
+
 ---
 
-## Every Planted Bug
+## Every planted bug
 
 ### 01_bookmarks
 
@@ -151,11 +162,25 @@ Per program, the median is 23 seconds, 19 of 20 finish inside a minute, and the 
 
 ---
 
-## How the Set Was Built
+## How the set was built
 
-One harness and model wrote the programs from [`objectives.txt`](objectives.txt). A **different** harness and model put the bugs in, from the instruction in [`inject-prompt.txt`](inject-prompt.txt), which names no checker, no rule and no tool. Neither step was told assay exists. `generate.sh` and `inject.sh` are the two steps. assay's rules were developed with this set in view, so its score is in-sample.
+One harness and model wrote the programs from `objectives.txt`. A **different** harness and model put the bugs in, from the instruction in `inject-prompt.txt`, which names no checker, no rule and no tool. Neither step was told assay exists. `generate.sh` and `inject.sh` are the two steps. assay's rules were developed with this set in view, so its score is in-sample.
 
 Each broken program has a `bugs.md` from the model that added the bugs, and a `verdict.txt` recording, for each bug, whether assay caught it and with which finding. Findings are named by the rule and the check, not by case number, so verdicts stay correct when checks are added or reordered.
 
 Deciding whether a failure is a particular planted bug is a judgement, so it's made by hand and written down, not matched by a script.
+
+[The objectives](planted/objectives.txt) · [The injector's instruction](planted/inject-prompt.txt)
+
+---
+
+## Running it yourself
+
+```bash
+python benchmarks/harness/planted.py
+```
+
+It needs no API key or network, because the programs are in the repository and assay runs them in a local browser.
+
+[Harness](harness/README.md)
 

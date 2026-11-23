@@ -1,6 +1,6 @@
 """Draw `run.svg` from a real run of assay, so it matches the real output.
 
-    python docs/hero.py bench/programs/opencode/gpt-oss-120b/58_reorder \
+    python docs/hero.py benchmarks/generated/programs/opencode/gpt-oss-120b/58_reorder \
                         "assay ./reorder" docs/run.svg
 
 The SVG animates like a terminal. The command is typed, the output rows

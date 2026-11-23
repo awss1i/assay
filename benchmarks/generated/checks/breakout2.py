@@ -1,6 +1,6 @@
 """Follow the ball in both 36_breakout2 programs by driving the pages.
 
-    python bench/checks/breakout2.py
+    python benchmarks/generated/checks/breakout2.py
 
 The output settles the two programs' `truth.txt` lines. Both programs draw
 the ball with `ctx.arc`, so the script records every `arc` call and follows
@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from playwright.sync_api import sync_playwright  # noqa: E402
 

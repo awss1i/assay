@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/how-it-works.md 5bf8fdf49caa9b6254f86f4d95b7b052a8547b2c -->
+<!-- i18n-source: docs/how-it-works.md e51d07a0daffd49dcc96c02a3fe23fee1f3b3ae9 -->
 
 <h1 align="center">동작 방식</h1>
 
@@ -14,7 +14,7 @@ assay는 페이지의 용도를 모르기 때문에, 페이지가 스스로 모�
 
 <p align="center">이 문서의 앞부분은 실행이 어떻게 진행되는지 설명합니다. 뒷부분은 검사 종류별로
 assay가 하는 일, 보고하는 내용과 출력하는 정확한 메시지, 그리고 일부러 보고하지 않는 경우와
-그 이유를 다룹니다. 여기 나오는 모든 규칙(rule)은 <a href="../bench/README.md">벤치마크</a>로
+그 이유를 다룹니다. 여기 나오는 모든 규칙(rule)은 <a href="../benchmarks/README.md">벤치마크</a>로
 측정했으며, 예외 대부분은 규칙을 더 넓게 적용한 버전이 정상 동작하는 페이지를 문제로
 표시했기 때문에 생겼습니다.</p>
 
@@ -174,7 +174,7 @@ C005 [FAILED] click green twice
     ↳ the page threw an error while loading (C001), before anything was pressed
 ```
 
-벤치마크 페이지의 모든 묶기 결과는 사람이 직접 작성한 정답표(answer key)인 [`bench/links.txt`](../bench/links.txt)와 대조해 확인합니다.
+벤치마크 페이지의 모든 묶기 결과는 사람이 직접 작성한 정답표(answer key)인 [`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt)와 대조해 확인합니다.
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/how-it-works.md 5bf8fdf49caa9b6254f86f4d95b7b052a8547b2c -->
+<!-- i18n-source: docs/how-it-works.md e51d07a0daffd49dcc96c02a3fe23fee1f3b3ae9 -->
 
 <h1 align="center">工作原理</h1>
 
@@ -8,7 +8,7 @@
 
 <p align="center">assay 在真实的浏览器中打开你的页面，找出页面上的每个控件（control），按一组规划好的检查（check）逐一使用这些控件，并在每项检查前后对比页面。assay 不知道你的页面是做什么用的，所以只在页面自相矛盾（the page contradicts itself）时才报告，比如页面抛出错误、某个控件的反应晚了一次、列表为空时计数却显示 1，等等。</p>
 
-<p align="center">本页前半部分介绍一次运行的过程。后半部分逐一介绍每类检查：assay 做什么、报告什么以及输出的确切消息，还有它在什么情况下会刻意不报告、为什么。这里的每条规则（rule）都经过<a href="../bench/README.md">基准测试</a>（benchmark）的衡量，其中大多数例外之所以存在，是因为规则更宽泛的版本曾把正常工作的页面标记为有问题。</p>
+<p align="center">本页前半部分介绍一次运行的过程。后半部分逐一介绍每类检查：assay 做什么、报告什么以及输出的确切消息，还有它在什么情况下会刻意不报告、为什么。这里的每条规则（rule）都经过<a href="../benchmarks/README.md">基准测试</a>（benchmark）的衡量，其中大多数例外之所以存在，是因为规则更宽泛的版本曾把正常工作的页面标记为有问题。</p>
 
 ---
 
@@ -166,7 +166,7 @@ C005 [FAILED] click green twice
     ↳ the page threw an error while loading (C001), before anything was pressed
 ```
 
-基准测试页面上的每一次合并，都会与人工编写的标准答案（answer key）[`bench/links.txt`](../bench/links.txt) 进行核对。
+基准测试页面上的每一次合并，都会与人工编写的标准答案（answer key）[`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt) 进行核对。
 
 ---
 

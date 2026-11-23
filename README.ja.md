@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 48b993e4b2b7c1890eccc2e8a6e4015018618aff -->
+<!-- i18n-source: README.md 98e1f9834b59ec87b57abb16fd325a6cec8eca55 -->
 
 <h1 align="center">assay</h1>
 
@@ -101,15 +101,16 @@ assay: checked todo/todo.html, 8 checks, nothing flagged.
 
 ## <a id="benchmarks"></a>ベンチマーク
 
-assay はこのリポジトリにある 2 組のページで評価しています。以下の数値はすべて採点スクリプトが書き込んだものです。
+assay はこのリポジトリにある 2 組のページで評価しています。以下の表は採点スクリプトが書き込んだものです。
 
-**AI が書いたページ。** 75 個のプロンプトから AI がそれぞれ 3 回ずつ書いた、225 個の小さな Web アプリです。その後、人が実際に開いて試しました。
+| セット | ページ数 | 見つけたバグ | 問題ありと判定した正常なページ |
+|---|---|---|---|
+| [AI が書いたページ](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 20 個中 15 個 | 205 ページ中 0 ページ |
+| [意図的にバグを仕込んだページ](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 50 個中 12 個 | 10 ページ中 0 ページ |
 
-assay は壊れている 20 ページのうち 15 ページで本物のバグを見つけ、正常に動く 205 ページのうち問題ありと判定したのは 0 ページでした。[すべてのページと結果](https://github.com/awss1i/assay/blob/main/bench/README.md)。
+AI が書いたページは、プロンプトの一覧から AI が書いた小さな Web アプリで、その後、人が実際に開いて試しました。意図的にバグを仕込んだページは、正常に動くアプリとその複製からなり、assay の存在を知らされていない別のエージェントが、それぞれの複製に自分で選んだバグを仕込みました。assay のルールはバグを仕込んだページを見ながら開発したため、このスコアは開発に使ったページそのものでの評価（in-sample）です。
 
-**意図的にバグを仕込んだページ。** assay の存在を知らされていない別のエージェントが、正常に動く 10 個のアプリそれぞれの複製に、自分で選んだバグを 5 個ずつ仕込み、その一覧を書き出しました。assay のルールはこれらのページを見ながら開発したため、このスコアは開発に使ったページそのものでの評価（in-sample）です。
-
-assay は仕込んだ 50 個のバグのうち 12 個を見つけ、元の 10 ページのうち問題ありと判定したのは 0 ページでした。[すべてのバグと結果](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)。
+[すべてのベンチマーク](https://github.com/awss1i/assay/blob/main/benchmarks/README.md)
 
 ---
 

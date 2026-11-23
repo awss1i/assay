@@ -13,7 +13,7 @@ from assay import check
 
 PAPER, PAPER2, INK, ACCENT, NOTE = "#f2ede3", "#e7e0d2", "#15120f", "#ec6a1f", "#b9b1a2"
 W, H = 1280, 640
-FOLDER, COMMAND, CASES = "bench/programs/opencode/gpt-oss-120b/58_reorder", "assay ./reorder", 5
+FOLDER, COMMAND, CASES = "benchmarks/generated/programs/opencode/gpt-oss-120b/58_reorder", "assay ./reorder", 5
 DESCRIPTION = "An agent-native QA CLI for web pages. Deterministic, no tests to write, no LLM."
 FONTS = pathlib.Path(__file__).parent / "fonts"
 #: Film grain over the whole card, and black grit on the paper panel only.

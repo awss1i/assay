@@ -40,7 +40,7 @@ assay ships with the benchmark pages it is scored on, so you can run it on one
 right now. This one is a small drawing program whose Undo reacts a press late:
 
 ```console
-$ assay bench/programs/dsh/gpt-oss-120b/37_draw2
+$ assay benchmarks/generated/programs/dsh/gpt-oss-120b/37_draw2
 24 cases planned, 24 carried out, 23 passed, 1 failed
 
 C015 [ok] draw on canvas, then draw somewhere else on it

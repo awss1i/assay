@@ -81,29 +81,9 @@ class Marks:
         self.wrong += [(program, one) for one in sorted(links - want)]
         self.missed += [(program, one) for one in sorted(want - links)]
 
-    def grouping(self) -> str:
-        """The front-page sentence about how many drawn links match the key."""
-        return (f"{self.right} of the {self.drawn} links assay drew between "
-                f"findings match the hand-written answer key, and "
-                f"{len(self.missed)} that the key expects are missing")
-
     def sentence(self) -> str:
         """A sentence giving the drawn, right, wrong and missing links."""
         return (f"assay drew {self.drawn} links between findings. "
                 f"{self.right} of them match the answer key, "
                 f"{len(self.wrong)} are wrong, and {len(self.missed)} that "
                 f"the key expects are missing")
-
-
-def write_block(readme: Path, name: str, sentence: str) -> None:
-    """Put one sentence between `<!-- name -->` markers in a README."""
-    if not readme.is_file():
-        return
-    text = readme.read_text(encoding="utf-8")
-    opened, closed = f"<!-- {name} -->", f"<!-- /{name} -->"
-    if opened not in text or closed not in text:
-        return
-    head, _, rest = text.partition(opened)
-    _, _, tail = rest.partition(closed)
-    readme.write_text(head + opened + "\n\n" + sentence + "\n\n" + closed
-                      + tail, encoding="utf-8")

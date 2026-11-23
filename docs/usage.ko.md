@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/usage.md 3b28af15e7fcd3c1fba90ffdf0ef7cdc24513549 -->
+<!-- i18n-source: docs/usage.md c622ba3943ed5dea96a0adf16c2f26aaf4bf3496 -->
 
 <h1 align="center">assay 사용법</h1>
 
@@ -41,7 +41,7 @@ assay ./my-app --surface          # 찾은 컨트롤을 나열한 뒤 종료
 assay에는 채점에 쓰는 벤치마크 페이지가 함께 들어 있으므로, 지금 바로 그중 하나에 assay를 실행해 볼 수 있습니다. 다음은 Undo가 한 번 늦게 반응하는 작은 그림 프로그램입니다.
 
 ```console
-$ assay bench/programs/dsh/gpt-oss-120b/37_draw2
+$ assay benchmarks/generated/programs/dsh/gpt-oss-120b/37_draw2
 24 cases planned, 24 carried out, 23 passed, 1 failed
 
 C015 [ok] draw on canvas, then draw somewhere else on it

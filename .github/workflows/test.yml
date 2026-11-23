@@ -45,5 +45,5 @@ jobs:
           python-version: "3.12"
       - run: pip install -e "."
       - run: python -m playwright install --with-deps chromium
-      - run: python bench/score.py --limit 3
-      - run: python bench/planted/score.py --limit 2
+      - run: python benchmarks/harness/generated.py --limit 3
+      - run: python benchmarks/harness/planted.py --limit 2

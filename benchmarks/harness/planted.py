@@ -13,9 +13,12 @@ assay found. Against `clean/`, it counts the working programs assay flagged
 anyway. A tool that flagged everything would find every planted bug, so the
 second number shows whether the first one means anything.
 
-    python bench/planted/score.py                            # this set
-    python bench/planted/score.py path/to/set --marker name   # another set
-    python bench/planted/score.py --limit 2                  # writes nothing
+    python benchmarks/harness/planted.py                            # this set
+    python benchmarks/harness/planted.py path/to/set --marker name   # another set
+    python benchmarks/harness/planted.py --limit 2                  # writes nothing
+
+The set is `benchmarks/planted/`. A complete run writes the set's page beside
+its folder, `benchmarks/planted.md`, and the set's row in the results table.
 """
 
 from __future__ import annotations
@@ -29,31 +32,26 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent
+BENCH = HERE.parent
+REPO = BENCH.parent
 sys.path.insert(0, str(REPO / "src"))
-sys.path.insert(0, str(HERE.parent))
+sys.path.insert(0, str(HERE))
 
 import linkkey  # noqa: E402
+import pages  # noqa: E402
 from machine import machine, plural, timing  # noqa: E402
 
-#: The sentence for a set's block in the front-page README, with the counts
-#: filled in from the run.
-RESULTS = ("assay found {caught} of the {planted} planted bugs and flagged "
-           "{noisy} of the {clean} original pages. "
-           "[Every bug and result](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).")
-
-#: The title and description each known set gets on its own README.
+#: The title and description each known set gets on its own page.
 ABOUT = {
     "planted": {
-        "title": "The planted-bug set",
+        "title": "The planted set",
         "built": ("One harness and model wrote the programs from "
-                  "[`objectives.txt`](objectives.txt). A **different** "
-                  "harness and model put the bugs in, from the instruction "
-                  "in [`inject-prompt.txt`](inject-prompt.txt), which names "
-                  "no checker, no rule and no tool. Neither step was told "
-                  "assay exists. `generate.sh` and `inject.sh` are the two "
-                  "steps. assay's rules were developed with this set in "
-                  "view, so its score is in-sample."),
+                  "`objectives.txt`. A **different** harness and model put "
+                  "the bugs in, from the instruction in `inject-prompt.txt`, "
+                  "which names no checker, no rule and no tool. Neither step "
+                  "was told assay exists. `generate.sh` and `inject.sh` are "
+                  "the two steps. assay's rules were developed with this set "
+                  "in view, so its score is in-sample."),
     },
 }
 
@@ -95,7 +93,7 @@ class Program:
     #: True when the program has no verdict yet, which stops the scorer
     #: writing anything.
     unread: bool = False
-    #: The links the run drew between its findings. See `bench/linkkey.py`.
+    #: The links the run drew between its findings. See `linkkey.py`.
     links: set = field(default_factory=set)
 
     @property
@@ -264,11 +262,18 @@ def sweep(root: Path, verdicts: bool, limit: int,
     return out
 
 
-def write_readme(root: Path, marker: str, broken: List[Program],
-                 clean: List[Program], measured_on: str,
-                 marks: "linkkey.Marks",
-                 excluded: Optional[Dict[str, str]] = None) -> None:
-    """Rewrite the set's `README.md` from this run."""
+def page_of(root: Path) -> Path:
+    """The set's own page, beside the folder that holds its programs."""
+    return root.parent / f"{root.name}.md"
+
+
+def write_page(root: Path, marker: str, broken: List[Program],
+               clean: List[Program], measured_on: str,
+               marks: "linkkey.Marks",
+               excluded: Optional[Dict[str, str]] = None) -> Path:
+    """Rewrite the set's page from this run, and return its path."""
+    here = page_of(root)
+    data = root.name
     about_it = about(marker)
     planted = sum(len(p.bugs) for p in broken)
     caught = sum(p.caught for p in broken)
@@ -276,55 +281,55 @@ def write_readme(root: Path, marker: str, broken: List[Program],
     other = [(p, f) for p in broken for f in p.other]
     seconds = [p.seconds for p in broken + clean]
 
-    # The header is HTML so it can be centred, and markdown inside an HTML
-    # block isn't rendered, so its code is HTML too.
-    out = [f'<h1 align="center">{about_it["title"]}</h1>',
-           "",
-           "---",
-           "",
-           '<p align="center"><i><code>planted/score.py</code> writes this '
-           "page, and the checks, flags and times come from running it. "
-           "Which planted bug each flag shows is judged by hand in each "
-           "<code>verdict.txt</code>.</i></p>",
-           "",
-           f'<p align="center">{len(broken)} programs with bugs a separate '
-           f"agent planted on purpose ({planted} in all, as listed in each "
-           f"<code>bugs.md</code>), and {len(clean)} working originals.</p>",
-           "",
-           "---",
-           "",
-           "## Contents",
-           "",
-           "- [What assay Found](#what-assay-found)",
-           "- [Every Planted Bug](#every-planted-bug)",
-           "- [How the Set Was Built](#how-the-set-was-built)",
-           "",
-           "---",
-           "",
-           "## What assay Found",
-           "",
-           f"- **{caught} of the {planted} planted bugs found.**",
-           f"- **{len(noisy)} of the {len(clean)} working originals "
-           f"flagged**"
-           + (f": {', '.join(p.name for p in noisy)}" if noisy else "."),
-           f"- **{plural(len(other), 'flag')} on broken programs that aren't a "
-           f"planted bug.**",
-           f"- **Grouped findings:** {marks.sentence()}.",
-           ""]
+    out = pages.header(
+        about_it["title"],
+        [("assay", REPO / "README.md"), ("Benchmarks", BENCH / "README.md")],
+        f"{len(clean)} working programs, a copy of each with bugs a separate "
+        f"agent planted on purpose, and which of the {planted} planted bugs "
+        f"assay found.", here)
+    out += ["---",
+            "",
+            "## Contents",
+            "",
+            "- [What assay found](#what-assay-found)",
+            "- [Every planted bug](#every-planted-bug)",
+            *[f"  - [{p.name}](#{p.name.lower()})" for p in broken],
+            "- [How the set was built](#how-the-set-was-built)",
+            "- [Running it yourself](#running-it-yourself)",
+            "",
+            "---",
+            "",
+            "## What assay found",
+            "",
+            f"- **{caught} of the {planted} planted bugs found.**",
+            f"- **{len(noisy)} of the {len(clean)} working originals "
+            f"flagged**"
+            + (f", {', '.join(p.name for p in noisy)}." if noisy else "."),
+            f"- **{plural(len(other), 'flag')} on broken programs that aren't a "
+            f"planted bug.**",
+            f"- **Grouped findings.** {marks.sentence()}.",
+            ""]
     if seconds:
         out += [f"Per program, {timing(seconds)}. assay ran on {measured_on}.",
                 ""]
+    out += [f"`harness/planted.py` writes this page, and the checks, flags "
+            f"and times come from running it. The {len(broken)} broken "
+            f"programs carry {planted} planted bugs in all, as listed in "
+            f"each `bugs.md`. Which planted bug each flag shows is judged by "
+            f"hand in each `verdict.txt`.",
+            ""]
     if other:
         out += ["| program | flag | what it is |", "|---|---|---|"]
         out += [f"| {p.name} | `{f.key}` | {f.note} |" for p, f in other]
         out.append("")
 
     if excluded:
-        out += ["Left out of the score before it was run, and why:", ""]
-        out += [f"- `{name}`: {why}" for name, why in excluded.items()]
+        out += ["These programs were left out of the score before it was "
+                "run:", ""]
+        out += [f"- `{name}`, because {why}" for name, why in excluded.items()]
         out.append("")
 
-    out += ["---", "", "## Every Planted Bug", ""]
+    out += ["---", "", "## Every planted bug", ""]
     for p in broken:
         out += [f"### {p.name}", "",
                 f"{p.checks} checks, {p.flagged} flagged, {p.caught} of "
@@ -340,7 +345,7 @@ def write_readme(root: Path, marker: str, broken: List[Program],
                 out.append(f"| {b.number} | missed | {b.note or '-'} |")
         out.append("")
 
-    out += ["---", "", "## How the Set Was Built", "",
+    out += ["---", "", "## How the set was built", "",
             about_it["built"],
             "",
             "Each broken program has a `bugs.md` from the model that added "
@@ -352,8 +357,25 @@ def write_readme(root: Path, marker: str, broken: List[Program],
             "Deciding whether a failure is a particular planted bug is a "
             "judgement, so it's made by hand and written down, not matched "
             "by a script.",
+            "",
+            f"[The objectives]({data}/objectives.txt) · "
+            f"[The injector's instruction]({data}/inject-prompt.txt)",
+            "",
+            "---",
+            "",
+            "## Running it yourself",
+            "",
+            "```bash",
+            "python benchmarks/harness/planted.py",
+            "```",
+            "",
+            "It needs no API key or network, because the programs are in the "
+            "repository and assay runs them in a local browser.",
+            "",
+            "[Harness](harness/README.md)",
             ""]
-    (root / "README.md").write_text("\n".join(out) + "\n", encoding="utf-8")
+    here.write_text("\n".join(out) + "\n", encoding="utf-8")
+    return here
 
 
 def about(marker: str) -> Dict[str, str]:
@@ -362,33 +384,19 @@ def about(marker: str) -> Dict[str, str]:
     return ABOUT.get(marker, {
         "title": f"The {marker} set",
         "built": ("Built the same way as the planted set, with "
-                  "`bench/planted/generate.sh` and `bench/planted/inject.sh`."),
+                  "`benchmarks/planted/generate.sh` and "
+                  "`benchmarks/planted/inject.sh`."),
     })
-
-
-def _write_headline(readme: Path, marker: str, **counts: object) -> None:
-    """Fill the marked block in the front-page README with this run."""
-    if not readme.is_file():
-        return
-    text = readme.read_text(encoding="utf-8")
-    opened, closed = f"<!-- {marker} -->", f"<!-- /{marker} -->"
-    if opened not in text or closed not in text:
-        return
-    head, _, rest = text.partition(opened)
-    _, _, tail = rest.partition(closed)
-    readme.write_text(head + opened + "\n\n"
-                      + RESULTS.format(**counts)
-                      + "\n\n" + closed + tail, encoding="utf-8")
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("root", type=Path, nargs="?", default=HERE,
+    ap.add_argument("root", type=Path, nargs="?", default=BENCH / "planted",
                     help="the set, holding broken/ and clean/ "
-                         "(default: the one beside this script)")
+                         "(default: benchmarks/planted)")
     ap.add_argument("--marker", default="planted",
-                    help="the name of the set, and the front-page block its "
-                         "headline goes in, if the README has one")
+                    help="the name of the set, as the answer key for links "
+                         "names its programs")
     ap.add_argument("--limit", type=int, default=0,
                     help="only the first N of each, for a quick check. It "
                          "writes nothing")
@@ -445,12 +453,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.limit:
         print("quick check, nothing written")
     else:
-        write_readme(root, args.marker, broken, clean, machine(), marks,
-                     excluded)
-        _write_headline(REPO / "README.md", args.marker, caught=caught,
-                        planted=planted, noisy=noisy, clean=len(clean),
-                        grouping=marks.grouping())
-        print(f"written: {root / 'README.md'} and the front-page headline")
+        page = write_page(root, args.marker, broken, clean, machine(), marks,
+                          excluded)
+        # Only this repository's own set has a row in the results table.
+        if root == BENCH / "planted":
+            pages.record("planted", pages=len(broken) + len(clean),
+                         bugs=planted, found=caught, working=len(clean),
+                         flagged=noisy)
+            pages.write()
+        print(f"written: {page}")
     return 1 if noisy else 0
 
 
