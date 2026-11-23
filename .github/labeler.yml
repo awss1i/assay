@@ -1,6 +1,34 @@
-benchmark:
+# One label per area of assay, named the way pull request titles name them.
+
+checks:
   - changed-files:
-      - any-glob-to-any-file: 'bench/**'
+      - any-glob-to-any-file:
+          - 'src/assay/__init__.py'
+          - 'src/assay/browser.py'
+          - 'src/assay/surface.py'
+          - 'src/assay/run.py'
+          - 'src/assay/qa.py'
+          - 'src/assay/links.py'
+          - 'tests/test_browser.py'
+          - 'tests/test_end_to_end.py'
+          - 'tests/test_judge.py'
+          - 'tests/test_links.py'
+          - 'tests/test_perform.py'
+          - 'tests/test_plan.py'
+
+cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/assay/cli.py'
+          - 'src/assay/tint.py'
+          - 'tests/test_cli.py'
+          - 'tests/test_one_line.py'
+
+report:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/assay/report.py'
+          - 'tests/test_report.py'
 
 plugin:
   - changed-files:
@@ -11,26 +39,26 @@ plugin:
           - '.grok-plugin/**'
           - '.agents/**'
           - '.github/plugin/**'
+          - 'tests/test_hook.py'
+          - 'tests/test_manifests.py'
+
+benchmarks:
+  - changed-files:
+      - any-glob-to-any-file: 'bench/**'
 
 documentation:
   - changed-files:
       - any-glob-to-any-file:
           - 'docs/**'
           - '*.md'
+          - 'plugins/assay/README*.md'
+          - 'tests/test_translations.py'
 
-# Every changed file has to be outside assay itself, the benchmarks, the
-# plugins and the docs. A pull request that also touches any of those isn't misc.
-misc:
+ci:
   - changed-files:
-      - all-globs-to-all-files:
-          - '!src/**'
-          - '!tests/**'
-          - '!bench/**'
-          - '!plugins/**'
-          - '!.claude-plugin/**'
-          - '!.cursor-plugin/**'
-          - '!.grok-plugin/**'
-          - '!.agents/**'
-          - '!.github/plugin/**'
-          - '!docs/**'
-          - '!*.md'
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
+          - '.github/ISSUE_TEMPLATE/**'
+          - '.github/labeler.yml'
+          - '.github/dependabot.yml'
+          - '.github/pull_request_template.md'

@@ -1,0 +1,25 @@
+name: pr-title
+
+# A pull request's title starts with the area it touches, the same name as
+# the area's label, or with `docs:`, `ci:` or `deps:`.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          areas='checks|cli|report|plugin|benchmarks|docs|ci|deps'
+          if [[ "$TITLE" =~ ^($areas):\ [^[:space:]] ]]; then
+            echo "The title starts with an area."
+          else
+            echo "::error::Start the title with one of ${areas//|/, } and a colon, such as 'cli: what changed'."
+            exit 1
+          fi

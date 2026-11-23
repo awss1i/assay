@@ -1,0 +1,53 @@
+name: audit
+
+# Checks assay's dependencies against known vulnerabilities, on every push
+# and once a week. A finding on main opens one `maintenance` issue, and a
+# later finding updates that issue instead of opening another.
+on:
+  push:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit
+      - run: pip-audit . --format markdown --desc on --output audit.md
+      # pip-audit writes audit.md only when it has findings, so a run that
+      # failed for another reason opens no issue.
+      - if: failure() && github.ref == 'refs/heads/main' && hashFiles('audit.md') != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title='deps: a dependency has a known vulnerability'
+          {
+            echo "pip-audit found a known vulnerability in one of assay's dependencies."
+            echo
+            cat audit.md
+            echo
+            echo "[The run that found it]($RUN_URL)"
+          } > body.md
+          number=$(gh issue list --state open --label maintenance --json number,title \
+            --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file body.md
+          else
+            gh issue create --title "$title" --label maintenance --body-file body.md
+          fi

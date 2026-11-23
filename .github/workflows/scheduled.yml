@@ -1,0 +1,46 @@
+name: scheduled
+
+# Runs the full test suite once a week against the newest Chromium,
+# Playwright and Python releases, which change without a commit here. A
+# failure opens one `maintenance` issue, and a later failure updates that
+# issue instead of opening another.
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  tests:
+    uses: $/.github/workflows/test.yml
+    permissions:
+      contents: read
+
+  report:
+    needs: tests
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title='ci: the weekly test run failed'
+          {
+            echo "The weekly run of the full test suite failed."
+            echo
+            echo "[The run that failed]($RUN_URL)"
+          } > body.md
+          number=$(gh issue list --state open --label maintenance --json number,title \
+            --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file body.md
+          else
+            gh issue create --title "$title" --label maintenance --body-file body.md
+          fi

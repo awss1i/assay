@@ -1,24 +1,23 @@
 name: welcome
 
-# Comments once on a person's first issue or first pull request. Like the
-# labeler, it checks out no code.
+# Comments once on a person's first issue and once on their first pull
+# request. Like the labeler, it uses `pull_request_target` to reach pull
+# requests from forks and checks out no code.
 on:
   issues:
     types: [opened]
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
     types: [opened]
 
-permissions:
-  issues: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   welcome:
-    # The owner and bots don't need the welcome.
-    if: >-
-      (github.event.issue.user.login || github.event.pull_request.user.login) != github.repository_owner
-      && (github.event.issue.user.type || github.event.pull_request.user.type) != 'Bot'
+    if: (github.event.issue.user.type || github.event.pull_request.user.type) != 'Bot'
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - shell: bash
         env:
@@ -28,20 +27,26 @@ jobs:
           NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
           IS_PR: ${{ github.event_name == 'pull_request_target' }}
           ISSUE_MESSAGE: >-
-            Thanks for opening your first issue. Issues are for bugs and false
-            alarms, and a false alarm needs the page attached. New features,
-            improvements and fixes come as pull requests. Questions, ideas and
-            general discussion belong in
-            [Discussions](https://github.com/awss1i/assay/discussions).
+            Thanks for opening your first issue here. Issues are for bugs and
+            for problems in the docs. Questions and ideas go in
+            [Discussions](https://github.com/awss1i/assay/discussions), and
+            fixes and features come as pull requests.
             [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
             has the details.
           PR_MESSAGE: >-
-            Thanks for your first pull request here. A change to a rule or to
-            `bench/` needs both benchmarks run, with the numbers before and
-            after in the description.
+            Thanks for your first pull request here. Its title starts with
+            the area it touches, such as `cli: what changed`.
             [CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
-            says what each kind of change needs.
+            lists the areas and has the details.
         run: |
+          set -euo pipefail
+          # Anyone who can push to the repository is a maintainer.
+          permission=$(gh api "repos/$GH_REPO/collaborators/$AUTHOR/permission" --jq .permission)
+          case "$permission" in
+            admin|maintain|write)
+              echo "$AUTHOR is a maintainer, so no welcome."
+              exit 0;;
+          esac
           # The issues endpoint lists pull requests too, marked by .pull_request.
           earlier=$(gh api --paginate "repos/$GH_REPO/issues?creator=$AUTHOR&state=all&per_page=100" \
             --jq ".[] | select(.number < $NUMBER and (.pull_request != null) == $IS_PR) | .number" | wc -l)

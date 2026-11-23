@@ -4,7 +4,19 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # A release has to be a week old before Dependabot proposes it.
+    cooldown:
+      default-days: 7
+    labels: [dependencies, maintenance]
+    commit-message:
+      prefix: deps
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: weekly
+    # A release has to be a week old before Dependabot proposes it.
+    cooldown:
+      default-days: 7
+    labels: [dependencies, maintenance]
+    commit-message:
+      prefix: deps

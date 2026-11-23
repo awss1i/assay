@@ -1,0 +1,38 @@
+name: release
+
+# Pushing a version tag, such as v1.2.3, builds that version and publishes a
+# GitHub release for it, with notes written from the pull requests merged
+# since the last release.
+on:
+  push:
+    tags: ['v*']
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::The tag is $TAG and pyproject.toml says $version."
+            exit 1
+          fi
+          pip install build
+          python -m build
+          gh release create "$TAG" dist/* --title "assay $version" --generate-notes
