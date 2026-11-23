@@ -1,8 +1,21 @@
-# dsh / gpt-oss-120b
+<h1 align="center">dsh on gpt-oss-120b</h1>
 
-75 programs, from the objectives in `../../../objectives.txt`.
+<p align="center"><a href="../../../../../README.md">assay</a> › <a href="../../../../README.md">Benchmarks</a> › <a href="../../../../generated.md">The generated set</a> › dsh on gpt-oss-120b</p>
 
-`truth` is what a person found by opening and using each program. `assay` is what the tool reported, and for a broken program, whether it flagged the actual bug, as judged by hand in [`verdicts.txt`](verdicts.txt).
+<p align="center">The 75 programs dsh wrote on gpt-oss-120b, what a person found in each, and what assay reported.</p>
+
+---
+
+## Contents
+
+- [Every program](#every-program)
+- [Totals](#totals)
+
+---
+
+## Every program
+
+`truth` is what a person found by opening and using each program. `assay` is what the tool reported, and for a broken program, whether it flagged the actual bug, as judged by hand in `verdicts.txt`.
 
 | # | objective | truth | assay | seconds | notes |
 |---|---|---|---|---|---|
@@ -82,9 +95,11 @@
 | 74 | cube3d | broken | found | 26 | the canvas never shows anything. The shaders compile, the loop runs and 24 line indices are drawn every frame, but the uploaded MVP leaves every one of the eight corners outside the near and far clip planes (w comes out +/-1 while z is about +/-5), so the whole cube is clipped away and the canvas stays its clear colour |
 | 75 | matrix | works | clean | 9 | 1..9 times 9..1 gives 30 24 18 / 84 69 54 / 138 114 90, the working for cell (0,0) reads 1 x 9 + 2 x 6 + 3 x 3 = 30, and the number inputs refuse letters outright |
 
-**Programs that work:** 69 of 75, checked by hand.
+---
 
-**What assay found:**
+## Totals
+
+69 of the 75 programs work, checked by hand. assay found:
 
 - the actual bug in 5 of the 6 broken programs, missing 52_treeview
 - 0 false alarms across the 69 working programs

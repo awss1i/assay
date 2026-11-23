@@ -1,6 +1,6 @@
 """Score assay against programs a person has tested by hand.
 
-    python bench/score.py bench
+    python benchmarks/harness/generated.py
 
 The scorer runs assay over every cell of the suite and records two results.
 
@@ -20,27 +20,35 @@ A cell is `programs/<harness>/<model>/`, holding its programs, `truth.txt` and
 `verdicts.txt`. Cells are found by walking the tree, so adding a harness or a
 model only needs a new folder.
 
-Every published number for this set is written by this script, and only by a
-complete run. A partial run (`--cell` or `--limit`) writes nothing.
+The suite is `benchmarks/generated/`. Every published number for this set is
+written by this script, and only by a complete run. It writes the set's page,
+`benchmarks/generated.md`, each cell's `results.md`, and the set's row in the
+results table. A partial run (`--cell` or `--limit`) writes nothing.
 """
 
 from __future__ import annotations
 
 import argparse
 import re
-import statistics
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+HERE = Path(__file__).resolve().parent
+BENCH = HERE.parent
+REPO = BENCH.parent
+sys.path.insert(0, str(REPO / "src"))
+sys.path.insert(0, str(HERE))
 
 from assay import check  # noqa: E402
 import linkkey  # noqa: E402
+import pages  # noqa: E402
 from machine import machine, plural, timing  # noqa: E402
+
+#: The pages above this set's page, as the trail under its title names them.
+TITLE = "The generated set"
 
 TRUTHS = ("works", "broken")
 
@@ -283,20 +291,40 @@ def _assay_said(r: Judged) -> str:
     return "flagged, not the bug" if r.failing else "**missed**"
 
 
-def write_cell_results(cell: Cell) -> None:
+def page_of(suite: Path) -> Path:
+    """The set's own page, beside the folder that holds its programs."""
+    return suite.parent / f"{suite.name}.md"
+
+
+def write_cell_results(suite: Path, cell: Cell) -> None:
     """Write the cell's `results.md` beside its programs."""
-    out = [f"# {cell.label}",
-           "",
-           f"{len(cell.rows)} programs, from the objectives in "
-           f"`../../../objectives.txt`.",
-           "",
-           "`truth` is what a person found by opening and using each "
-           "program. `assay` is what the tool reported, and for a broken "
-           "program, whether it flagged the actual bug, as judged by hand in "
-           "[`verdicts.txt`](verdicts.txt).",
-           "",
-           "| # | objective | truth | assay | seconds | notes |",
-           "|---|---|---|---|---|---|"]
+    here = cell.folder / "results.md"
+    title = f"{cell.harness} on {cell.model}"
+    out = pages.header(
+        title,
+        [("assay", REPO / "README.md"), ("Benchmarks", BENCH / "README.md"),
+         (TITLE, page_of(suite))],
+        f"The {len(cell.rows)} programs {cell.harness} wrote on "
+        f"{cell.model}, what a person found in each, and what assay "
+        f"reported.", here)
+    out += ["---",
+            "",
+            "## Contents",
+            "",
+            "- [Every program](#every-program)",
+            "- [Totals](#totals)",
+            "",
+            "---",
+            "",
+            "## Every program",
+            "",
+            "`truth` is what a person found by opening and using each "
+            "program. `assay` is what the tool reported, and for a broken "
+            "program, whether it flagged the actual bug, as judged by hand in "
+            "`verdicts.txt`.",
+            "",
+            "| # | objective | truth | assay | seconds | notes |",
+            "|---|---|---|---|---|---|"]
     for r in cell.rows:
         number, _, _ = r.name.partition("_")
         out.append(f"| {number} | {r.objective} | {r.truth or '-'} | "
@@ -304,10 +332,12 @@ def write_cell_results(cell: Cell) -> None:
                    f"{f'{r.seconds:.0f}' if r.said else '-'} | {r.why} |")
 
     out += ["",
-            f"**Programs that work:** {len(cell.works)} of "
-            f"{len(cell.scored)}, checked by hand.",
+            "---",
             "",
-            "**What assay found:**",
+            "## Totals",
+            "",
+            f"{len(cell.works)} of the {len(cell.scored)} programs work, "
+            f"checked by hand. assay found:",
             "",
             f"- the actual bug in {len(cell.broken) - len(cell.missed)} of "
             f"the {len(cell.broken)} broken programs"
@@ -315,11 +345,11 @@ def write_cell_results(cell: Cell) -> None:
                if cell.missed else ""),
             f"- {plural(len(cell.cried_wolf), 'false alarm')} across the "
             f"{len(cell.works)} working programs"
-            + (f": {', '.join(r.name for r in cell.cried_wolf)}"
+            + (f", on {', '.join(r.name for r in cell.cried_wolf)}"
                if cell.cried_wolf else ""),
             f"- {plural(len(cell.other_flags), 'flag')} on broken programs "
             f"that aren't their bug"]
-    (cell.folder / "results.md").write_text("\n".join(out) + "\n")
+    here.write_text("\n".join(out) + "\n")
 
 
 def _in_words(n: int) -> str:
@@ -327,14 +357,15 @@ def _in_words(n: int) -> str:
             6: "Six"}.get(n, str(n))
 
 
-def write_suite_readme(suite: Path, cells: List[Cell],
-                       measured_on: str) -> None:
-    """Write the suite's `README.md` from every cell's results.
+def write_page(suite: Path, cells: List[Cell], measured_on: str) -> Path:
+    """Write the set's page from every cell's results, and return its path.
 
     The page leads with the bugs assay found instead of how often it agreed
     with the answer key. Most programs in the set work, so a tool that called
     everything clean without opening a browser would agree most of the time.
     """
+    here = page_of(suite)
+    data = suite.name
     objectives = [line.split("|", 1)[0]
                   for line in (suite / "objectives.txt").read_text().splitlines()
                   if line.strip()]
@@ -349,47 +380,43 @@ def write_suite_readme(suite: Path, cells: List[Cell],
     harnesses = sorted({c.harness for c in cells})
     models = ", ".join(sorted({c.model for c in cells}))
 
-    # The header is HTML so it can be centred, and markdown inside an HTML
-    # block isn't rendered, so its links and code are HTML too.
-    out = ['<h1 align="center">The generated benchmark</h1>',
-           "",
-           "---",
-           "",
-           '<p align="center"><i><code>score.py</code> writes this page, and '
-           "every number here comes from running it. Which flag is a broken "
-           "program's actual bug is judged by hand in each folder's "
-           "<code>verdicts.txt</code>.</i></p>",
-           "",
-           f'<p align="center">{len(every)} programs, written to the '
-           f'{len(objectives)} objectives in <a href="objectives.txt">'
-           f"<code>objectives.txt</code></a> by {', '.join(harnesses)} on "
-           f"{models}. A person opened and tested every one by hand, and "
-           f"assay is scored against that answer key.</p>",
-           "",
-           f'<p align="center"><strong>{len(broken)} of the {len(every)} are '
-           f"broken.</strong> The rest work.</p>",
-           "",
-           "---",
-           "",
-           "## Contents",
-           "",
-           "- [What assay Found](#what-assay-found)",
-           "- [The Broken Programs](#the-broken-programs)",
-           "- [Where the Programs Came From]"
-           "(#where-the-programs-came-from)",
-           "",
-           "---",
-           "",
-           "## What assay Found",
-           "",
-           f"- **The actual bug in {len(found)} of the {len(broken)} broken "
-           f"programs.** A flag on a broken program only counts if it's "
-           f"that program's bug.",
-           f"- **{plural(len(wolf), 'false alarm')}** on the {len(works)} working "
-           f"programs.",
-           f"- **{plural(len(other), 'flag')} on broken programs that aren't "
-           f"their bug.**",
-           ""]
+    out = pages.header(
+        TITLE,
+        [("assay", REPO / "README.md"), ("Benchmarks", BENCH / "README.md")],
+        f"{len(every)} programs an AI wrote and a person tested by hand, "
+        f"{len(broken)} of them broken, and what assay made of each.", here)
+
+    contents = ["- [What assay found](#what-assay-found)"]
+    if wolf:
+        contents.append("- [False alarms](#false-alarms)")
+    if other:
+        contents.append("- [Flags that are not the bug]"
+                        "(#flags-that-are-not-the-bug)")
+    if broken:
+        contents.append("- [The broken programs](#the-broken-programs)")
+    contents += ["- [Where the programs came from]"
+                 "(#where-the-programs-came-from)",
+                 "- [Running it yourself](#running-it-yourself)",
+                 "- [Docs](#docs)"]
+
+    out += ["---",
+            "",
+            "## Contents",
+            "",
+            *contents,
+            "",
+            "---",
+            "",
+            "## What assay found",
+            "",
+            f"- **The actual bug in {len(found)} of the {len(broken)} broken "
+            f"programs.** A flag on a broken program only counts if it's "
+            f"that program's bug.",
+            f"- **{plural(len(wolf), 'false alarm')}** on the {len(works)} working "
+            f"programs.",
+            f"- **{plural(len(other), 'flag')} on broken programs that aren't "
+            f"their bug.**",
+            ""]
     if flagged:
         out += [f"Of the {len(flagged)} programs assay flagged, "
                 f"**{len(right)}** were flagged for their actual bug.", ""]
@@ -404,24 +431,28 @@ def write_suite_readme(suite: Path, cells: List[Cell],
             f"misleading. {len(works)} of these {len(every)} programs work, "
             f"so a tool that called everything clean without opening a "
             f"browser would score {round(100 * len(works) / max(len(every), 1))}%.",
+            "",
+            "`harness/generated.py` writes this page, and every number here "
+            "comes from running it. Which flag is a broken program's actual "
+            "bug is judged by hand in each folder's `verdicts.txt`.",
             ""]
 
     if wolf:
         out += ["---",
                 "",
-                "## False Alarms",
+                "## False alarms",
                 "",
                 "| program | what assay said | why it's wrong |",
                 "|---|---|---|"]
-        out += [f"| [`{c.harness}/{r.name}`](programs/{c.harness}/{c.model}/"
-                f"{r.name}/index.html) | {r.detail} | {r.why} |"
+        out += [f"| [`{c.harness}/{r.name}`]({data}/programs/{c.harness}/"
+                f"{c.model}/{r.name}/index.html) | {r.detail} | {r.why} |"
                 for c, r in wolf]
         out.append("")
 
     if other:
         out += ["---",
                 "",
-                "## Flags That Are Not the Bug",
+                "## Flags that are not the bug",
                 "",
                 "Flags on broken programs that were judged by hand to be "
                 "something other than the program's bug.",
@@ -435,68 +466,63 @@ def write_suite_readme(suite: Path, cells: List[Cell],
     if broken:
         out += ["---",
                 "",
-                "## The Broken Programs",
+                "## The broken programs",
                 "",
                 "Every program is in this repository, so you can open any of "
                 "them and check.",
                 "",
                 "| program | what is wrong | assay |",
                 "|---|---|---|"]
-        out += [f"| [`{c.harness}/{r.name}`](programs/{c.harness}/{c.model}/"
-                f"{r.name}/index.html) | {r.why} | {_assay_said(r)} |"
+        out += [f"| [`{c.harness}/{r.name}`]({data}/programs/{c.harness}/"
+                f"{c.model}/{r.name}/index.html) | {r.why} | {_assay_said(r)} |"
                 for c, r in broken]
         out.append("")
 
     out += ["---",
             "",
-            "## Where the Programs Came From",
+            "## Where the programs came from",
             "",
-            f"{_in_words(len(harnesses))} sources, so the programs don't all "
-            f"come from one tool.",
-            ""]
+            f"The programs were written to the {len(objectives)} objectives "
+            f"by {', '.join(harnesses)} on {models}, one per objective from "
+            f"each. {_in_words(len(harnesses))} sources mean the programs "
+            f"don't all come from one tool. A person then opened and tested "
+            f"every program by hand, and assay is scored against that answer "
+            f"key.",
+            "",
+            f"[The objectives]({data}/objectives.txt)",
+            "",
+            "---",
+            "",
+            "## Running it yourself",
+            "",
+            "```bash",
+            "python benchmarks/harness/generated.py",
+            "```",
+            "",
+            "It needs no API key or network, because the programs are in the "
+            "repository and assay runs them in a local browser.",
+            "",
+            "[Harness](harness/README.md)",
+            "",
+            "---",
+            "",
+            "## Docs",
+            "",
+            "| Doc | What it covers |",
+            "|---|---|"]
     for c in cells:
-        out.append(f"- [`{c.harness}` on `{c.model}`]"
-                   f"(programs/{c.harness}/{c.model}/results.md): "
-                   f"{len(c.works)} of {len(c.scored)} work")
-
-    out += ["", "---", "",
-            "Reproduce this with `python bench/score.py`. It needs no API "
-            "key or network, because the programs are in the repository and "
-            "assay runs them in a local browser.", ""]
-    (suite / "README.md").write_text("\n".join(out) + "\n")
-
-
-#: The sentence written into each marked block of the top-level README, by
-#: marker name. Blank lines separate it from the markers, because GitHub
-#: doesn't render markdown on the same line as an HTML comment.
-HEADLINE = {
-    "generated": (
-        "assay found the real bug on {found} of the {broken} broken pages and "
-        "flagged {wolf} of the {works} working pages. "
-        "[Every page and result](https://github.com/awss1i/assay/blob/main/bench/README.md)."),
-}
-
-
-def _write_headline(readme: Path, **counts: object) -> None:
-    """Fill each marked block in the README with this run's numbers."""
-    if not readme.is_file():
-        return
-    text = readme.read_text()
-    for name, wording in HEADLINE.items():
-        opened, closed = f"<!-- {name} -->", f"<!-- /{name} -->"
-        if opened not in text or closed not in text:
-            continue
-        head, _, rest = text.partition(opened)
-        _, _, tail = rest.partition(closed)
-        text = (head + opened + "\n\n" + wording.format(**counts)
-                + "\n\n" + closed + tail)
-    readme.write_text(text)
+        out.append(f"| [{c.harness} on {c.model}]({data}/programs/{c.harness}/"
+                   f"{c.model}/results.md) | Every program {c.harness} wrote, "
+                   f"{len(c.works)} of {len(c.scored)} working |")
+    here.write_text("\n".join(out) + "\n")
+    return here
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("suite", type=Path, nargs="?", default=Path(__file__).parent,
-                    help="the benchmark folder (default: the one beside this script)")
+    ap.add_argument("suite", type=Path, nargs="?", default=BENCH / "generated",
+                    help="the folder holding the set's programs "
+                         "(default: benchmarks/generated)")
     ap.add_argument("--cell", help="score only this harness/model, and write "
                                    "nothing")
     ap.add_argument("--entry", default="index.html")
@@ -507,7 +533,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = ap.parse_args(argv)
 
     try:
-        cells = find_cells(args.suite)
+        suite = args.suite.resolve()
+        cells = find_cells(suite)
         if args.cell:
             cells = [c for c in cells if f"{c.harness}/{c.model}" == args.cell]
             if not cells:
@@ -568,15 +595,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         measured_on = machine()
         for cell in cells:
-            write_cell_results(cell)
-        write_suite_readme(args.suite, cells, measured_on)
-        seconds = [r.seconds for r in every]
-        _write_headline(args.suite.parent / "README.md", total=len(every),
-                        found=found, broken=broken, wolf=wolf, works=works,
-                        grouping=marks.grouping(),
-                        median=statistics.median(seconds),
-                        fast=sum(1 for s in seconds if s < 60))
-        print(f"written: {args.suite / 'README.md'} and each cell's results.md")
+            write_cell_results(suite, cell)
+        page = write_page(suite, cells, measured_on)
+        # Only this repository's own set has a row in the results table.
+        if suite == BENCH / "generated":
+            pages.record("generated", pages=len(every), bugs=broken,
+                         found=found, working=works, flagged=wolf)
+            pages.write()
+        print(f"written: {page} and each cell's results.md")
     return 0 if wolf == 0 else 1
 
 

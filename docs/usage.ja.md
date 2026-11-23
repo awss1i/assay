@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/usage.md 3b28af15e7fcd3c1fba90ffdf0ef7cdc24513549 -->
+<!-- i18n-source: docs/usage.md c622ba3943ed5dea96a0adf16c2f26aaf4bf3496 -->
 
 <h1 align="center">assay の使い方</h1>
 
@@ -41,7 +41,7 @@ assay ./my-app --surface          # 見つけたコントロールを一覧表�
 assay には評価に使っているベンチマークのページが同梱されているので、今すぐそのどれかで試せます。次の例は小さなお絵かきプログラムで、「Undo」の反応が 1 回分遅れます。
 
 ```console
-$ assay bench/programs/dsh/gpt-oss-120b/37_draw2
+$ assay benchmarks/generated/programs/dsh/gpt-oss-120b/37_draw2
 24 cases planned, 24 carried out, 23 passed, 1 failed
 
 C015 [ok] draw on canvas, then draw somewhere else on it

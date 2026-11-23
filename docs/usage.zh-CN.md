@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/usage.md 3b28af15e7fcd3c1fba90ffdf0ef7cdc24513549 -->
+<!-- i18n-source: docs/usage.md c622ba3943ed5dea96a0adf16c2f26aaf4bf3496 -->
 
 <h1 align="center">使用 assay</h1>
 
@@ -41,7 +41,7 @@ assay ./my-app --surface          # 列出找到的控件后停止
 assay 自带用于评分的基准测试（benchmark）页面，所以你现在就可以拿其中一个来运行。这里用的是一个小型绘图程序，它的 Undo 总是晚一次才有反应。
 
 ```console
-$ assay bench/programs/dsh/gpt-oss-120b/37_draw2
+$ assay benchmarks/generated/programs/dsh/gpt-oss-120b/37_draw2
 24 cases planned, 24 carried out, 23 passed, 1 failed
 
 C015 [ok] draw on canvas, then draw somewhere else on it

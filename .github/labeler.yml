@@ -44,7 +44,7 @@ plugin:
 
 benchmarks:
   - changed-files:
-      - any-glob-to-any-file: 'bench/**'
+      - any-glob-to-any-file: 'benchmarks/**'
 
 documentation:
   - changed-files:

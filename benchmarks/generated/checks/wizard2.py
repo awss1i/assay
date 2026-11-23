@@ -1,6 +1,6 @@
 """Check whether opencode's 42_wizard2 can be finished by driving every step.
 
-    python bench/checks/wizard2.py
+    python benchmarks/generated/checks/wizard2.py
 
 The output settles the program's `truth.txt` line. The script fills each step
 with valid values, presses Next, and prints any dialog the final Submit opens.
@@ -11,7 +11,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from playwright.sync_api import sync_playwright  # noqa: E402
 

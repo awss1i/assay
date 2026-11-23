@@ -1,4 +1,4 @@
-<!-- i18n-source: docs/how-it-works.md 5bf8fdf49caa9b6254f86f4d95b7b052a8547b2c -->
+<!-- i18n-source: docs/how-it-works.md e51d07a0daffd49dcc96c02a3fe23fee1f3b3ae9 -->
 
 <h1 align="center">仕組み</h1>
 
@@ -8,7 +8,7 @@
 
 <p align="center">assay は、ページを実際のブラウザーで開き、ページ上のコントロールをすべて見つけ、計画した一連のチェックの中でそれぞれを操作し、各チェックの前後でページを比較します。assay はページが何のためのものかを知らないので、報告するのはページが自己矛盾している（the page contradicts itself）場合だけです。たとえば、ページがエラーを投げる、コントロールの反応が 1 回分遅れる、リストが空なのに件数が 1 と表示される、といった場合です。</p>
 
-<p align="center">このページの前半では、1 回の実行の流れを説明します。後半ではチェックの種類ごとに、assay が何をするか、何を報告し、どんなメッセージを正確に出力するか、そしてどんなときに、なぜあえて報告しないのかを説明します。ここに載っているルールはすべて<a href="../bench/README.md">ベンチマーク</a>で検証しています。例外の多くは、より広く適用するルールが正常に動くページで誤検知（false alarm）を起こしたために設けたものです。</p>
+<p align="center">このページの前半では、1 回の実行の流れを説明します。後半ではチェックの種類ごとに、assay が何をするか、何を報告し、どんなメッセージを正確に出力するか、そしてどんなときに、なぜあえて報告しないのかを説明します。ここに載っているルールはすべて<a href="../benchmarks/README.md">ベンチマーク</a>で検証しています。例外の多くは、より広く適用するルールが正常に動くページで誤検知（false alarm）を起こしたために設けたものです。</p>
 
 ---
 
@@ -166,7 +166,7 @@ C005 [FAILED] click green twice
     ↳ the page threw an error while loading (C001), before anything was pressed
 ```
 
-ベンチマークのページでのまとめ方はすべて、手書きの正解リスト（answer key）である [`bench/links.txt`](../bench/links.txt) と照合しています。
+ベンチマークのページでのまとめ方はすべて、手書きの正解リスト（answer key）である [`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt) と照合しています。
 
 ---
 

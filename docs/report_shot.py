@@ -1,6 +1,6 @@
 """Draw `report.png` from a real run of assay, so it matches the real report.
 
-    python docs/report_shot.py bench/planted/broken/06_tagfilter \
+    python docs/report_shot.py benchmarks/planted/broken/06_tagfilter \
                                docs/report.png
 
 The script checks the program, writes the report the same way

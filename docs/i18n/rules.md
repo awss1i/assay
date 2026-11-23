@@ -39,7 +39,7 @@ English, or because a program reads or writes them:
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md` and `plugins/assay/SECURITY.md`
 - the pull request template and the issue forms in `.github/`
 - `plugins/assay/skills/checking-a-page/SKILL.md`, which a coding agent reads
-- the benchmark READMEs, which `bench/score.py` and `bench/planted/score.py` rewrite
+- the benchmark pages in `benchmarks/`, which `benchmarks/harness/generated.py` and `benchmarks/harness/planted.py` rewrite
 - this page and the glossary
 
 To translate another doc, add all four translations in the same change and list it above.

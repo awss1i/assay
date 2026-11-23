@@ -13,7 +13,7 @@ press late, a count says 1 when the list is empty, and so on.</p>
 <p align="center">The first half of this page describes how a run goes. The second half goes
 through each kind of check: what assay does, what it reports and the exact
 message it prints, and when it deliberately stays quiet and why. Every rule
-here is measured against the <a href="../bench/README.md">benchmarks</a>, and most of the
+here is measured against the <a href="../benchmarks/README.md">benchmarks</a>, and most of the
 exceptions exist because a broader version of the rule flagged a page that
 works.</p>
 
@@ -218,7 +218,7 @@ a finding about the whole page (such as nothing responding) says so:
 ```
 
 Every grouping on the benchmark pages is checked against a hand-written
-answer key, [`bench/links.txt`](../bench/links.txt).
+answer key, [`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt).
 
 ---
 

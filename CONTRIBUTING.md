@@ -134,13 +134,14 @@ should point into this folder.
 - `hooks/pages.py` finds the pages a turn changed, by file times.
 - `hooks/check_pages.py` checks them and always reports the result.
 
-**`bench/`**:
+**`benchmarks/`**:
 
-- `programs/` holds the 225 generated programs, scored by `score.py`.
-- `planted/` holds the planted-bug set and its own `score.py`.
-- `links.txt` is the answer key for grouped findings.
-- `checks/` holds scripts that confirmed answer-key entries by driving the
-  pages.
+- `generated/` holds the 225 generated programs, scored by
+  `harness/generated.py`.
+- `planted/` holds the planted-bug set, scored by `harness/planted.py`.
+- `harness/links.txt` is the answer key for grouped findings.
+- `generated/checks/` holds scripts that confirmed answer-key entries by
+  driving the pages.
 
 **`tests/`** is the test suite. **`docs/`** holds the longer pages and the
 scripts that draw the README's pictures from real runs.
@@ -192,11 +193,11 @@ before anything is merged.
 ## Benchmarks
 
 ```bash
-python bench/score.py            # the 225 generated programs
-python bench/planted/score.py    # the planted-bug set
+python benchmarks/harness/generated.py    # the 225 generated programs
+python benchmarks/harness/planted.py      # the planted-bug set
 ```
 
-Neither needs an API key or network. Each writes a README with its results,
+Neither needs an API key or network. Each writes a page with its results,
 including how long every program took and the machine it ran on. Paste the
 summary line each one prints into your pull request, before and after your
 change.
@@ -205,10 +206,13 @@ change.
 `rule@what the check did`, as `assay --json` prints it. Keys are used instead
 of case ids because adding one check renumbers every check after it.
 
-- `bench/programs/<harness>/<model>/verdicts.txt` says which flag is each
-  broken program's actual bug, and what every other flag on it is.
-- `bench/planted/broken/*/verdict.txt` says which planted bug each flag shows.
-- `bench/links.txt` says which findings should be grouped on each program.
+- `benchmarks/generated/programs/<harness>/<model>/verdicts.txt` says which
+  flag is each broken program's actual bug, and what every other flag on it
+  is.
+- `benchmarks/planted/broken/*/verdict.txt` says which planted bug each flag
+  shows.
+- `benchmarks/harness/links.txt` says which findings should be grouped on
+  each program.
 
 A scorer won't write its results while a verdict names a failure that didn't
 happen, a flag on a broken program has no verdict, or a grouping is wrong or
@@ -216,9 +220,10 @@ unjudged. So if your change makes assay report something new, you also need
 to record by hand what it is.
 
 Adding a program changes the headline numbers, so its answer key has to be
-written by hand like the existing ones. [bench/README.md](bench/README.md)
-and [bench/planted/README.md](bench/planted/README.md) describe how each set
-was built.
+written by hand like the existing ones.
+[benchmarks/generated.md](benchmarks/generated.md) and
+[benchmarks/planted.md](benchmarks/planted.md) describe how each set was
+built.
 
 ---
 
@@ -242,7 +247,7 @@ was built.
 ## Before You Open It
 
 - The tests for what you changed pass, or you only changed docs.
-- A change to a rule or to `bench/` includes both benchmark numbers, before
+- A change to a rule or to `benchmarks/` includes both benchmark numbers, before
   and after.
 - One change per pull request.
 - Commit messages say where and what, in lowercase: `readme: add X badge`,

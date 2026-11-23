@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 48b993e4b2b7c1890eccc2e8a6e4015018618aff -->
+<!-- i18n-source: README.md 98e1f9834b59ec87b57abb16fd325a6cec8eca55 -->
 
 <h1 align="center">assay</h1>
 
@@ -101,15 +101,16 @@ assay: checked todo/todo.html, 8 checks, nothing flagged.
 
 ## <a id="benchmarks"></a>基准测试
 
-assay 的评分基于本仓库中的两组页面，下面的每个数字都由评分脚本写入。
+assay 的评分基于本仓库中的两组页面，下面的表格由评分脚本写入。
 
-**AI 编写的页面。** AI 根据 75 个提示词各写了三次，得到 225 个小型网页应用，再由人逐一打开试用。
+| 页面组 | 页面数 | 找到的 bug | 被标记为有问题的正常页面 |
+|---|---|---|---|
+| [AI 编写的页面](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 20 个中的 15 个 | 205 个中的 0 个 |
+| [人为植入 bug 的页面](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 50 个中的 12 个 | 10 个中的 0 个 |
 
-assay 在 20 个有问题的页面中找到了其中 15 个页面的真实 bug，205 个正常页面中有 0 个被标记为有问题。[每个页面及其结果](https://github.com/awss1i/assay/blob/main/bench/README.md)。
+AI 编写的页面是 AI 根据一组提示词写出的小型网页应用，再由人逐一打开试用。人为植入 bug 的页面由正常运行的应用及其副本组成，另一个从未被告知 assay 存在的智能体在每个副本中植入了由它自己挑选的 bug。assay 的规则（rule）在开发时参考过植入 bug 的页面，所以这项得分是样本内（in-sample）结果。
 
-**人为植入 bug 的页面。** 另一个从未被告知 assay 存在的智能体拿来 10 个正常运行的应用，在每个应用的副本中植入了 5 个由它自己挑选的 bug，然后把这些 bug 逐一列出。assay 的规则（rule）在开发时参考过这些页面，所以这项得分是样本内（in-sample）结果。
-
-assay 在植入的 50 个 bug 中找到了 12 个，10 个原始页面中有 0 个被标记为有问题。[每个 bug 及其结果](https://github.com/awss1i/assay/blob/main/bench/planted/README.md)。
+[全部基准测试](https://github.com/awss1i/assay/blob/main/benchmarks/README.md)
 
 ---
 

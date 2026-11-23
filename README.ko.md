@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 48b993e4b2b7c1890eccc2e8a6e4015018618aff -->
+<!-- i18n-source: README.md 98e1f9834b59ec87b57abb16fd325a6cec8eca55 -->
 
 <h1 align="center">assay</h1>
 
@@ -104,15 +104,16 @@ assay: checked todo/todo.html, 8 checks, nothing flagged.
 
 ## <a id="benchmarks"></a>벤치마크
 
-assay의 점수는 이 저장소에 있는 두 가지 페이지 세트로 매깁니다. 아래의 모든 숫자는 채점 스크립트가 기록합니다.
+assay의 점수는 이 저장소에 있는 두 가지 페이지 세트로 매깁니다. 아래 표는 채점 스크립트가 기록합니다.
 
-**AI가 작성한 페이지.** AI가 프롬프트 75개로 각각 세 번씩 작성한 작은 웹 앱 225개이며, 사람이 하나하나 열어서 직접 사용해 봤습니다.
+| 세트 | 페이지 수 | 찾은 버그 | 문제로 표시한 정상 페이지 |
+|---|---|---|---|
+| [AI가 작성한 페이지](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 20개 중 15개 | 205개 중 0개 |
+| [의도적으로 심은 버그가 있는 페이지](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 50개 중 12개 | 10개 중 0개 |
 
-assay는 고장 난 페이지 20개 중 15개에서 실제 버그를 찾았고, 정상 동작하는 페이지 205개 중 문제로 표시한 페이지는 0개입니다. [모든 페이지와 결과](https://github.com/awss1i/assay/blob/main/bench/README.md).
+AI가 작성한 페이지는 AI가 프롬프트 목록으로 작성한 작은 웹 앱이며, 사람이 하나하나 열어서 직접 사용해 봤습니다. 의도적으로 심은 버그(planted bug)가 있는 페이지는 정상 동작하는 앱과 그 복사본으로 이루어져 있고, assay의 존재를 전혀 알지 못하는 별도의 에이전트가 각 복사본에 스스로 고른 버그를 심었습니다. assay의 규칙(rule)은 버그를 심은 페이지들을 보면서 개발했으므로, 이 점수는 개발에 쓴 데이터로 매긴 표본 내(in-sample) 점수입니다.
 
-**의도적으로 심은 버그(planted bug)가 있는 페이지.** assay의 존재를 전혀 알지 못하는 별도의 에이전트가 정상 동작하는 앱 10개의 복사본에 각각 스스로 고른 버그를 5개씩 심고, 그 목록을 남겼습니다. assay의 규칙(rule)은 이 페이지들을 보면서 개발했으므로, 이 점수는 개발에 쓴 데이터로 매긴 표본 내(in-sample) 점수입니다.
-
-assay는 심은 버그 50개 중 12개를 찾았고, 원본 페이지 10개 중 문제로 표시한 페이지는 0개입니다. [모든 버그와 결과](https://github.com/awss1i/assay/blob/main/bench/planted/README.md).
+[모든 벤치마크](https://github.com/awss1i/assay/blob/main/benchmarks/README.md)
 
 ---
 

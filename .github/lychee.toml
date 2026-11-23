@@ -12,9 +12,9 @@ accept = ["200..=299", "429", "503"]
 
 exclude_path = [
   # The benchmark pages are kept exactly as a model wrote them.
-  "bench/programs",
-  "bench/planted/broken",
-  "bench/planted/clean",
+  "benchmarks/generated/programs",
+  "benchmarks/planted/broken",
+  "benchmarks/planted/clean",
   ".venv",
 ]
 

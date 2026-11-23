@@ -1,8 +1,21 @@
-# opencode / gpt-oss-120b
+<h1 align="center">opencode on gpt-oss-120b</h1>
 
-75 programs, from the objectives in `../../../objectives.txt`.
+<p align="center"><a href="../../../../../README.md">assay</a> › <a href="../../../../README.md">Benchmarks</a> › <a href="../../../../generated.md">The generated set</a> › opencode on gpt-oss-120b</p>
 
-`truth` is what a person found by opening and using each program. `assay` is what the tool reported, and for a broken program, whether it flagged the actual bug, as judged by hand in [`verdicts.txt`](verdicts.txt).
+<p align="center">The 75 programs opencode wrote on gpt-oss-120b, what a person found in each, and what assay reported.</p>
+
+---
+
+## Contents
+
+- [Every program](#every-program)
+- [Totals](#totals)
+
+---
+
+## Every program
+
+`truth` is what a person found by opening and using each program. `assay` is what the tool reported, and for a broken program, whether it flagged the actual bug, as judged by hand in `verdicts.txt`.
 
 | # | objective | truth | assay | seconds | notes |
 |---|---|---|---|---|---|
@@ -41,13 +54,13 @@
 | 33 | minesweeper2 | works | clean | 12 | a click reveals its number and flood-fills the empties, right click plants a flag and the mine counter follows |
 | 34 | snake2 | works | clean | 25 | it runs from load, the arrows steer it, walls end the game, eating raises the score and the high score survives a reload |
 | 35 | tetris2 | works | clean | 46 | pieces fall on their own, all three keys act and Pause freezes the board |
-| 36 | breakout2 | broken | **missed** | 19 | update() moves the paddle and never the ball. The ball is drawn every frame at its starting spot, the paddle follows the pointer, and whatever is pressed the game cannot be played (bench/checks/breakout2.py) |
+| 36 | breakout2 | broken | **missed** | 19 | update() moves the paddle and never the ball. The ball is drawn every frame at its starting spot, the paddle follows the pointer, and whatever is pressed the game cannot be played (benchmarks/generated/checks/breakout2.py) |
 | 37 | draw2 | broken | found | 48 | it throws "Cannot access 'historyStack' before initialization" on load, so the script never runs and the canvas takes no stroke at all |
 | 38 | chart2 | works | clean | 42 | Add Sample Data draws the bars, the button switches to a line and back, and Clear Data empties it |
 | 39 | signup2 | works | clean | 12 | Sign Up stays disabled and names the reason for a bad email, a weak password or a mismatch, and enables only when all three are right |
 | 40 | quiz2 | works | clean | 5 | Next walks the questions and the end shows a review of each answer against the correct one |
 | 41 | search2 | works | clean | 15 | typing narrows the table to matching rows and clearing restores all twenty-one |
-| 42 | wizard2 | broken | **missed** | 11 | every step advances with valid values, but the final Submit tests `!!data.zip` where it means `!data.zip`, so a filled ZIP always answers "Please complete all fields before submitting." and the form can never be sent (bench/checks/wizard2.py) |
+| 42 | wizard2 | broken | **missed** | 11 | every step advances with valid values, but the final Submit tests `!!data.zip` where it means `!data.zip`, so a filled ZIP always answers "Please complete all fields before submitting." and the form can never be sent (benchmarks/generated/checks/wizard2.py) |
 | 43 | clock2 | works | clean | 4 | every clock ticks and the toggle switches all zones between 24 hour and am/pm |
 | 44 | calc2 | works | clean | 55 | 7+8=15, 9x3=27, 50/4=12.5, 10-25=-15 and the sign flip is right too |
 | 45 | timer2 | works | clean | 7 | it counts down from what is entered, Pause freezes it, Resume carries on and Reset clears it |
@@ -82,9 +95,11 @@
 | 74 | cube3d | broken | found | 26 | the canvas never shows anything. The shaders compile, the loop runs and 24 line indices are drawn every frame, but the uploaded MVP leaves every one of the eight corners outside the near and far clip planes (w comes out +/-1 while z is about +/-5), so the whole cube is clipped away and the canvas stays its clear colour |
 | 75 | matrix | broken | **missed** | 9 | it multiplies the grids element by element instead of multiplying the matrices. cCells[i].value = aVal * bVal, so 1..9 times 9..1 gives 9 16 21 / 24 25 24 / 21 16 9 and the working shown reads 1 x 9 = 9 rather than a sum of three products |
 
-**Programs that work:** 67 of 75, checked by hand.
+---
 
-**What assay found:**
+## Totals
+
+67 of the 75 programs work, checked by hand. assay found:
 
 - the actual bug in 5 of the 8 broken programs, missing 36_breakout2, 42_wizard2, 75_matrix
 - 0 false alarms across the 67 working programs
