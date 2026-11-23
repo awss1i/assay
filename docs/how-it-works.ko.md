@@ -1,22 +1,12 @@
-<!-- i18n-source: docs/how-it-works.md e51d07a0daffd49dcc96c02a3fe23fee1f3b3ae9 -->
+<!-- i18n-source: docs/how-it-works.md b2e4320be90e404adda540de29a3daa7a56e74a5 -->
 
 <h1 align="center">동작 방식</h1>
 
+<p align="center"><a href="../README.ko.md">assay</a> › 동작 방식</p>
+
 <p align="center"><a href="how-it-works.md">English</a> · <a href="how-it-works.zh-CN.md">简体中文</a> · <a href="how-it-works.ja.md">日本語</a> · <b>한국어</b> · <a href="how-it-works.ru.md">Русский</a></p>
 
----
-
-<p align="center">assay는 실제 브라우저에서 페이지를 열고, 페이지의 모든 컨트롤(control)을 찾아, 미리
-계획한 여러 검사(check)에서 하나씩 사용해 보고, 검사마다 검사 전후의 페이지를 비교합니다.
-assay는 페이지의 용도를 모르기 때문에, 페이지가 스스로 모순될(the page contradicts itself)
-때만 보고합니다. 예를 들어 페이지에서 오류가 발생하거나, 컨트롤이 한 번 늦게 반응하거나,
-목록이 비어 있는데 개수가 1로 표시되는 경우입니다.</p>
-
-<p align="center">이 문서의 앞부분은 실행이 어떻게 진행되는지 설명합니다. 뒷부분은 검사 종류별로
-assay가 하는 일, 보고하는 내용과 출력하는 정확한 메시지, 그리고 일부러 보고하지 않는 경우와
-그 이유를 다룹니다. 여기 나오는 모든 규칙(rule)은 <a href="../benchmarks/README.md">벤치마크</a>로
-측정했으며, 예외 대부분은 규칙을 더 넓게 적용한 버전이 정상 동작하는 페이지를 문제로
-표시했기 때문에 생겼습니다.</p>
+<p align="center">실행 과정, assay가 하는 모든 종류의 검사, 각 검사가 출력하는 정확한 메시지, 그리고 보고하지 않는 경우를 설명합니다.</p>
 
 ---
 
@@ -55,6 +45,14 @@ assay가 하는 일, 보고하는 내용과 출력하는 정확한 메시지, �
 ---
 
 ## <a id="how-a-run-goes"></a>실행 과정
+
+assay는 실제 브라우저에서 페이지를 열고, 페이지의 모든 컨트롤(control)을 찾아, 미리
+계획한 여러 검사(check)에서 하나씩 사용해 보고, 검사마다 검사 전후의 페이지를 비교합니다.
+assay는 페이지의 용도를 모르기 때문에, 페이지가 스스로 모순될(the page contradicts itself)
+때만 보고합니다. 예를 들어 페이지에서 오류가 발생하거나, 컨트롤이 한 번 늦게 반응하거나,
+목록이 비어 있는데 개수가 1로 표시되는 경우입니다.
+
+---
 
 ### <a id="serving-the-page"></a>페이지 서빙
 
@@ -174,13 +172,17 @@ C005 [FAILED] click green twice
     ↳ the page threw an error while loading (C001), before anything was pressed
 ```
 
-벤치마크 페이지의 모든 묶기 결과는 사람이 직접 작성한 정답표(answer key)인 [`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt)와 대조해 확인합니다.
+벤치마크 페이지의 모든 묶기 결과는 사람이 직접 작성한 정답표(answer key)인 `benchmarks/harness/links.txt`와 대조해 확인합니다.
 
 ---
 
 ## <a id="what-assay-checks"></a>assay가 검사하는 항목
 
-아래 각 섹션은 assay가 페이지에 하는 일, 보고하는 내용, 보고하지 않는 경우와 그 이유를 차례로 설명합니다. 검사 하나에 대한 발견 사항에는 `C001`, `C002` 같은 번호가 붙습니다. 어느 한 검사로는 드러나지 않는, 실행 전체에 대한 발견 사항에는 `F001`, `F002` 같은 번호가 붙고, 페이지 전체에 대한 두 가지 발견 사항(아무것도 반응하지 않음, 아무것도 그려지지 않음)은 `C000`입니다.
+아래 각 섹션은 검사 종류별로 assay가 하는 일, 보고하는 내용과 출력하는 정확한 메시지, 그리고 일부러 보고하지 않는 경우와 그 이유를 다룹니다. 여기 나오는 모든 규칙(rule)은 벤치마크로 측정했으며, 예외 대부분은 규칙을 더 넓게 적용한 버전이 정상 동작하는 페이지를 문제로 표시했기 때문에 생겼습니다.
+
+검사 하나에 대한 발견 사항에는 `C001`, `C002` 같은 번호가 붙습니다. 어느 한 검사로는 드러나지 않는, 실행 전체에 대한 발견 사항에는 `F001`, `F002` 같은 번호가 붙고, 페이지 전체에 대한 두 가지 발견 사항(아무것도 반응하지 않음, 아무것도 그려지지 않음)은 `C000`입니다.
+
+---
 
 ### <a id="opening-the-page"></a>페이지 열기
 

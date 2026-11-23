@@ -1,14 +1,12 @@
-<!-- i18n-source: docs/harnesses.md 754a27f7ad6e3db62fad6db5ec61f13ed63618f1 -->
+<!-- i18n-source: docs/harnesses.md dedfb1408902eaf75909c9cf3b90f2dc6304d0a1 -->
 
-<h1 align="center">harness에 assay 설치하기</h1>
+<h1 align="center">Harness</h1>
+
+<p align="center"><a href="../README.ko.md">assay</a> › Harness</p>
 
 <p align="center"><a href="harnesses.md">English</a> · <a href="harnesses.zh-CN.md">简体中文</a> · <a href="harnesses.ja.md">日本語</a> · <b>한국어</b> · <a href="harnesses.ru.md">Русский</a></p>
 
----
-
-<p align="center">harness(에이전트 실행 환경) 15개의 설치 방법입니다. 그중 8개는 자체 플러그인 명령으로
-assay를 설치합니다. 나머지 7개는 skill 파일을 알맞은 위치에 복사하면 되며, 이 방법은 skill을
-읽는 harness라면 어디서든 동작합니다.</p>
+<p align="center">지원하는 코딩 에이전트 harness(에이전트 실행 환경) 15개 각각에 skill과 플러그인을 설치하는 방법입니다.</p>
 
 ---
 
@@ -30,6 +28,8 @@ assay를 설치합니다. 나머지 7개는 skill 파일을 알맞은 위치에 
 
 ## <a id="what-you-get"></a>제공되는 기능
 
+harness 8개는 자체 플러그인 명령으로 assay를 설치합니다. 나머지 7개는 skill 파일을 알맞은 위치에 복사하면 되며, 이 방법은 skill을 읽는 harness라면 어디서든 동작합니다.
+
 assay는 두 부분으로 구성됩니다.
 
 - 에이전트가 페이지를 완성한 뒤 `assay`를 실행하고 그 결과를 보여 주도록 지시하는 **skill**
@@ -40,16 +40,10 @@ assay는 두 부분으로 구성됩니다.
 harness 15개 모두 먼저 `assay`가 `PATH`에 있어야 합니다.
 
 ```bash
-pip install assay-ui           # Python 3.10+
+pip install assay-ui
 ```
 
-```bash
-uv tool install assay-ui       # Python 3.10+가 없으면 uv가 내려받습니다
-```
-
-```bash
-pipx install assay-ui          # assay를 별도의 격리된 환경에 설치합니다
-```
+[모든 설치 방법](install.ko.md)
 
 ---
 
@@ -190,11 +184,11 @@ Copilot은 훅의 보고를 에이전트에게 전달하지 않고 화면에 직
 
 assay는 이 harness들의 형식에 맞는 플러그인을 제공하지 않으므로, skill을 파일로 설치합니다. skill은 마크다운 파일 하나이며, skill이나 지침 파일을 읽는 곳이라면 어디서든 동작합니다.
 
-[`plugins/assay/skills/checking-a-page/`](../plugins/assay/skills/checking-a-page)를 harness가 skill을 읽는 폴더에 복사하세요. 예를 들어 Hermes Agent는 프로젝트의 `.agents/skills/`를 읽습니다. 또는 파일 내용을 `AGENTS.md`에 붙여 넣으세요.
+`plugins/assay/skills/checking-a-page/`를 harness가 skill을 읽는 폴더에 복사하세요. 예를 들어 Hermes Agent는 프로젝트의 `.agents/skills/`를 읽습니다. 또는 파일 내용을 `AGENTS.md`에 붙여 넣으세요.
 
 훅이 없으면 매 턴이 끝날 때마다 검사가 실행되는 대신, 에이전트가 검사를 언제 실행할지 결정합니다.
 
-**[skill의 동작 방식 →](../plugins/assay/README.ko.md#the-skill)**
+[skill과 플러그인](../plugins/assay/README.ko.md)
 
 ---
 

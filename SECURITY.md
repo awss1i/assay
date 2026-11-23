@@ -1,21 +1,30 @@
 <h1 align="center">Security</h1>
 
----
+<p align="center"><a href="README.md">assay</a> › Security</p>
 
-<p align="center"><strong>Report a vulnerability privately, never in a public issue.</strong> Use
-<a href="https://github.com/awss1i/assay/security/advisories/new">Report a vulnerability</a>
-on the Security tab. A fix goes out as a new release on PyPI.</p>
+<p align="center">How to report a vulnerability in assay, and what counts as one.</p>
 
 ---
 
 ## Contents
 
-- [What Counts](#what-counts)
-- [Supported Versions](#supported-versions)
+- [Reporting a vulnerability](#reporting-a-vulnerability)
+- [What counts](#what-counts)
+- [Supported versions](#supported-versions)
 
 ---
 
-## What Counts
+## Reporting a vulnerability
+
+Report a vulnerability privately, never in a public issue. Use Report a
+vulnerability on the repository's Security tab. A fix goes out as a new
+release on PyPI.
+
+[Report a vulnerability](https://github.com/awss1i/assay/security/advisories/new)
+
+---
+
+## What counts
 
 assay opens pages nobody has reviewed, so these are its security boundaries:
 
@@ -41,6 +50,6 @@ gives it. Keep secrets out of the folder you check, or in hidden files.
 
 ---
 
-## Supported Versions
+## Supported versions
 
 The latest release on PyPI.

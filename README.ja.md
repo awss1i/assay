@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 98e1f9834b59ec87b57abb16fd325a6cec8eca55 -->
+<!-- i18n-source: README.md 4840d70700f505b756259d67a4a9623def33bb6c -->
 
 <h1 align="center">assay</h1>
 
@@ -13,14 +13,12 @@
 </p>
 
 <p align="center">
-  <a href="#install">インストール</a> · <a href="#use">使い方</a> · <a href="#benchmarks">ベンチマーク</a> · <a href="#how-it-works">仕組み</a> · <a href="#why">なぜ assay なのか</a> · <a href="#limits">制限事項</a> · <a href="#contributing">コントリビューション</a> · <a href="#licence">ライセンス</a>
+  <a href="#install">インストール</a> · <a href="#getting-started">はじめに</a> · <a href="#benchmarks">ベンチマーク</a> · <a href="#docs">ドキュメント</a> · <a href="#contributing">コントリビューション</a> · <a href="#licence">ライセンス</a>
 </p>
 
 ---
 
 <p align="center"><strong>エージェントネイティブな Web ページ向け QA CLI。決定論的、テスト不要、LLM 不要。</strong></p>
-
-<p align="center"><code>pip install assay-ui</code></p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="ドラッグで並べ替えるリストに対して assay を実行しているターミナルです。ページから 7 件のチェックが計画され、1 件が成功、6 件が失敗しています。最初の失敗はページ上のどこもまったく変化しなかったことを示し、残りの 5 件は同じ指摘であることを示しています。">
@@ -32,43 +30,30 @@
 
 assay はページを Chromium で開き、ページ上のコントロールをすべて見つけ出して、そのすべてを実際に操作し、うまくいかなかった点を報告します。
 
-- **テストを書く必要はありません。** assay は、ページ上で見つけたコントロールをもとにチェックを組み立てます。
+- **テストを書く必要はありません。** assay は、ページ上で見つけたコントロールをもとにチェックを組み立てるので、テストスクリプトも基準となるスクリーンショットも管理する必要がありません。
 - **LLM は使いません。** API キーも費用も不要で、何度実行しても同じ結果になります。
 - **コーディングエージェントと連携します。** 15 種類の harness（エージェントの実行環境）に対応した skill を使うと、エージェントは自分が書いたページを 1 つずつチェックします。Claude Code、Codex、Grok Build CLI、Devin CLI、Factory Droid、GitHub Copilot CLI、DeepSeek Harness では、さらにフックがターンの終わりに毎回チェックを自動で実行します。
 - **重複をまとめます。** 1 つのバグが複数のチェックを失敗させた場合、2 件目以降は同じメッセージを繰り返さず、*same finding as C003*（C003 と同じ指摘）と表示します。
+
+assay はページが何のためのものかを知らないので、ページが自己矛盾している（the page contradicts itself）箇所を報告します。たとえば、リストが空なのに件数が 1 と表示される場合や、「Undo」が 1 回目には何もせず 2 回目で動く場合です。動作はするものの間違ったことをするページ、たとえば合計の計算が間違っているページは、たいていチェックを通過します。
 
 ---
 
 ## <a id="install"></a>インストール
 
 ```bash
-pip install assay-ui           # Python 3.10 以上が必要
+pip install assay-ui
 ```
 
-```bash
-uv tool install assay-ui       # Python 3.10 以上がなくても uv がダウンロードします
-```
+assay は uv や pipx でもインストールでき、skill とプラグインは 15 種類のコーディングエージェント向け harness にインストールできます。
 
-```bash
-pipx install assay-ui          # assay を専用の隔離環境にインストールします
-```
-
-`pip` が見つからない場合は、`python3 -m pip install assay-ui` を使ってください。初回の実行時には、必要に応じて Chromium がダウンロードされます。
-
-assay 自体の開発に参加する場合は、次のようにします。
-
-```bash
-git clone https://github.com/awss1i/assay.git && cd assay
-pip install -e ".[dev]"
-```
-
-### <a id="for-coding-agents"></a>コーディングエージェント向け
-
-まず上記の CLI をインストールしてから、**[harness のセットアップ →](https://github.com/awss1i/assay/blob/main/docs/harnesses.ja.md)** の手順に従い、対応している 15 種類の harness のいずれかに skill またはプラグインを追加してください。
+[すべてのインストール方法](https://github.com/awss1i/assay/blob/main/docs/install.ja.md)
 
 ---
 
-## <a id="use"></a>使い方
+## <a id="getting-started"></a>はじめに
+
+ページが入っているフォルダーを assay に指定します。
 
 ```console
 assay ./my-app                    # このフォルダーの index.html をチェック
@@ -78,24 +63,14 @@ assay ./my-app --one-line         # スクリプトやエージェント向け�
 
 失敗が 1 つでもあれば終了コードは 0 以外になります。初回の実行時に Chromium をダウンロードすることを除けば、指定しない限りディスクには何も書き込みません。
 
-**[すべてのフラグ、実行例、Python API、HTML レポート →](https://github.com/awss1i/assay/blob/main/docs/usage.ja.md)**
-
-### <a id="with-coding-agents"></a>コーディングエージェントで使う
-
-**skill** は、対応している 15 種類の harness すべてで動作します。対象は Claude Code、DeepSeek Harness、opencode、Antigravity、Codex App、Codex CLI、Cursor、Devin CLI、Factory Droid、Gemini CLI、GitHub Copilot CLI、Grok Build CLI、Kimi Code、Pi、Hermes Agent です。skill はエージェントに対し、ページを書き終えたら assay を実行し、返答の最後に次のような結果を載せるよう指示します。
-
-```
-assay: checked todo/todo.html, 8 checks, nothing flagged.
-```
-
-**プラグイン**はフックを追加し、ページに変更があったターンの終わりに毎回チェックを自動で実行します。フックが動作するのは Claude Code、Codex、Grok Build CLI、Devin CLI、Factory Droid、GitHub Copilot CLI、DeepSeek Harness です。どちらの方法でも、エージェントは assay が見つけた内容を報告するだけで、あなたが頼まない限り、それを理由にコードを変更することはありません。
+コーディングエージェントでは、プラグインがページに変更があったターンの終わりに毎回チェックを実行し、エージェントが assay の見つけた内容を報告します。Claude Code では、次の 2 つのコマンドでインストールします。
 
 ```
 /plugin marketplace add awss1i/assay
 /plugin install assay@assay
 ```
 
-**[skill とプラグインの仕組み →](https://github.com/awss1i/assay/blob/main/plugins/assay/README.ja.md)**
+[はじめに](https://github.com/awss1i/assay/blob/main/docs/getting-started.ja.md)
 
 ---
 
@@ -114,55 +89,23 @@ AI が書いたページは、プロンプトの一覧から AI が書いた小�
 
 ---
 
-## <a id="how-it-works"></a>仕組み
+## <a id="docs"></a>ドキュメント
 
-assay は次の 5 つの手順で動きます。
-
-1. フォルダーを localhost で配信し、ページを Chromium で開きます。
-2. ページ上のコントロールが変化しなくなるまで待ちます。
-3. ブラウザーが描画するコントロールをすべて列挙します。クリックできる div、ドラッグハンドル、編集可能な領域も含みます。
-4. それらのコントロールからチェックを計画します。たとえば、すべてのボタンを 1 回押す、2 回押す、入力欄に空の文字列、普通の文字列、非常に長い文字列、HTML を含む文字列を入力する、すべてのドロップダウンを変更する、キャンバスに描画する、フォームに入力して送信する、などです。
-5. 各チェックを新しいタブで実行し、実行前後のページを比較します。
-
-assay はページが何のためのものかを知りません。そのため、押しても何も変わらないボタンがあるだけでは失敗とみなしません。代わりに、ページが自己矛盾している（the page contradicts itself）箇所を報告します。たとえば次のような場合です。
-
-- ページがエラーを投げる
-- 「Undo」が 1 回目には何もせず、2 回目で動く
-- リストが空なのに、項目数の表示が 1 になっている
-- 項目を追加すると合計が増えるのに、削除しても減らない
-- 数値があるべき場所に `NaN` が表示される
-- どのコントロールを操作しても、ページがまったく反応しない
-
-**[すべてのルール →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.ja.md)**
-
----
-
-## <a id="why"></a>なぜ assay なのか
-
-Playwright や Cypress には、誰かが書いたテストが必要です。ビジュアルリグレッションテストには、基準となるスクリーンショットが必要です。モデルにコードをレビューさせる方法では、コードを読むだけで実行はしません。assay は事前に何も準備せずに、コードを実際に実行します。
-
-|  | テストを書く必要 | ベースラインの必要 | プログラムの実行 |
-|---|---|---|---|
-| Playwright / Cypress | あり | なし | する、書いた部分だけ |
-| Percy / Chromatic | なし | **あり** | スクリーンショットを撮る |
-| モデルにレビューさせる | なし | なし | **しない、ソースを読むだけ** |
-| **assay** | **なし** | **なし** | **する、すべて** |
-
----
-
-## <a id="limits"></a>制限事項
-
-- **意図はチェックできません。** 動きはするものの間違った処理をするページ（たとえば合計の計算を間違えるページ）は、たいていチェックを通過します。そうした点を確かめるには、Python から受け入れ基準（acceptance criteria）を渡してください。
-- **対象は Web ページのみです。** ローカルフォルダーから配信したページを 1 つずつチェックします。クロールやログインは行いません。チェック中もページはインターネットに接続できるため、稼働中の API を呼び出すページは、その API がその時点で返した内容をもとにチェックされます。
-- **対象はビルド済みの出力のみです。** `npm install` やビルドは実行しません。ソースツリーを指定すると、先に何を実行すべきかを教えてくれます。
-- **終了したゲームは壊れているように見えることがあります。** 再開する手段がないまま終了したゲームは反応しなくなるため、何も反応しないページとして報告されることがあります。
-- **速度。** ほとんどのページは数秒から 1 分で終わります。ベンチマークのページには、各ページの所要時間と、計測に使ったマシンが載っています。
+| ドキュメント | 内容 |
+|---|---|
+| [使い方](https://github.com/awss1i/assay/blob/main/docs/usage.ja.md) | すべてのオプション、assay の出力、終了コード、HTML レポート、Python API |
+| [仕組み](https://github.com/awss1i/assay/blob/main/docs/how-it-works.ja.md) | 1 回の実行の流れ、すべてのチェックとそれぞれが出力する正確なメッセージ、assay がチェックできないこと |
+| [Harness](https://github.com/awss1i/assay/blob/main/docs/harnesses.ja.md) | 対応している 15 種類のコーディングエージェント向け harness それぞれのインストール手順 |
+| [skill とプラグイン](https://github.com/awss1i/assay/blob/main/plugins/assay/README.ja.md) | skill がエージェントに指示する内容と、プラグインのフックが各ターンの後に行うこと |
+| [開発](https://github.com/awss1i/assay/blob/main/docs/development.ja.md) | コードの構成、ルールの変更、テスト、harness の追加 |
 
 ---
 
 ## <a id="contributing"></a>コントリビューション
 
-バグや誤検知（false alarm）は Issue で報告し、変更はプルリクエストで送ってください。質問やアイデアの共有は [Discussions](https://github.com/awss1i/assay/discussions) でどうぞ。詳しくは **[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)** を参照してください。
+バグやドキュメントの問題は Issue で報告し、質問やアイデアは Discussions へ、修正や新機能はプルリクエストで送ってください。タイトルは、変更が関係する領域の名前で始めます。たとえば `cli: what changed` のようにします。
+
+[コントリビューション](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
 
 ---
 

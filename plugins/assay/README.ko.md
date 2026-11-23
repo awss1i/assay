@@ -1,13 +1,12 @@
-<!-- i18n-source: plugins/assay/README.md 180af1a6b8d06f59dee6add968b42fecd831ed93 -->
+<!-- i18n-source: plugins/assay/README.md 417d141f0e70242b6251212fd928d234e07ebe83 -->
 
 <h1 align="center">skill과 플러그인</h1>
 
+<p align="center"><a href="../../README.ko.md">assay</a> › skill과 플러그인</p>
+
 <p align="center"><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>한국어</b> · <a href="README.ru.md">Русский</a></p>
 
----
-
-<p align="center">에이전트가 방금 작성한 페이지를 검사(check)하게 하는 두 가지 방법입니다.
-<strong><a href="../../docs/harnesses.ko.md">harness(에이전트 실행 환경) 15개의 설치 방법 →</a></strong></p>
+<p align="center">에이전트가 방금 작성한 페이지를 검사(check)하게 하는 두 가지 방법입니다.</p>
 
 ---
 
@@ -21,7 +20,7 @@
 
 ## <a id="the-skill"></a>skill
 
-skill은 지원하는 harness 15개 모두에서 동작합니다. [`skills/checking-a-page/SKILL.md`](skills/checking-a-page/SKILL.md)는 에이전트에게 페이지를 완성한 뒤 다음 명령을 실행하라고 지시합니다.
+skill은 지원하는 harness(에이전트 실행 환경) 15개 모두에서 동작합니다. skill은 `skills/checking-a-page/SKILL.md` 파일 하나이며, 에이전트에게 페이지를 완성한 뒤 다음 명령을 실행하라고 지시합니다.
 
 ```bash
 assay <the page> --one-line
@@ -45,6 +44,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 
 이 네 줄은 버그 하나입니다. 반복되는 줄은 메시지를 되풀이하는 대신 첫 번째 발견 사항(finding)을 가리킵니다. 에이전트는 assay의 출력을 요약하지 않고 그대로 옮기므로, 숫자와 문구가 정확하게 유지됩니다. skill만 사용하면 검사를 언제 실행할지는 에이전트가 결정합니다.
 
+[skill 파일](skills/checking-a-page/SKILL.md)
+
 ---
 
 ## <a id="the-plugin"></a>플러그인
@@ -56,6 +57,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 - **페이지를 검사하면 항상 보고합니다.** 그래서 문제없다는 결과를 assay가 실행되지 않은 것으로 착각할 일이 없습니다. 페이지를 변경하지 않은 턴은 아무것도 보고하지 않습니다.
 - **결과를 볼 수 있도록 턴을 열어 둡니다.** 단, 두 번 연속으로 열어 두지는 않습니다. 이를 위해 harness의 `stop_hook_active` 플래그를 확인하고 타임스탬프를 기록합니다(harness의 임시 폴더, 없으면 저장소의 `.git` 폴더, 그것도 없으면 `.assay-last-run` 파일에 기록). 타임스탬프를 기록할 수 없으면 턴을 열어 두지 않고 보고만 합니다.
 - **제한 시간 안에 끝납니다.** 페이지 하나에 최대 4분, 모든 페이지를 합쳐 최대 9분을 쓰므로, `hooks.json`에 설정된 10분 제한이 지나 harness가 훅을 취소하기 전에 끝납니다. 시간이 남지 않은 페이지는 검사하지 못함(not checked)으로 보고합니다.
+
+[Harness](../../docs/harnesses.ko.md)
 
 ---
 

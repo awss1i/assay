@@ -1,22 +1,21 @@
 <h1 align="center">Glossary</h1>
 
----
+<p align="center"><a href="../../README.md">assay</a> › <a href="../development.md">Development</a> › Glossary</p>
 
-<p align="center">The word each translation uses for assay's terms, so every page in a language
-says the same thing the same way. <a href="rules.md">rules.md</a> covers everything else.</p>
+<p align="center">The word each translation uses for assay's terms, so every page in a language says the same thing the same way.</p>
 
 ---
 
 ## Contents
 
-- [assay's Terms](#assays-terms)
-- [Coding Agents](#coding-agents)
-- [General Terms](#general-terms)
-- [Never Translated](#never-translated)
+- [assay's terms](#assays-terms)
+- [Coding agents](#coding-agents)
+- [General terms](#general-terms)
+- [Never translated](#never-translated)
 
 ---
 
-## assay's Terms
+## assay's terms
 
 | English | 简体中文 | 日本語 | 한국어 | Русский | Meaning |
 |---|---|---|---|---|---|
@@ -39,7 +38,7 @@ says the same thing the same way. <a href="rules.md">rules.md</a> covers everyth
 
 ---
 
-## Coding Agents
+## Coding agents
 
 | English | 简体中文 | 日本語 | 한국어 | Русский | Note |
 |---|---|---|---|---|---|
@@ -53,7 +52,7 @@ says the same thing the same way. <a href="rules.md">rules.md</a> covers everyth
 
 ---
 
-## General Terms
+## General terms
 
 | English | 简体中文 | 日本語 | 한국어 | Русский |
 |---|---|---|---|---|
@@ -86,7 +85,7 @@ says the same thing the same way. <a href="rules.md">rules.md</a> covers everyth
 
 ---
 
-## Never Translated
+## Never translated
 
 These stay exactly as written in every language:
 

@@ -1,12 +1,12 @@
-<!-- i18n-source: docs/harnesses.md 754a27f7ad6e3db62fad6db5ec61f13ed63618f1 -->
+<!-- i18n-source: docs/harnesses.md dedfb1408902eaf75909c9cf3b90f2dc6304d0a1 -->
 
-<h1 align="center">harness に assay をインストールする</h1>
+<h1 align="center">Harness</h1>
+
+<p align="center"><a href="../README.ja.md">assay</a> › Harness</p>
 
 <p align="center"><a href="harnesses.md">English</a> · <a href="harnesses.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="harnesses.ko.md">한국어</a> · <a href="harnesses.ru.md">Русский</a></p>
 
----
-
-<p align="center">15 種類の harness（エージェントの実行環境）へのインストール手順です。そのうち 8 種類では、それぞれのプラグインコマンドで assay をインストールします。残りの 7 種類では skill のファイルを所定の場所にコピーします。この方法は、skill を読み込む harness ならどれでも使えます。</p>
+<p align="center">対応している 15 種類のコーディングエージェント向け harness（エージェントの実行環境）ごとの、skill とプラグインのインストール手順です。</p>
 
 ---
 
@@ -28,6 +28,8 @@
 
 ## <a id="what-you-get"></a>提供されるもの
 
+8 種類の harness では、それぞれのプラグインコマンドで assay をインストールします。残りの 7 種類では skill のファイルを所定の場所にコピーします。この方法は、skill を読み込む harness ならどれでも使えます。
+
 assay は次の 2 つで構成されています。
 
 - **skill**。エージェントに対し、ページを書き終えたら `assay` を実行して結果を表示するよう指示します。
@@ -38,16 +40,10 @@ assay は次の 2 つで構成されています。
 15 種類のどの harness でも、事前に `assay` が `PATH` 上にある必要があります。
 
 ```bash
-pip install assay-ui           # Python 3.10 以上が必要
+pip install assay-ui
 ```
 
-```bash
-uv tool install assay-ui       # Python 3.10 以上がなくても uv がダウンロードします
-```
-
-```bash
-pipx install assay-ui          # assay を専用の隔離環境にインストールします
-```
+[すべてのインストール方法](install.ja.md)
 
 ---
 
@@ -188,11 +184,11 @@ Copilot は、フックの報告内容をエージェントに渡さず、あな
 
 assay はこれらの harness の形式に合わせたプラグインを提供していないため、skill をファイルとしてインストールします。skill は 1 つの Markdown ファイルで、skill や指示ファイルを読み込む環境ならどこでも動作します。
 
-[`plugins/assay/skills/checking-a-page/`](../plugins/assay/skills/checking-a-page) を、使っている harness が skill を読み込むフォルダーにコピーしてください。たとえば、Hermes Agent が読み込むプロジェクトの `.agents/skills/` などです。あるいは、このファイルの内容を `AGENTS.md` に貼り付けても構いません。
+`plugins/assay/skills/checking-a-page/` を、使っている harness が skill を読み込むフォルダーにコピーしてください。たとえば、Hermes Agent が読み込むプロジェクトの `.agents/skills/` などです。あるいは、このファイルの内容を `AGENTS.md` に貼り付けても構いません。
 
 フックがない場合、チェックは毎ターンの終わりに実行されるのではなく、いつ実行するかをエージェントが判断します。
 
-**[skill の仕組み →](../plugins/assay/README.ja.md#the-skill)**
+[skill とプラグイン](../plugins/assay/README.ja.md)
 
 ---
 
