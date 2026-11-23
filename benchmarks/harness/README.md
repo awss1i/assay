@@ -72,8 +72,8 @@ Only a complete run writes anything.
 | `benchmarks/generated.md` | `generated.py` | The generated set's page |
 | `benchmarks/generated/programs/<harness>/<model>/results.md` | `generated.py` | Every program in one cell, with what a person found and what assay reported |
 | `benchmarks/planted.md` | `planted.py` | The planted set's page |
-| `benchmarks/harness/results.json` | Both | Each set's headline counts from its last complete run |
-| The results table in `README.md` and `benchmarks/README.md` | Both | Every set's counts, read from `results.json` |
+| `benchmarks/harness/results.json` | Both | Each set's headline counts and timings from its last complete run |
+| The results table in `README.md` and `benchmarks/README.md`, and the median in the README's opening list | Both | Every set's counts and the generated set's median time, read from `results.json` |
 
 Each set's page names the machine it ran on and how long the programs took.
 

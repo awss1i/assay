@@ -600,7 +600,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         # Only this repository's own set has a row in the results table.
         if suite == BENCH / "generated":
             pages.record("generated", pages=len(every), bugs=broken,
-                         found=found, working=works, flagged=wolf)
+                         found=found, working=works, flagged=wolf,
+                         seconds=[r.seconds for r in every])
             pages.write()
         print(f"written: {page} and each cell's results.md")
     return 0 if wolf == 0 else 1

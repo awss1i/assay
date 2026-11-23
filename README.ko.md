@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 41f80cc8489cc19ee17099eca6317c17b2f55f5e -->
+<!-- i18n-source: README.md aac1b652e13b90929d527cd6942e248b8ff20034 -->
 
 <h1 align="center">assay</h1>
 
@@ -34,7 +34,7 @@
 assay는 Chromium에서 페이지를 열고, 페이지의 모든 컨트롤(control)을 찾아 전부 사용해 본 뒤, 무엇이 잘못되었는지 보고합니다.
 
 - **테스트를 작성할 필요가 없습니다.** assay는 페이지에서 찾은 컨트롤로 검사(check)를 만들므로, 관리해야 할 테스트 스크립트나 기준 스크린샷이 없습니다.
-- **LLM을 쓰지 않습니다.** API 키도 비용도 필요 없고, 몇 번을 실행해도 결과가 같습니다.
+- **LLM을 쓰지 않습니다.** API 키도 비용도 필요 없고, 몇 번을 실행해도 결과가 같으며, 페이지 하나를 검사하는 데 걸리는 시간의 중앙값은 14초입니다.
 - **코딩 에이전트(coding agent)와 함께 동작합니다.** harness(에이전트 실행 환경) 15개에서 지원하는 skill은 에이전트가 작성한 페이지를 하나하나 검사하게 합니다. Claude Code, Codex, Grok Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI, DeepSeek Harness에서는 훅(hook)도 매 턴(turn)이 끝날 때마다 검사를 자동으로 실행합니다.
 - **반복되는 실패를 묶습니다.** 버그 하나 때문에 여러 검사가 실패하면, 뒤에 실패한 검사는 같은 메시지를 반복하는 대신 *same finding as C003*(C003과 같은 발견 사항)이라고 표시합니다.
 
@@ -85,6 +85,8 @@ assay의 점수는 이 저장소에 있는 두 가지 페이지 세트로 매깁
 |---|---|---|---|
 | [AI가 작성한 페이지](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 20개 중 15개 | 205개 중 0개 |
 | [의도적으로 심은 버그가 있는 페이지](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 50개 중 12개 | 10개 중 0개 |
+
+AI가 작성한 페이지에서 페이지 하나를 검사하는 데 걸린 시간의 중앙값은 14초였고, 225개 중 221개가 1분 안에 끝났습니다.
 
 AI가 작성한 페이지는 AI가 프롬프트 목록으로 작성한 작은 웹 앱이며, 사람이 하나하나 열어서 직접 사용해 봤습니다. 의도적으로 심은 버그(planted bug)가 있는 페이지는 정상 동작하는 앱과 그 복사본으로 이루어져 있고, assay의 존재를 전혀 알지 못하는 별도의 에이전트가 각 복사본에 스스로 고른 버그를 심었습니다. assay의 규칙(rule)은 버그를 심은 페이지들을 보면서 개발했으므로, 이 점수는 개발에 쓴 데이터로 매긴 표본 내(in-sample) 점수입니다.
 

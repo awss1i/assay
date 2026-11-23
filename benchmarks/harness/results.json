@@ -4,13 +4,17 @@
     "bugs": 20,
     "found": 15,
     "working": 205,
-    "flagged": 0
+    "flagged": 0,
+    "median_seconds": 14,
+    "within_a_minute": 221
   },
   "planted": {
     "pages": 20,
     "bugs": 50,
     "found": 12,
     "working": 10,
-    "flagged": 0
+    "flagged": 0,
+    "median_seconds": 23,
+    "within_a_minute": 19
   }
 }

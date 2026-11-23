@@ -34,8 +34,8 @@ them, and reports what went wrong.
 
 - **No tests to write.** assay builds its checks from the controls it finds
   on the page, so there are no test scripts or reference screenshots to keep.
-- **No LLM.** There's no API key and no cost, and every run gives the same
-  result.
+- **No LLM.** There's no API key and no cost, every run gives the same
+  result, and the median page takes <!-- median -->14 seconds<!-- /median --> to check.
 - **Works with coding agents.** A skill, supported across fifteen harnesses,
   has the agent check each page it writes. In Claude Code, Codex, Grok Build
   CLI, Devin CLI, Factory Droid, GitHub Copilot CLI and the DeepSeek Harness,
@@ -101,6 +101,8 @@ scripts write the table below.
 |---|---|---|---|
 | [Pages written by AI](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 15 of 20 | 0 of 205 |
 | [Pages with planted bugs](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 12 of 50 | 0 of 10 |
+
+On the pages written by AI, the median page took 14 seconds to check, and 221 of the 225 finished inside a minute.
 
 <!-- /results -->
 

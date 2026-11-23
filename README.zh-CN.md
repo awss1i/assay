@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 41f80cc8489cc19ee17099eca6317c17b2f55f5e -->
+<!-- i18n-source: README.md aac1b652e13b90929d527cd6942e248b8ff20034 -->
 
 <h1 align="center">assay</h1>
 
@@ -31,7 +31,7 @@
 assay 会在 Chromium 中打开你的页面，找出页面上的每个控件（control），逐一操作，然后报告哪里出了问题。
 
 - **无需编写测试。** assay 根据在页面上找到的控件生成检查（check），所以不需要维护测试脚本或基准截图。
-- **不依赖 LLM。** 不需要 API 密钥，不产生费用，每次运行的结果都相同。
+- **不依赖 LLM。** 不需要 API 密钥，不产生费用，每次运行的结果都相同，检查一个页面的中位用时为 14 秒。
 - **支持编程智能体（coding agent）。** 一个可在 15 种 harness（智能体运行框架）中使用的 skill 会让智能体检查它写出的每个页面。在 Claude Code、Codex、Grok Build CLI、Devin CLI、Factory Droid、GitHub Copilot CLI 和 DeepSeek Harness 中，还有一个钩子（hook）会在每一轮（turn）结束后自动运行检查。
 - **合并重复的问题（finding）。** 当一个 bug 导致多项检查失败时，后面的检查会显示 *same finding as C003*（与 C003 是同一个问题），而不会重复同一条消息。
 
@@ -82,6 +82,8 @@ assay 的评分基于本仓库中的两组页面，下面的表格由评分脚�
 |---|---|---|---|
 | [AI 编写的页面](https://github.com/awss1i/assay/blob/main/benchmarks/generated.md) | 225 | 20 个中的 15 个 | 205 个中的 0 个 |
 | [人为植入 bug 的页面](https://github.com/awss1i/assay/blob/main/benchmarks/planted.md) | 20 | 50 个中的 12 个 | 10 个中的 0 个 |
+
+在 AI 编写的页面上，检查一个页面的中位用时为 14 秒，225 个页面中有 221 个在一分钟内完成。
 
 AI 编写的页面是 AI 根据一组提示词写出的小型网页应用，再由人逐一打开试用。人为植入 bug 的页面由正常运行的应用及其副本组成，另一个从未被告知 assay 存在的智能体在每个副本中植入了由它自己挑选的 bug。assay 的规则（rule）在开发时参考过植入 bug 的页面，所以这项得分是样本内（in-sample）结果。
 

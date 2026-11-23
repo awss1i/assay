@@ -459,7 +459,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         if root == BENCH / "planted":
             pages.record("planted", pages=len(broken) + len(clean),
                          bugs=planted, found=caught, working=len(clean),
-                         flagged=noisy)
+                         flagged=noisy,
+                         seconds=[p.seconds for p in broken + clean])
             pages.write()
         print(f"written: {page}")
     return 1 if noisy else 0
