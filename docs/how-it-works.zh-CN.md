@@ -1,14 +1,12 @@
-<!-- i18n-source: docs/how-it-works.md e51d07a0daffd49dcc96c02a3fe23fee1f3b3ae9 -->
+<!-- i18n-source: docs/how-it-works.md b2e4320be90e404adda540de29a3daa7a56e74a5 -->
 
 <h1 align="center">工作原理</h1>
 
+<p align="center"><a href="../README.zh-CN.md">assay</a> › 工作原理</p>
+
 <p align="center"><a href="how-it-works.md">English</a> · <b>简体中文</b> · <a href="how-it-works.ja.md">日本語</a> · <a href="how-it-works.ko.md">한국어</a> · <a href="how-it-works.ru.md">Русский</a></p>
 
----
-
-<p align="center">assay 在真实的浏览器中打开你的页面，找出页面上的每个控件（control），按一组规划好的检查（check）逐一使用这些控件，并在每项检查前后对比页面。assay 不知道你的页面是做什么用的，所以只在页面自相矛盾（the page contradicts itself）时才报告，比如页面抛出错误、某个控件的反应晚了一次、列表为空时计数却显示 1，等等。</p>
-
-<p align="center">本页前半部分介绍一次运行的过程。后半部分逐一介绍每类检查：assay 做什么、报告什么以及输出的确切消息，还有它在什么情况下会刻意不报告、为什么。这里的每条规则（rule）都经过<a href="../benchmarks/README.md">基准测试</a>（benchmark）的衡量，其中大多数例外之所以存在，是因为规则更宽泛的版本曾把正常工作的页面标记为有问题。</p>
+<p align="center">一次运行的过程、assay 所做的每一类检查、每类检查输出的确切消息，以及它在什么情况下不报告。</p>
 
 ---
 
@@ -47,6 +45,10 @@
 ---
 
 ## <a id="how-a-run-goes"></a>一次运行的过程
+
+assay 在真实的浏览器中打开你的页面，找出页面上的每个控件（control），按一组规划好的检查（check）逐一使用这些控件，并在每项检查前后对比页面。assay 不知道你的页面是做什么用的，所以只在页面自相矛盾（the page contradicts itself）时才报告，比如页面抛出错误、某个控件的反应晚了一次、列表为空时计数却显示 1，等等。
+
+---
 
 ### <a id="serving-the-page"></a>托管页面
 
@@ -166,13 +168,17 @@ C005 [FAILED] click green twice
     ↳ the page threw an error while loading (C001), before anything was pressed
 ```
 
-基准测试页面上的每一次合并，都会与人工编写的标准答案（answer key）[`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt) 进行核对。
+基准测试页面上的每一次合并，都会与人工编写的标准答案（answer key）`benchmarks/harness/links.txt` 进行核对。
 
 ---
 
 ## <a id="what-assay-checks"></a>assay 检查什么
 
-下面每一节先说明 assay 对页面做了什么，再说明它报告什么，最后说明它在什么情况下不报告、为什么。针对单项检查的问题编号为 `C001`、`C002`，依此类推。针对整次运行、任何单项检查都无法单独发现的问题，编号为 `F001`、`F002`。两个针对整个页面的问题（毫无响应、什么都没有画出来）编号为 `C000`。
+下面每一节逐一介绍一类检查：assay 做什么、报告什么以及输出的确切消息，还有它在什么情况下会刻意不报告、为什么。这里的每条规则（rule）都经过基准测试（benchmark）的衡量，其中大多数例外之所以存在，是因为规则更宽泛的版本曾把正常工作的页面标记为有问题。
+
+针对单项检查的问题编号为 `C001`、`C002`，依此类推。针对整次运行、任何单项检查都无法单独发现的问题，编号为 `F001`、`F002`。两个针对整个页面的问题（毫无响应、什么都没有画出来）编号为 `C000`。
+
+---
 
 ### <a id="opening-the-page"></a>打开页面
 

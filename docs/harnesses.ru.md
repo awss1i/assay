@@ -1,14 +1,12 @@
-<!-- i18n-source: docs/harnesses.md 754a27f7ad6e3db62fad6db5ec61f13ed63618f1 -->
+<!-- i18n-source: docs/harnesses.md dedfb1408902eaf75909c9cf3b90f2dc6304d0a1 -->
 
-<h1 align="center">Установка assay в ваш harness</h1>
+<h1 align="center">Harness</h1>
+
+<p align="center"><a href="../README.ru.md">assay</a> › Harness</p>
 
 <p align="center"><a href="harnesses.md">English</a> · <a href="harnesses.zh-CN.md">简体中文</a> · <a href="harnesses.ja.md">日本語</a> · <a href="harnesses.ko.md">한국어</a> · <b>Русский</b></p>
 
----
-
-<p align="center">Шаги установки для пятнадцати harness (среда запуска агента). Восемь из них
-устанавливают assay собственной командой для плагинов. Для остальных семи вы копируете файл
-skill в нужное место, и этот способ работает в любом harness, который читает файлы skill.</p>
+<p align="center">Шаги установки skill и плагина в каждом из пятнадцати поддерживаемых harness (среда запуска агента) для агентов программирования.</p>
 
 ---
 
@@ -30,6 +28,10 @@ skill в нужное место, и этот способ работает в �
 
 ## <a id="what-you-get"></a>Что вы получаете
 
+Восемь harness устанавливают assay собственной командой для плагинов. Для остальных семи вы
+копируете файл skill в нужное место, и этот способ работает в любом harness, который читает файлы
+skill.
+
 assay состоит из двух частей:
 
 - **skill**, который говорит агенту запускать `assay` после того, как он закончил страницу, и
@@ -46,16 +48,10 @@ Claude Code. opencode и [остальные harness](#everywhere-else-the-skill
 Всем пятнадцати сначала нужен `assay` в вашем `PATH`.
 
 ```bash
-pip install assay-ui           # Python 3.10+
+pip install assay-ui
 ```
 
-```bash
-uv tool install assay-ui       # нет Python 3.10+? uv скачает его сам
-```
-
-```bash
-pipx install assay-ui          # устанавливает assay в отдельное изолированное окружение
-```
+[Все способы установки](install.ru.md)
 
 ---
 
@@ -224,15 +220,13 @@ assay не поставляет плагин в форматах этих harnes
 один файл в формате Markdown, и он работает везде, где читаются файлы skill или файлы с
 инструкциями.
 
-Скопируйте
-[`plugins/assay/skills/checking-a-page/`](../plugins/assay/skills/checking-a-page)
-в папку, из которой ваш harness читает файлы skill, например в `.agents/skills/` проекта, которую
+Скопируйте `plugins/assay/skills/checking-a-page/` в папку, из которой ваш harness читает файлы skill, например в `.agents/skills/` проекта, которую
 читает Hermes Agent. Или вставьте содержимое файла в ваш `AGENTS.md`.
 
 Без хука агент сам решает, когда запускать проверку, и она не запускается автоматически в конце
 каждого хода.
 
-**[Как работает skill →](../plugins/assay/README.ru.md#the-skill)**
+[Skill и плагин](../plugins/assay/README.ru.md)
 
 ---
 

@@ -1,10 +1,10 @@
 """Record which version of its English source a translation was made from.
 
-    python docs/i18n/stamp.py README.zh-CN.md docs/usage.ja.md
+    python docs/development/stamp.py README.zh-CN.md docs/usage.ja.md
 
 Run it after updating a translation. It writes the English source's git blob id
 into the translation's first line, the line tests/test_translations.py checks.
-docs/i18n/rules.md describes the whole convention.
+docs/development/translating.md describes the whole convention.
 """
 import hashlib
 import sys

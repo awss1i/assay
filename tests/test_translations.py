@@ -2,7 +2,7 @@
 
 A translation's first line records the git blob id of its English source, so
 when the English changes, the ids stop matching and the test names the stale
-translation. docs/i18n/rules.md describes the convention.
+translation. docs/development/translating.md describes the convention.
 """
 
 from __future__ import annotations
@@ -95,13 +95,13 @@ def test_translation_matches_the_current_english(translation):
     source = source_of(translation)
     first = translation.read_text(encoding="utf-8").splitlines()[0]
     m = STAMP.fullmatch(first)
-    assert m, f"{rel(translation)} has no i18n-source line, run docs/i18n/stamp.py on it"
+    assert m, f"{rel(translation)} has no i18n-source line, run docs/development/stamp.py on it"
     assert m.group(1) == rel(source), f"{rel(translation)} names the wrong source"
     assert m.group(2) == blob_id(source), (
         f"{rel(source)} changed after {rel(translation)} was translated. "
         f"See what changed with `git diff {m.group(2)} HEAD:{rel(source)}`, update the "
-        f"translation, then run `python docs/i18n/stamp.py {rel(translation)}`. "
-        f"docs/i18n/rules.md has the details.")
+        f"translation, then run `python docs/development/stamp.py {rel(translation)}`. "
+        f"docs/development/translating.md has the details.")
 
 
 @pytest.mark.parametrize("translation", TRANSLATIONS, ids=rel)

@@ -1,13 +1,12 @@
-<!-- i18n-source: plugins/assay/README.md 180af1a6b8d06f59dee6add968b42fecd831ed93 -->
+<!-- i18n-source: plugins/assay/README.md 417d141f0e70242b6251212fd928d234e07ebe83 -->
 
 <h1 align="center">skill とプラグイン</h1>
 
+<p align="center"><a href="../../README.ja.md">assay</a> › skill とプラグイン</p>
+
 <p align="center"><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ko.md">한국어</a> · <a href="README.ru.md">Русский</a></p>
 
----
-
-<p align="center">エージェントが書いたばかりのページを、エージェント自身にチェックさせる 2 つの方法です。
-<strong><a href="../../docs/harnesses.ja.md">15 種類の harness（エージェントの実行環境）へのインストール手順 →</a></strong></p>
+<p align="center">エージェントが書いたばかりのページを、エージェント自身にチェックさせる 2 つの方法です。</p>
 
 ---
 
@@ -21,7 +20,7 @@
 
 ## <a id="the-skill"></a>skill
 
-skill は、対応している 15 種類の harness すべてで動作します。[`skills/checking-a-page/SKILL.md`](skills/checking-a-page/SKILL.md) は、ページを書き終えたら次のコマンドを実行するようエージェントに指示します。
+skill は、対応している 15 種類の harness（エージェントの実行環境）すべてで動作します。skill は `skills/checking-a-page/SKILL.md` という 1 つのファイルで、ページを書き終えたら次のコマンドを実行するようエージェントに指示します。
 
 ```bash
 assay <the page> --one-line
@@ -45,6 +44,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 
 この 4 行は 1 つのバグによるものです。2 件目以降は、メッセージを繰り返す代わりに最初の指摘（finding）を示します。エージェントは assay の出力を要約せずにそのまま写すので、数値も文言も正確に保たれます。skill だけを使う場合、チェックをいつ実行するかはエージェントが判断します。
 
+[skill のファイル](skills/checking-a-page/SKILL.md)
+
 ---
 
 ## <a id="the-plugin"></a>プラグイン
@@ -56,6 +57,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 - **ページをチェックしたときは必ず報告します。** そのため、問題がなかったという結果を、assay が実行されなかったことと取り違えることはありません。ページを変更しなかったターンでは何も報告しません。
 - **結果が見えるように、ターンを終了させずに続けます。** ただし、2 回続けてそうすることはありません。harness の `stop_hook_active` フラグを確認し、タイムスタンプを書き込みます（書き込み先は harness の一時フォルダー、それがなければリポジトリの `.git` フォルダー、それもなければ `.assay-last-run` ファイルです）。タイムスタンプを書き込めない場合は、ターンを続けさせずに報告します。
 - **制限時間内に終わります。** 1 ページにかける時間は最大 4 分、全ページの合計は最大 9 分です。そのため、`hooks.json` で設定した 10 分の制限で harness に打ち切られる前に終わります。時間が残っていなかったページは、未チェック（not checked）として報告します。
+
+[Harness](../../docs/harnesses.ja.md)
 
 ---
 

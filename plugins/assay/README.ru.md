@@ -1,13 +1,12 @@
-<!-- i18n-source: plugins/assay/README.md 180af1a6b8d06f59dee6add968b42fecd831ed93 -->
+<!-- i18n-source: plugins/assay/README.md 417d141f0e70242b6251212fd928d234e07ebe83 -->
 
 <h1 align="center">Skill и плагин</h1>
 
+<p align="center"><a href="../../README.ru.md">assay</a> › Skill и плагин</p>
+
 <p align="center"><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.ko.md">한국어</a> · <b>Русский</b></p>
 
----
-
-<p align="center">Два способа заставить агента проверить страницу, которую он только что написал.
-<strong><a href="../../docs/harnesses.ru.md">Установка в пятнадцати harness (среда запуска агента) →</a></strong></p>
+<p align="center">Два способа заставить агента проверить страницу, которую он только что написал.</p>
 
 ---
 
@@ -21,8 +20,8 @@
 
 ## <a id="the-skill"></a>Skill
 
-Skill работает во всех пятнадцати поддерживаемых harness.
-[`skills/checking-a-page/SKILL.md`](skills/checking-a-page/SKILL.md) велит агенту, закончив
+Skill работает во всех пятнадцати поддерживаемых harness (среда запуска агента). Это один файл,
+`skills/checking-a-page/SKILL.md`, и он велит агенту, закончив
 страницу, выполнить эту команду.
 
 ```bash
@@ -50,6 +49,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 формулировки остаются точными. Если используется только skill, агент сам решает, когда запускать
 проверку (check).
 
+[Файл skill](skills/checking-a-page/SKILL.md)
+
 ---
 
 ## <a id="the-plugin"></a>Плагин
@@ -76,6 +77,8 @@ skill. DeepSeek Harness запускает хук через свой мост �
   вместе до девяти, поэтому он завершается раньше, чем harness прервёт его по десятиминутному
   лимиту, заданному в `hooks.json`. Про страницу, на которую не хватило времени, хук сообщает,
   что она не проверена (not checked).
+
+[Harness](../../docs/harnesses.ru.md)
 
 ---
 

@@ -1,36 +1,38 @@
-<h1 align="center">Translating the Docs</h1>
+<h1 align="center">Translating the docs</h1>
 
----
+<p align="center"><a href="../../README.md">assay</a> › <a href="../development.md">Development</a> › Translating the docs</p>
 
-<p align="center">The docs that explain how to use assay are kept in English, Simplified Chinese,
-Japanese, Korean and Russian. English is the source. This page is the convention every translation
-follows, and <a href="glossary.md">glossary.md</a> fixes the word used for each of assay's own
-terms in each language.</p>
+<p align="center">The convention every translation of assay's docs follows.</p>
 
 ---
 
 ## Contents
 
-- [What Is Translated](#what-is-translated)
-- [File Names](#file-names)
-- [The Language Switcher](#the-language-switcher)
-- [Headings and Anchors](#headings-and-anchors)
-- [What Stays in English](#what-stays-in-english)
+- [What is translated](#what-is-translated)
+- [File names](#file-names)
+- [The translations line](#the-translations-line)
+- [The trail](#the-trail)
+- [Headings and anchors](#headings-and-anchors)
+- [What stays in English](#what-stays-in-english)
 - [Links](#links)
 - [Writing](#writing)
-- [Keeping Translations Current](#keeping-translations-current)
-- [The Closing Note](#the-closing-note)
+- [Keeping translations current](#keeping-translations-current)
+- [The closing note](#the-closing-note)
 
 ---
 
-## What Is Translated
+## What is translated
 
-These docs have a translation in each of the four languages:
+The docs are kept in English, Simplified Chinese, Japanese, Korean and Russian. English is the
+source. These docs have a translation in each of the four other languages:
 
 - `README.md`
+- `docs/install.md`
+- `docs/getting-started.md`
 - `docs/usage.md`
-- `docs/harnesses.md`
 - `docs/how-it-works.md`
+- `docs/harnesses.md`
+- `docs/development.md`
 - `plugins/assay/README.md`
 
 These stay in English only, because issues, pull requests and security reports happen in
@@ -39,14 +41,14 @@ English, or because a program reads or writes them:
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md` and `plugins/assay/SECURITY.md`
 - the pull request template and the issue forms in `.github/`
 - `plugins/assay/skills/checking-a-page/SKILL.md`, which a coding agent reads
-- the benchmark pages in `benchmarks/`, which `benchmarks/harness/generated.py` and `benchmarks/harness/planted.py` rewrite
-- this page and the glossary
+- everything in `benchmarks/`, because the scorers rewrite its pages
+- this page and the glossary, which translators work from
 
 To translate another doc, add all four translations in the same change and list it above.
 
 ---
 
-## File Names
+## File names
 
 A translation sits next to its English source, with the language code before `.md`:
 
@@ -62,10 +64,10 @@ unchanged.
 
 ---
 
-## The Language Switcher
+## The translations line
 
-Every translated doc and its English source carry the same switcher, a centred line directly
-under the title. The current language is bold and unlinked, the others are links, and the order
+Every translated doc and its English source carry the same translations line, a centred line
+under the trail. The current language is bold and unlinked, the others are links, and the order
 is always English, 简体中文, 日本語, 한국어, Русский. In `docs/usage.md` it looks like this.
 
 ```html
@@ -79,13 +81,26 @@ In `docs/usage.ja.md` the same line reads like this.
 ```
 
 `README.md` is the one exception. PyPI shows it as the project description, where relative links
-don't resolve, so its switcher links are full GitHub URLs, like
+don't resolve, so every link in it is a full GitHub URL, like
 `https://github.com/awss1i/assay/blob/main/README.zh-CN.md`. The translated READMEs aren't on
-PyPI, so their switchers use relative links like every other doc.
+PyPI, so their translations lines use relative links like every other doc.
 
 ---
 
-## Headings and Anchors
+## The trail
+
+Every page except the README has a trail directly under its title. It links each page above it,
+starting with assay, and ends with the page's own name in plain text. On a translated page, the
+names in the trail are translated and its links go to the pages in the same language. In
+`docs/usage.ja.md` it looks like this.
+
+```html
+<p align="center"><a href="../README.ja.md">assay</a> › 使い方</p>
+```
+
+---
+
+## Headings and anchors
 
 Every heading below the title is translated, and starts with an anchor that carries the id GitHub
 gives the English heading. For example, `## The command` in English becomes this in Chinese.
@@ -95,14 +110,14 @@ gives the English heading. For example, `## The command` in English becomes this
 ```
 
 The id is the English heading in lowercase, with spaces turned into hyphens and punctuation
-removed, so `## Everywhere Else: The Skill on Its Own` gets `everywhere-else-the-skill-on-its-own`.
+removed, so `## Everywhere else: the skill on its own` gets `everywhere-else-the-skill-on-its-own`.
 In-page links, the centred nav and the Contents lists keep the English fragment, like
 `#the-command`, so the same link works in all five languages. A translation has the same headings
 in the same order as its source, and the test checks that.
 
 ---
 
-## What Stays in English
+## What stays in English
 
 Keep these exactly as they are in the source:
 
@@ -120,8 +135,10 @@ When prose quotes something assay prints, keep the English so a reader can match
 terminal, and give its meaning in parentheses right after it.
 
 The first time a doc uses one of assay's own terms, give the English in parentheses after the
-translation, like `误报（false alarm）`. After that, use the translation alone.
-[glossary.md](glossary.md) lists the word to use for each term in each language.
+translation, like `误报（false alarm）`. After that, use the translation alone. The glossary lists
+the word to use for each term in each language.
+
+[Glossary](glossary.md)
 
 ---
 
@@ -178,7 +195,7 @@ horizontal bar. Use a colon only to introduce a list, and don't join clauses wit
 
 ---
 
-## Keeping Translations Current
+## Keeping translations current
 
 The first line of every translation records which version of its English source it was made
 from, like this.
@@ -198,13 +215,13 @@ When the English changes:
    first line.
 2. Update the matching part of all four translations.
 3. Record the new version with
-   `python docs/i18n/stamp.py docs/usage.zh-CN.md docs/usage.ja.md docs/usage.ko.md docs/usage.ru.md`.
+   `python docs/development/stamp.py docs/usage.zh-CN.md docs/usage.ja.md docs/usage.ko.md docs/usage.ru.md`.
 
 Commit the English change and its translations together.
 
 ---
 
-## The Closing Note
+## The closing note
 
 Each translation ends with a divider and this note, naming and linking its source:
 

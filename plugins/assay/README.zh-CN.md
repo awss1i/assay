@@ -1,12 +1,12 @@
-<!-- i18n-source: plugins/assay/README.md 180af1a6b8d06f59dee6add968b42fecd831ed93 -->
+<!-- i18n-source: plugins/assay/README.md 417d141f0e70242b6251212fd928d234e07ebe83 -->
 
 <h1 align="center">skill 与插件</h1>
 
+<p align="center"><a href="../../README.zh-CN.md">assay</a> › skill 与插件</p>
+
 <p align="center"><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ko.md">한국어</a> · <a href="README.ru.md">Русский</a></p>
 
----
-
-<p align="center">让智能体（agent）检查它刚写好的页面，有两种方式。<strong><a href="../../docs/harnesses.zh-CN.md">15 种 harness（智能体运行框架）的安装步骤 →</a></strong></p>
+<p align="center">让智能体（agent）检查它刚写好的页面，有两种方式。</p>
 
 ---
 
@@ -20,7 +20,7 @@
 
 ## <a id="the-skill"></a>skill
 
-skill 可在全部 15 种受支持的 harness 中使用。[`skills/checking-a-page/SKILL.md`](skills/checking-a-page/SKILL.md) 让智能体在写完页面后运行这条命令。
+skill 可在全部 15 种受支持的 harness（智能体运行框架）中使用。它只有一个文件 `skills/checking-a-page/SKILL.md`，这个文件让智能体在写完页面后运行这条命令。
 
 ```bash
 assay <the page> --one-line
@@ -44,6 +44,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 
 这四行其实是同一个 bug。重复的几行不再重复消息，而是指明第一个问题（finding）。智能体会原样复制 assay 的输出，而不是自己总结，所以数字和措辞都保持准确。如果只安装 skill，由智能体决定何时运行检查（check）。
 
+[skill 文件](skills/checking-a-page/SKILL.md)
+
 ---
 
 ## <a id="the-plugin"></a>插件
@@ -55,6 +57,8 @@ assay: checked notes/index.html, 12 checks, 4 flagged:
 - **只要检查了页面就一定会报告**，这样没有问题的结果就不会被误认为是 assay 没有运行。没有修改任何页面的一轮不会报告任何内容。
 - **暂不结束这一轮**，好让你看到结果，但不会连续两次这样做。钩子会检查 harness 的 `stop_hook_active` 标志，并写入一个时间戳（写在 harness 的临时文件夹中，没有的话写在仓库的 `.git` 文件夹中，再没有的话写入 `.assay-last-run` 文件）。如果无法写入时间戳，钩子会照常报告，但不会阻止这一轮结束。
 - **按时结束。** 钩子给每个页面最多四分钟，给所有页面合计最多九分钟，这样它会在 harness 按照 `hooks.json` 中设定的十分钟上限取消它之前结束。没来得及检查的页面会被报告为未检查（not checked）。
+
+[Harness](../../docs/harnesses.zh-CN.md)
 
 ---
 

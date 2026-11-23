@@ -1,12 +1,12 @@
-<!-- i18n-source: docs/harnesses.md 754a27f7ad6e3db62fad6db5ec61f13ed63618f1 -->
+<!-- i18n-source: docs/harnesses.md dedfb1408902eaf75909c9cf3b90f2dc6304d0a1 -->
 
-<h1 align="center">在你的 harness 中安装 assay</h1>
+<h1 align="center">Harness</h1>
+
+<p align="center"><a href="../README.zh-CN.md">assay</a> › Harness</p>
 
 <p align="center"><a href="harnesses.md">English</a> · <b>简体中文</b> · <a href="harnesses.ja.md">日本語</a> · <a href="harnesses.ko.md">한국어</a> · <a href="harnesses.ru.md">Русский</a></p>
 
----
-
-<p align="center">15 种 harness（智能体运行框架）的安装步骤。其中 8 种可以用各自的插件（plugin）命令安装 assay。其余 7 种需要你把 skill 文件复制到相应位置，这种做法适用于任何能读取 skill 的 harness。</p>
+<p align="center">skill 和插件（plugin）在 15 种受支持的编程智能体 harness（智能体运行框架）中的安装步骤。</p>
 
 ---
 
@@ -28,6 +28,8 @@
 
 ## <a id="what-you-get"></a>你会得到什么
 
+有 8 种 harness 可以用各自的插件命令安装 assay。其余 7 种需要你把 skill 文件复制到相应位置，这种做法适用于任何能读取 skill 的 harness。
+
 assay 由两部分组成：
 
 - 一个 **skill**，它让你的智能体（agent）在写完页面后运行 `assay`，并把结果展示给你，以及
@@ -38,16 +40,10 @@ assay 由两部分组成：
 这 15 种 harness 都需要先确保 `assay` 位于你的 `PATH` 中。
 
 ```bash
-pip install assay-ui           # Python 3.10+
+pip install assay-ui
 ```
 
-```bash
-uv tool install assay-ui       # 没有 Python 3.10+ 时由 uv 下载一个
-```
-
-```bash
-pipx install assay-ui          # 把 assay 安装在单独的隔离环境中
-```
+[全部安装方式](install.zh-CN.md)
 
 ---
 
@@ -188,11 +184,11 @@ Copilot 会直接把钩子的报告展示给你，而不是传给智能体。你
 
 assay 没有提供这些 harness 格式的插件，所以要以文件的形式安装 skill。它只是一个 markdown 文件，在任何能读取 skill 或指令文件的地方都能使用。
 
-把 [`plugins/assay/skills/checking-a-page/`](../plugins/assay/skills/checking-a-page) 复制到你的 harness 读取 skill 的文件夹，例如项目中的 `.agents/skills/`（Hermes Agent 会读取这个文件夹），或者把这个文件的内容粘贴到你的 `AGENTS.md` 中。
+把 `plugins/assay/skills/checking-a-page/` 复制到你的 harness 读取 skill 的文件夹，例如项目中的 `.agents/skills/`（Hermes Agent 会读取这个文件夹），或者把这个文件的内容粘贴到你的 `AGENTS.md` 中。
 
 没有钩子时，检查不会在每一轮结束时自动运行，而是由智能体决定何时运行。
 
-**[skill 的工作方式 →](../plugins/assay/README.zh-CN.md#the-skill)**
+[skill 与插件](../plugins/assay/README.zh-CN.md)
 
 ---
 

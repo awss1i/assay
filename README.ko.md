@@ -1,4 +1,4 @@
-<!-- i18n-source: README.md 98e1f9834b59ec87b57abb16fd325a6cec8eca55 -->
+<!-- i18n-source: README.md 4840d70700f505b756259d67a4a9623def33bb6c -->
 
 <h1 align="center">assay</h1>
 
@@ -13,14 +13,12 @@
 </p>
 
 <p align="center">
-  <a href="#install">설치</a> · <a href="#use">사용법</a> · <a href="#benchmarks">벤치마크</a> · <a href="#how-it-works">동작 방식</a> · <a href="#why">왜 assay인가</a> · <a href="#limits">한계</a> · <a href="#contributing">기여하기</a> · <a href="#licence">라이선스</a>
+  <a href="#install">설치</a> · <a href="#getting-started">시작하기</a> · <a href="#benchmarks">벤치마크</a> · <a href="#docs">문서</a> · <a href="#contributing">기여하기</a> · <a href="#licence">라이선스</a>
 </p>
 
 ---
 
 <p align="center"><strong>에이전트 네이티브 웹 페이지 QA CLI. 결정론적이며 테스트 작성도, LLM도 필요 없습니다.</strong></p>
-
-<p align="center"><code>pip install assay-ui</code></p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/awss1i/assay/main/docs/run.svg" alt="드래그로 순서를 바꾸는 목록에 assay를 실행한 터미널입니다.
@@ -35,43 +33,30 @@
 
 assay는 Chromium에서 페이지를 열고, 페이지의 모든 컨트롤(control)을 찾아 전부 사용해 본 뒤, 무엇이 잘못되었는지 보고합니다.
 
-- **테스트를 작성할 필요가 없습니다.** assay는 페이지에서 찾은 컨트롤로 검사(check)를 만듭니다.
+- **테스트를 작성할 필요가 없습니다.** assay는 페이지에서 찾은 컨트롤로 검사(check)를 만들므로, 관리해야 할 테스트 스크립트나 기준 스크린샷이 없습니다.
 - **LLM을 쓰지 않습니다.** API 키도 비용도 필요 없고, 몇 번을 실행해도 결과가 같습니다.
 - **코딩 에이전트(coding agent)와 함께 동작합니다.** harness(에이전트 실행 환경) 15개에서 지원하는 skill은 에이전트가 작성한 페이지를 하나하나 검사하게 합니다. Claude Code, Codex, Grok Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI, DeepSeek Harness에서는 훅(hook)도 매 턴(turn)이 끝날 때마다 검사를 자동으로 실행합니다.
 - **반복되는 실패를 묶습니다.** 버그 하나 때문에 여러 검사가 실패하면, 뒤에 실패한 검사는 같은 메시지를 반복하는 대신 *same finding as C003*(C003과 같은 발견 사항)이라고 표시합니다.
+
+assay는 페이지의 용도를 모르기 때문에, 페이지가 스스로 모순되는(the page contradicts itself) 곳을 보고합니다. 예를 들어 목록이 비어 있는데 개수가 1로 표시되거나, Undo가 처음 누를 때는 아무 일도 하지 않고 두 번째에야 동작하는 경우입니다. 실행은 되지만 잘못 동작하는 페이지, 예를 들어 합계를 잘못 계산하는 페이지는 대개 통과합니다.
 
 ---
 
 ## <a id="install"></a>설치
 
 ```bash
-pip install assay-ui           # Python 3.10+
+pip install assay-ui
 ```
 
-```bash
-uv tool install assay-ui       # Python 3.10+가 없으면 uv가 내려받습니다
-```
+assay는 uv와 pipx로도 설치할 수 있고, skill과 플러그인(plugin)은 코딩 에이전트 harness 15개에 설치할 수 있습니다.
 
-```bash
-pipx install assay-ui          # assay를 별도의 격리된 환경에 설치합니다
-```
-
-`pip` 명령을 찾을 수 없다면 `python3 -m pip install assay-ui`를 사용하세요. 첫 실행 때 필요하면 Chromium을 내려받습니다.
-
-assay 자체를 개발하려면 다음 명령을 실행하세요.
-
-```bash
-git clone https://github.com/awss1i/assay.git && cd assay
-pip install -e ".[dev]"
-```
-
-### <a id="for-coding-agents"></a>코딩 에이전트용
-
-먼저 위의 CLI를 설치한 다음, **[harness 설정 →](https://github.com/awss1i/assay/blob/main/docs/harnesses.ko.md)** 안내에 따라 지원하는 harness 15개 중 원하는 곳에 skill이나 플러그인(plugin)을 추가하세요.
+[모든 설치 방법](https://github.com/awss1i/assay/blob/main/docs/install.ko.md)
 
 ---
 
-## <a id="use"></a>사용법
+## <a id="getting-started"></a>시작하기
+
+페이지가 들어 있는 폴더를 assay에 지정하세요.
 
 ```console
 assay ./my-app                    # 이 폴더의 index.html 검사
@@ -81,24 +66,14 @@ assay ./my-app --one-line         # 스크립트와 에이전트용 짧은 요�
 
 하나라도 실패하면 종료 코드가 0이 아닌 값이 됩니다. 첫 실행 때 Chromium을 내려받는 것을 제외하면, 요청하지 않는 한 디스크에 아무것도 쓰지 않습니다.
 
-**[전체 플래그, 실제 예시, Python API, HTML 보고서(report) →](https://github.com/awss1i/assay/blob/main/docs/usage.ko.md)**
-
-### <a id="with-coding-agents"></a>코딩 에이전트와 함께 쓰기
-
-**skill**은 지원하는 harness 15개, 즉 Claude Code, DeepSeek Harness, opencode, Antigravity, Codex App, Codex CLI, Cursor, Devin CLI, Factory Droid, Gemini CLI, GitHub Copilot CLI, Grok Build CLI, Kimi Code, Pi, Hermes Agent 모두에서 동작합니다. 이 skill은 에이전트에게 페이지를 완성한 뒤 assay를 실행하고, 그 결과로 답변을 끝내라고 지시합니다.
-
-```
-assay: checked todo/todo.html, 8 checks, nothing flagged.
-```
-
-**플러그인**은 페이지를 변경한 턴이 끝날 때마다 검사를 자동으로 실행하는 훅을 추가합니다. 이 훅은 Claude Code, Codex, Grok Build CLI, Devin CLI, Factory Droid, GitHub Copilot CLI, DeepSeek Harness에서 동작합니다. 어느 쪽이든 에이전트는 assay가 찾은 내용을 보고하고, 요청하지 않는 한 그 결과 때문에 코드를 수정하지 않습니다.
+코딩 에이전트에서는 플러그인이 페이지를 변경한 턴이 끝날 때마다 검사를 실행하고, 에이전트가 assay가 찾은 내용을 보고합니다. Claude Code에서는 다음 두 명령으로 설치합니다.
 
 ```
 /plugin marketplace add awss1i/assay
 /plugin install assay@assay
 ```
 
-**[skill과 플러그인의 동작 방식 →](https://github.com/awss1i/assay/blob/main/plugins/assay/README.ko.md)**
+[시작하기](https://github.com/awss1i/assay/blob/main/docs/getting-started.ko.md)
 
 ---
 
@@ -117,55 +92,23 @@ AI가 작성한 페이지는 AI가 프롬프트 목록으로 작성한 작은 �
 
 ---
 
-## <a id="how-it-works"></a>동작 방식
+## <a id="docs"></a>문서
 
-assay는 다음 다섯 단계로 동작합니다.
-
-1. 폴더를 localhost에서 서빙하고 Chromium에서 페이지를 엽니다.
-2. 페이지의 컨트롤이 더 이상 바뀌지 않을 때까지 기다립니다.
-3. 브라우저가 렌더링하는 모든 컨트롤을 나열합니다. 클릭할 수 있는 div, 드래그 핸들, 편집 가능한 영역도 포함합니다.
-4. 이 컨트롤로 검사를 계획합니다. 모든 버튼을 한 번, 그리고 두 번 누르고, 입력란(field)에 빈 값, 평범한 텍스트, 아주 긴 텍스트, HTML이 섞인 텍스트를 입력하고, 모든 드롭다운을 바꾸고, 캔버스에 그리고, 양식(form)을 채워 제출하는 등의 검사입니다.
-5. 각 검사를 새 탭에서 실행하고, 검사 전후의 페이지를 비교합니다.
-
-assay는 페이지의 용도를 모르기 때문에, 아무것도 바꾸지 않는 버튼만으로는 실패로 보지 않습니다. 대신 페이지가 스스로 모순되는(the page contradicts itself) 곳을 보고합니다. 예를 들면 다음과 같습니다.
-
-- 페이지에서 오류가 발생합니다.
-- Undo가 처음 눌렀을 때는 아무것도 하지 않고, 두 번째로 눌렀을 때 동작합니다.
-- 목록이 비어 있는데 항목 개수가 1로 표시됩니다.
-- 항목을 추가하면 합계가 올라가지만, 항목을 삭제해도 합계가 내려가지 않습니다.
-- 숫자가 있어야 할 자리에 `NaN`이 나타납니다.
-- 페이지의 어떤 컨트롤을 사용해도 페이지가 전혀 반응하지 않습니다.
-
-**[모든 규칙 →](https://github.com/awss1i/assay/blob/main/docs/how-it-works.ko.md)**
-
----
-
-## <a id="why"></a>왜 assay인가
-
-Playwright와 Cypress는 누군가 작성한 테스트가 있어야 합니다. 시각적 회귀 테스트는 기준이 되는 스크린샷이 있어야 합니다. 모델에게 코드 리뷰를 맡기면 모델은 코드를 읽을 뿐 실행하지는 않습니다. assay는 미리 준비할 것 없이 코드를 직접 실행합니다.
-
-|  | 테스트 작성 필요 | 베이스라인 필요 | 프로그램 실행 |
-|---|---|---|---|
-| Playwright / Cypress | 예 | 아니요 | 예, 작성한 부분만 |
-| Percy / Chromatic | 아니요 | **예** | 스크린샷을 찍음 |
-| 모델에게 리뷰 요청 | 아니요 | 아니요 | **아니요, 소스를 읽음** |
-| **assay** | **아니요** | **아니요** | **예, 전부** |
-
----
-
-## <a id="limits"></a>한계
-
-- **의도는 검사할 수 없습니다.** 합계를 잘못 더하는 것처럼, 실행은 되지만 엉뚱한 일을 하는 페이지는 대개 통과합니다. 이런 부분을 검사하려면 Python에서 인수 기준(acceptance criteria)을 넘기세요.
-- **웹 페이지만 검사합니다.** 로컬 폴더에서 서빙한 페이지를 한 번에 하나씩 검사합니다. 크롤링이나 로그인은 하지 않습니다. 검사하는 동안에도 페이지는 인터넷에 접속할 수 있으므로, 실제 API를 호출하는 페이지는 그 API가 그때 돌려주는 응답을 받은 상태로 검사합니다.
-- **빌드 결과물만 검사합니다.** `npm install`이나 빌드를 대신 실행하지 않습니다. 소스 트리를 지정하면 먼저 무엇을 실행해야 하는지 알려 줍니다.
-- **끝난 게임은 고장 난 것처럼 보일 수 있습니다.** 다시 시작할 방법 없이 끝난 게임은 반응하지 않으므로, 아무것도 반응하지 않는다고 보고될 수 있습니다.
-- **속도.** 대부분의 페이지는 몇 초에서 1분 정도 걸립니다. 벤치마크 페이지에 페이지별 소요 시간과 측정에 쓴 머신이 나와 있습니다.
+| 문서 | 다루는 내용 |
+|---|---|
+| [사용법](https://github.com/awss1i/assay/blob/main/docs/usage.ko.md) | 모든 옵션, assay가 출력하는 내용, 종료 코드, HTML 보고서(report), Python API |
+| [동작 방식](https://github.com/awss1i/assay/blob/main/docs/how-it-works.ko.md) | 실행 과정, 모든 검사와 각 검사가 출력하는 정확한 메시지, assay가 검사할 수 없는 것 |
+| [Harness](https://github.com/awss1i/assay/blob/main/docs/harnesses.ko.md) | 지원하는 코딩 에이전트 harness 15개 각각의 설치 방법 |
+| [skill과 플러그인](https://github.com/awss1i/assay/blob/main/plugins/assay/README.ko.md) | skill이 에이전트에게 지시하는 내용과 플러그인의 훅이 매 턴 뒤에 하는 일 |
+| [개발](https://github.com/awss1i/assay/blob/main/docs/development.ko.md) | 코드 구성, 규칙 변경, 테스트, harness 추가 |
 
 ---
 
 ## <a id="contributing"></a>기여하기
 
-버그와 오탐(false alarm)은 이슈로 알려 주시고, 변경 사항은 풀 리퀘스트로 보내 주세요. 질문이나 아이디어는 [Discussions](https://github.com/awss1i/assay/discussions)에서 나눠 주세요. 자세한 내용은 **[CONTRIBUTING.md](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)** 문서를 참고하세요.
+버그와 문서의 문제는 이슈로 알려 주시고, 질문과 아이디어는 Discussions에서 나눠 주시고, 수정과 기능은 풀 리퀘스트로 보내 주세요. 제목은 변경이 다루는 영역 이름으로 시작합니다. 예를 들면 `cli: what changed`입니다.
+
+[기여하기](https://github.com/awss1i/assay/blob/main/CONTRIBUTING.md)
 
 ---
 

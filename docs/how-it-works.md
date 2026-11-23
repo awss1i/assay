@@ -1,21 +1,10 @@
-<h1 align="center">How It Works</h1>
+<h1 align="center">How it works</h1>
+
+<p align="center"><a href="../README.md">assay</a> › How it works</p>
 
 <p align="center"><b>English</b> · <a href="how-it-works.zh-CN.md">简体中文</a> · <a href="how-it-works.ja.md">日本語</a> · <a href="how-it-works.ko.md">한국어</a> · <a href="how-it-works.ru.md">Русский</a></p>
 
----
-
-<p align="center">assay opens your page in a real browser, finds every control on it, uses each
-one in a planned set of checks, and compares the page before and after every
-check. It doesn't know what your page is for, so it only reports something
-when the page contradicts itself: it throws an error, a control reacts one
-press late, a count says 1 when the list is empty, and so on.</p>
-
-<p align="center">The first half of this page describes how a run goes. The second half goes
-through each kind of check: what assay does, what it reports and the exact
-message it prints, and when it deliberately stays quiet and why. Every rule
-here is measured against the <a href="../benchmarks/README.md">benchmarks</a>, and most of the
-exceptions exist because a broader version of the rule flagged a page that
-works.</p>
+<p align="center">How a run goes, every kind of check assay makes, the exact message each one prints, and when it stays quiet.</p>
 
 ---
 
@@ -54,6 +43,14 @@ works.</p>
 ---
 
 ## How a run goes
+
+assay opens your page in a real browser, finds every control on it, uses each
+one in a planned set of checks, and compares the page before and after every
+check. It doesn't know what your page is for, so it only reports something
+when the page contradicts itself: it throws an error, a control reacts one
+press late, a count says 1 when the list is empty, and so on.
+
+---
 
 ### Serving the page
 
@@ -218,17 +215,24 @@ a finding about the whole page (such as nothing responding) says so:
 ```
 
 Every grouping on the benchmark pages is checked against a hand-written
-answer key, [`benchmarks/harness/links.txt`](../benchmarks/harness/links.txt).
+answer key, `benchmarks/harness/links.txt`.
 
 ---
 
 ## What assay checks
 
-Each section below starts with what assay does to the page, then what it
-reports, then when it stays quiet and why. Findings about a single check are
-numbered `C001`, `C002` and so on. Findings about the whole run, which no
-single check could show, are numbered `F001`, `F002`, and the two page-wide
-findings (nothing responds, nothing is drawn) are `C000`.
+Each section below goes through one kind of check: what assay does, what it
+reports and the exact message it prints, and when it deliberately stays quiet
+and why. Every rule here is measured against the benchmarks, and most of the
+exceptions exist because a broader version of the rule flagged a page that
+works.
+
+Findings about a single check are numbered `C001`, `C002` and so on. Findings
+about the whole run, which no single check could show, are numbered `F001`,
+`F002`, and the two page-wide findings (nothing responds, nothing is drawn)
+are `C000`.
+
+---
 
 ### Opening the page
 
