@@ -54,11 +54,11 @@ documentation:
           - 'plugins/assay/README*.md'
           - 'tests/test_translations.py'
 
+# The repository's own setup, meaning everything under .github/ and the
+# dotfiles at the root. A dotfile inside a folder, such as one in
+# .claude-plugin/, belongs to that folder's area.
 ci:
   - changed-files:
       - any-glob-to-any-file:
-          - '.github/workflows/**'
-          - '.github/ISSUE_TEMPLATE/**'
-          - '.github/labeler.yml'
-          - '.github/dependabot.yml'
-          - '.github/pull_request_template.md'
+          - '.github/**'
+          - '.*'
